@@ -81,6 +81,61 @@ public:
     // 或者我们也可以在邻接表绘制完成后，在对这个图进行整体的遍历，然后将平行边处理掉（练习--）
     // todo
   }
+
+public:
+  // 在稀疏图这个类中实现一个新的类，表示一个相邻边的迭代器
+  class adjIterator
+  {
+  private:
+    SparseGraph &G; // 保存要迭代的图
+    int V;          // 保存要迭代的顶点
+    int index;      // 该变量用于指示迭代到哪里了
+
+  public:
+    // 对于构造函数，这里我希望用户高数迭代器两个内容
+    // graph 表示我们要迭代的是那张图
+    // v 表示用户要迭代的是哪一个顶点 他相邻的边
+    adjIterator(SparseGraph &graph, int v) : G(graph), V(v), index(0)
+    {
+    }
+
+    // 返回要迭代的第一个元素
+    int begin()
+    {
+      int index = 0;
+      // 对于begin这个函数，我们首先要检查对于G这个图
+      // 他里面g[V]这个分量的size是否为0
+      // 如果不为 0 ，那么我们就返回这个g[V]分量的第一个元素即可
+      // 否者返回 -1 就行
+      if (G.g[V].size())
+      {
+        return G.g[V][index];
+      }
+      return -1;
+
+      // 这样我们就找到了v这个节点在这个图中的第一个相邻节点，如果没有的话返回的就是-1
+    }
+
+    // 从当前迭代的元素向下偏移找下一个元素
+    int next()
+    {
+      index++;
+
+      // 判断当前index值是否越界
+      if (index < G.g[V].size())
+      {
+        return G.g[V][index];
+      }
+      return -1;
+    }
+
+    // 用于指示我们的迭代终止没有
+    bool end()
+    {
+      return index >= G.g[V].size();
+      // 如果迭代指示器 index 大于等于 单前向量g[v]的size，表示已经越界（对于g[v]这个分量来说已经迭代完成了）
+    }
+  };
 };
 
 #endif

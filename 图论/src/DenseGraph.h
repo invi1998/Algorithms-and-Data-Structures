@@ -90,6 +90,59 @@ public:
         // addEdge的时间复杂度也就是O(1)，
         // 所以，从这里可以看出，邻接矩阵对于处理平行边是有着天然的优势（基本不会付出额外的代价）
     }
+
+public:
+    // 实现稠密图的邻边迭代器
+    class adjIterator
+    {
+    private:
+        DenseGraph &G; // 保存要迭代的图
+        int V;         // 保存要迭代的顶点
+        int index;     // 迭代到哪里了
+
+    public:
+        adjIterator(DenseGraph &graph, int v) : G(graph), V(v), index(-1)
+        {
+        }
+
+        int begin()
+        {
+            // 在稠密图中我们应该遍历的是 v 所在的这一行中的所有元素
+            // 如果这个元素时false，就说明没有这个边
+            // 如果这个元素是true，说明有这个边
+            // 也就是说，在begin这里，对于稠密图来说，不见得是取第0个元素
+            // 而是应该去找这一行中第一个值为true的元素
+            // 所以这里初始化的时候将 index设置为 -1 (这也是上面构造函数中为什么要将这个index这是为 -1的原因)
+            index = -1;
+            // 然后我们直接通过 next 去找第一个元素
+            return next();
+        }
+
+        int next()
+        {
+            // next 这个函数做的事情就是从当前这个 index 开始，
+            // 去找之后第一个为 true 的这个元素
+            // 遍历V个顶点
+            for (index += 1; index < G.V(); index++)
+            {
+                // g[V][index] 表示 g[V] 这一行，他的第 index个元素是否为 true
+                // 一旦为true ，那么当前的index就能返回回去
+                if (G.g[V][index])
+                {
+                    return index;
+                }
+            }
+            // 如果经过这轮循环没有找到一个为 true的元素，那么就说明所有的邻边都已经遍历完了
+            return -1;
+        }
+
+        bool end()
+        {
+            return index >= G.V();
+            // 判断是否迭代完，直接用index的值来和当前顶点的个数做比较
+            // 如果大于等于 顶点个数，就说明这一行中所有的顶点的都已经遍历完了
+        }
+    };
 };
 
 #endif
