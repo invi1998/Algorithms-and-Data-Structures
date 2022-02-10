@@ -92,6 +92,19 @@ public:
     }
 
 public:
+    void show()
+    {
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                std::cout << g[i][j] << "\t";
+            }
+            std::cout << std::endl;
+        }
+    }
+
+public:
     // 实现稠密图的邻边迭代器
     class adjIterator
     {

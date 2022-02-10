@@ -3,6 +3,7 @@
 #include <vector>
 #include "DenseGraph.h"
 #include "SparseGraph.h"
+#include "ReadGraph.h"
 
 using namespace std;
 
@@ -137,6 +138,52 @@ int main()
   // 从使用者的角度来看，这两个图他们的遍历方式都是一样的
   // 这就为我们后续实现图相关的算法带来了方便，因为后续我们的算法要求对稀疏图和稠密图都同时成立
   // 因为我们调用的都是同一个接口（我们的图算法都将封装在模板类中，这个模板类我们就可以任意的传入稀疏图或者稠密图）
+
+  std::cout << "------------------------------------------------------------------------------------" << std::endl;
+
+  string filename1 = "testG1.txt";
+  string filename2 = "testG2.txt";
+
+  // 稀疏图(13个节点的无向图)
+  SparseGraph gg1(13, false);
+  // 将filename1中的内容读进g1中
+  ReadGraph<SparseGraph> read1(gg1, filename1);
+
+  gg1.show();
+  // vertex0:        5       1       2       6
+  // vertex1:        0
+  // vertex2:        0
+  // vertex3:        4       5
+  // vertex4:        3       6       5
+  // vertex5:        0       4       3
+  // vertex6:        4       0
+  // vertex7:        8
+  // vertex8:        7
+  // vertex9:        12      10      11
+  // vertex10:       9
+  // vertex11:       12      9
+  // vertex12:       9       11
+
+  std::cout << "..............................." << std::endl;
+
+  // 稠密图（13个节点的无向图）将filename1读为一个稠密图
+  DenseGraph gg2(13, false);
+  ReadGraph<DenseGraph> read2(gg2, filename1);
+
+  gg2.show();
+  // 0       1       1       0       0       1       1       0       0       0       0       0       0
+  // 1       0       0       0       0       0       0       0       0       0       0       0       0
+  // 1       0       0       0       0       0       0       0       0       0       0       0       0
+  // 0       0       0       0       1       1       0       0       0       0       0       0       0
+  // 0       0       0       1       0       1       1       0       0       0       0       0       0
+  // 1       0       0       1       1       0       0       0       0       0       0       0       0
+  // 1       0       0       0       1       0       0       0       0       0       0       0       0
+  // 0       0       0       0       0       0       0       0       1       0       0       0       0
+  // 0       0       0       0       0       0       0       1       0       0       0       0       0
+  // 0       0       0       0       0       0       0       0       0       0       1       1       1
+  // 0       0       0       0       0       0       0       0       0       1       0       0       0
+  // 0       0       0       0       0       0       0       0       0       1       0       0       1
+  // 0       0       0       0       0       0       0       0       0       1       0       1       0
 
   return 0;
 }

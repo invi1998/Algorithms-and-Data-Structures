@@ -83,6 +83,21 @@ public:
   }
 
 public:
+  // 打印图
+  void show()
+  {
+    for (int i = 0; i < n; i++)
+    {
+      std::cout << "vertex" << i << ":\t";
+      for (int j = 0; j < g[i].size(); j++)
+      {
+        std::cout << g[i][j] << "\t";
+      }
+      std::cout << std::endl;
+    }
+  }
+
+public:
   // 在稀疏图这个类中实现一个新的类，表示一个相邻边的迭代器
   class adjIterator
   {
