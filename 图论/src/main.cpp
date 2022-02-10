@@ -4,6 +4,7 @@
 #include "DenseGraph.h"
 #include "SparseGraph.h"
 #include "ReadGraph.h"
+#include "Component.h"
 
 using namespace std;
 
@@ -142,7 +143,6 @@ int main()
   std::cout << "------------------------------------------------------------------------------------" << std::endl;
 
   string filename1 = "testG1.txt";
-  string filename2 = "testG2.txt";
 
   // 稀疏图(13个节点的无向图)
   SparseGraph gg1(13, false);
@@ -185,5 +185,25 @@ int main()
   // 0       0       0       0       0       0       0       0       0       1       0       0       1
   // 0       0       0       0       0       0       0       0       0       1       0       1       0
 
+  std::cout << "------------------------------------------------------------------------------------" << std::endl;
+
+  string filename2 = "testG2.txt";
+
+  SparseGraph graph1 = SparseGraph(13, false);
+  ReadGraph<SparseGraph> readG1(graph1, filename1);
+  Component<SparseGraph> component1(graph1);
+  std::cout << "图 TestG1.txt 的连通分量是：" << component1.count() << std::endl;
+  // 图 TestG1.txt 的连通分量是：3
+
+  std::cout << std::endl;
+
+  SparseGraph graph2 = SparseGraph(7, false);
+  ReadGraph<SparseGraph> readG2(graph2, filename2);
+  Component<SparseGraph> component2(graph2);
+  std::cout << "图 TestG2.txt 的连通分量是：" << component2.count() << std::endl;
+  // 图 TestG2.txt 的连通分量是：1
+
+  std::cout << "在图 testG1.txt中，节点 7 和 节点 11 是否相连？\t" << component1.isConnected(7, 11) << std::endl;
+  // 在图 testG1.txt中，节点 7 和 节点 11 是否相连？ 1
   return 0;
 }
