@@ -5,6 +5,7 @@
 #include "SparseGraph.h"
 #include "ReadGraph.h"
 #include "Component.h"
+#include "Path.h"
 
 using namespace std;
 
@@ -205,5 +206,13 @@ int main()
 
   std::cout << "在图 testG1.txt中，节点 7 和 节点 11 是否相连？\t" << component1.isConnected(7, 11) << std::endl;
   // 在图 testG1.txt中，节点 7 和 节点 11 是否相连？ 1
+
+  std::cout << "------------------------------------------------------------------------------------" << std::endl;
+
+  Path<SparseGraph> dfs(graph2, 0);
+  std::cout << "图 TestG2中从 0 到 6 的深度优先遍历路径为（DFS）:  ";
+  dfs.showPath(6);
+  // 图 TestG2中从 0 到 6 的深度优先遍历路径为（DFS）:  0 -> 5 -> 3 -> 4 -> 6
+
   return 0;
 }
