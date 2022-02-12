@@ -6,6 +6,7 @@
 #include "ReadGraph.h"
 #include "Component.h"
 #include "Path.h"
+#include "ShortestPath.h"
 
 using namespace std;
 
@@ -213,6 +214,13 @@ int main()
   std::cout << "图 TestG2中从 0 到 6 的深度优先遍历路径为（DFS）:  ";
   dfs.showPath(6);
   // 图 TestG2中从 0 到 6 的深度优先遍历路径为（DFS）:  0 -> 5 -> 3 -> 4 -> 6
+
+  std::cout << "------------------------------------------------------------------------------------" << std::endl;
+
+  ShortestPath<SparseGraph> bfs(graph2, 0);
+  std::cout << "图 TestG2中从 0 到 6 的广度优先遍历求最短路径为（BFS）:  ";
+  bfs.showPath(6);
+  // 图 TestG2中从 0 到 6 的广度优先遍历最短路径为（BFS）:  0 -> 6
 
   return 0;
 }
