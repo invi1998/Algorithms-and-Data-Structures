@@ -2,6 +2,8 @@
 // #include <algorithm>     c++11之前使用swap函数需要引入这个头文件，c++11之后，swap被包含在了标准库std中
 #include "Student.h"
 
+#include "ShortTestHelper.h"
+
 using namespace std;
 
 // 选择排序
@@ -106,6 +108,16 @@ int main()
   // Student: a  10
 
   std::cout << std::endl;
+
+  std::cout << "----------------------------------------------------------------------" << std::endl;
+
+  int n = 100000;
+  int *arrTest = SortTestHelper::gennerateRandomArray(n, 0, n);
+  SortTestHelper::testSort("选择排序（Selection sort）", SelectionSort, arrTest, n);
+
+  // 选择排序（Selection sort） : 16.9211 s
+
+  delete[] arrTest;
 
   return 0;
 }
