@@ -42,6 +42,54 @@ void SelectionSort(T arr[], int n)
   }
 }
 
+// 插入排序
+
+template <typename T>
+void insertionSort(T arr[], int n)
+{
+  // 注意这里，插入排序第一层遍历从1开始，为什么？
+  // 因为对于插入排序来说，第0个元素我们根本可以不用考虑
+  // 因为对于插入排序来说，第0个元素放在那里，它本身就已经有序了
+  // 我们不再需要把它插入到前面的任何一个位置(第0个元素前面也没有位置)
+  // 所以我们开始遍历的时候是直接从第二个元素(索引值为1这个元素开始考察的)
+  for (int i = 1; i < n; i++)
+  {
+    // 然后在这个循环里我们做的事情是什么？
+    // 寻找元素arr[i]合适的插入位置
+    // 这个合适的插入位置是在前面
+    // 所以这里这层循环我们是从这个位置向前倒。知道j>0为止
+    // 注意这里是j>0而不是j>=0,为什么？
+    // 因为我们这层循环是和当前元素的前一个位置元素进行比较，看看能不能放在前一个元素的位置
+    // 可以想象，这个比较最后发生的位置，应该是j = 1的时候，这个时候就是位置1的元素和位置0的元素做比较
+    // 看位置1能不能插入到位置0，如果能，就交换位置
+    // 所以我们最多考察到j=1这个位置（也就是j>0）
+
+    // for(int j = i; j > 0; j--)
+    // {
+    //     if(arr[j] < arr[j-1])
+    //     {
+    //         swap(arr[j], arr[j-1]);
+    //     }
+    //     // 如果在这里我们已经发现j这个位置的元素已经大于等于它前面位置的元素，
+    //     // 那么就没有必要继续遍历比较下去了，j这个位置已经是合适的位置了
+    //     // 这个时候直接终止这次循环就可以了
+    //     else
+    //     {
+    //         break;
+    //     }
+    // }
+
+    // 所以这里也可以看到插入排序理论上比选择排序效率高的一个表现就是插入排序它是有提前结束遍历的条件的
+    // 而选择排序则没有，需要完整跑完全部数据
+
+    // 其实这里也可以直接这样写
+    for (int j = i; j > 0 && arr[j] < arr[j - 1]; j--)
+    {
+      swap(arr[j], arr[j - 1]);
+    }
+  }
+}
+
 int main()
 {
   int arr[] = {10, 23, 5, 2, 22, 9, 6, 11, 45};
@@ -112,12 +160,19 @@ int main()
   std::cout << "----------------------------------------------------------------------" << std::endl;
 
   int n = 100000;
-  int *arrTest = SortTestHelper::gennerateRandomArray(n, 0, n);
-  SortTestHelper::testSort("选择排序（Selection sort）", SelectionSort, arrTest, n);
+  // int n = 10000;
+  int *arrTest1 = SortTestHelper::gennerateRandomArray(n, 0, n);
+  int *arrTest2 = SortTestHelper::copyIntArray(arrTest1, n);
+  SortTestHelper::testSort("选择排序（Selection sort）", SelectionSort, arrTest1, n);
+  SortTestHelper::testSort("插入排序（Selection sort）", insertionSort, arrTest2, n);
 
-  // 选择排序（Selection sort） : 16.9211 s
+  // 选择排序（Selection sort） : 14.6116 s
+  // 插入排序（Selection sort） : 30.4101 s
 
-  delete[] arrTest;
+  delete[] arrTest1;
+  delete[] arrTest2;
+
+  std::cout << "----------------------------------------------------------------------" << std::endl;
 
   return 0;
 }

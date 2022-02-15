@@ -75,6 +75,17 @@ namespace SortTestHelper
     }
     return true;
   }
+
+  int *copyIntArray(int a[], int n)
+  {
+    int *arr = new int[n];
+
+    // copy 第一个参数源数组的头指针，第二个参数源数组的尾指针, 第三个参数就是拷贝到目的地址的头指针
+    copy(a, a + n, arr);
+
+    return arr;
+  }
+
 }
 
 #endif
