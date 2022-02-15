@@ -28,6 +28,31 @@ namespace SortTestHelper
     return arr;
   }
 
+  // 生成一个近乎于有序的随机数组
+  int *gennerateNearlyOrderArray(int n, int swapTimes)
+  {
+    // 先生成一个完全有序的数组
+    int *arr = new int[n];
+    for (int i = 0; i < n; i++)
+    {
+      arr[i] = i;
+    }
+
+    // 随机挑选几对元素进行交换
+
+    // 设置随机种子
+    srand(time(NULL));
+
+    for (int i = 0; i < swapTimes; i++)
+    {
+      int posx = rand() % n;
+      int posy = rand() % n;
+      swap(arr[posx], arr[posy]);
+    }
+
+    return arr;
+  }
+
   template <typename T>
   void printArray(T arr[], int n)
   {

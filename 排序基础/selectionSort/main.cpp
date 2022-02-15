@@ -83,10 +83,34 @@ void insertionSort(T arr[], int n)
     // 而选择排序则没有，需要完整跑完全部数据
 
     // 其实这里也可以直接这样写
-    for (int j = i; j > 0 && arr[j] < arr[j - 1]; j--)
+    // for(int j = i; j>0 && arr[j] < arr[j-1]; j--)
+    // {
+    //     swap(arr[j], arr[j-1]);
+    // }
+
+    // 从代码里可以看到，我们现在实现的这个版本的插入排序，
+    // 它在遍历的同时也在不停的进行交换，交换这个操作是要比简单的比较这个操作还要耗时的，
+    // 因为每次交换背后都有三次赋值的操作，那这里我们能不能改变插入排序的算法，让他只在内层循环中只交换一次呢？
+
+    // 性能优化改进
+    T e = arr[i]; // 将待排序的值先拷贝一份出来
+
+    // 然后把对于j的声明放在外面来，因为在最后那次赋值的时候是需要j的
+    // j实际上就是用来保存元素e应该插入的位置
+    int j;
+
+    // 所以在初始化的时候j = i, 也就是说元素e是不是应该放在j所在的位置。怎么看呢？
+    // 首先j要大于0，其次我们要看j前一个元素是否大于待排序元素e，
+    // 如果j前一个元素还要比e大，就说明我们当前j这个位置不是e应该存在的位置
+    // 所以我们的循环要继续
+    for (j = i; j > 0 && arr[j - 1] > e; j--)
     {
-      swap(arr[j], arr[j - 1]);
+      // 在循环体里面要做的事情就是把 arr[j]这位置的元素赋值成arr[j-1]这个位置的元素
+      // 也就是把前一个位置的元素向后挪一下
+      arr[j] = arr[j - 1];
     }
+    // 在这层for循环结束以后，可以看到，我们j里保存的就是e应该存放的位置
+    arr[j] = e;
   }
 }
 
@@ -161,13 +185,24 @@ int main()
 
   int n = 100000;
   // int n = 10000;
-  int *arrTest1 = SortTestHelper::gennerateRandomArray(n, 0, n);
+  // int *arrTest1 = SortTestHelper::gennerateRandomArray(n, 0, 3);   // 全无序随机数组
+  int *arrTest1 = SortTestHelper::gennerateNearlyOrderArray(n, 100); // 近乎有序的数组（100个位置是错误的）
   int *arrTest2 = SortTestHelper::copyIntArray(arrTest1, n);
   SortTestHelper::testSort("选择排序（Selection sort）", SelectionSort, arrTest1, n);
   SortTestHelper::testSort("插入排序（Selection sort）", insertionSort, arrTest2, n);
 
   // 选择排序（Selection sort） : 14.6116 s
   // 插入排序（Selection sort） : 30.4101 s
+
+  // 性能优化改进 之后
+
+  // 选择排序（Selection sort） : 11.7841 s
+  // 插入排序（Selection sort） : 6.34223 s
+
+  // 对于一个近乎有序的数组来说，改进后的插入排序性能提升更为明显
+
+  // 选择排序（Selection sort） : 11.4011 s
+  // 插入排序（Selection sort） : 0.020248 s
 
   delete[] arrTest1;
   delete[] arrTest2;
