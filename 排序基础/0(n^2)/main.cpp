@@ -45,7 +45,7 @@ void SelectionSort(T arr[], int n)
 // 插入排序
 
 template <typename T>
-void insertionSort(T arr[], int n)
+void InsertionSort(T arr[], int n)
 {
   // 注意这里，插入排序第一层遍历从1开始，为什么？
   // 因为对于插入排序来说，第0个元素我们根本可以不用考虑
@@ -111,6 +111,58 @@ void insertionSort(T arr[], int n)
     }
     // 在这层for循环结束以后，可以看到，我们j里保存的就是e应该存放的位置
     arr[j] = e;
+  }
+}
+
+// 冒泡排序
+template <typename T>
+void BubbleSort(T arr[], int n)
+{
+  int newn; // 使用newn进行优化
+
+  do
+  {
+    newn = 0;
+    for (int i = 1; i < n; i++)
+    {
+      if (arr[i - 1] > arr[i])
+      {
+        swap(arr[i - 1], arr[i]);
+
+        // 记录最后一次交换的位置，在此之后的元素在下一轮扫描中均不考虑
+        newn = i;
+      }
+    }
+    n = newn;
+  } while (newn > 0);
+}
+
+// 希尔排序
+template <typename T>
+void ShellSort(T arr[], int n)
+{
+
+  // 计算 increment sequence: 1, 4, 13, 40, 121, 364, 1093...
+  int h = 1;
+  while (h < n / 3)
+    h = 3 * h + 1;
+
+  while (h >= 1)
+  {
+
+    // h-sort the array
+    for (int i = h; i < n; i++)
+    {
+
+      // 对 arr[i], arr[i-h], arr[i-2*h], arr[i-3*h]... 使用插入排序
+      T e = arr[i];
+      int j;
+      for (j = i; j >= h && e < arr[j - h]; j -= h)
+        arr[j] = arr[j - h];
+      arr[j] = e;
+    }
+
+    h /= 3;
   }
 }
 
@@ -185,27 +237,33 @@ int main()
 
   int n = 100000;
   // int n = 10000;
-  // int *arrTest1 = SortTestHelper::gennerateRandomArray(n, 0, 3);   // 全无序随机数组
+  // int *arrTest1 = SortTestHelper::gennerateRandomArray(n, 0, n);   // 全无序随机数组
   int *arrTest1 = SortTestHelper::gennerateNearlyOrderArray(n, 100); // 近乎有序的数组（100个位置是错误的）
   int *arrTest2 = SortTestHelper::copyIntArray(arrTest1, n);
+  int *arrTest3 = SortTestHelper::copyIntArray(arrTest1, n);
+  int *arrTest4 = SortTestHelper::copyIntArray(arrTest1, n);
   SortTestHelper::testSort("选择排序（Selection sort）", SelectionSort, arrTest1, n);
-  SortTestHelper::testSort("插入排序（Selection sort）", insertionSort, arrTest2, n);
+  SortTestHelper::testSort("插入排序（InsertionSort sort）", InsertionSort, arrTest2, n);
+  SortTestHelper::testSort("冒泡排序（BubbleSort sort）", BubbleSort, arrTest3, n);
+  SortTestHelper::testSort("希尔排序（Shell sort）", ShellSort, arrTest4, n);
 
   // 选择排序（Selection sort） : 14.6116 s
-  // 插入排序（Selection sort） : 30.4101 s
+  // 插入排序（InsertionSort sort） : 30.4101 s
 
   // 性能优化改进 之后
 
   // 选择排序（Selection sort） : 11.7841 s
-  // 插入排序（Selection sort） : 6.34223 s
+  // 插入排序（InsertionSort sort） : 6.34223 s
 
   // 对于一个近乎有序的数组来说，改进后的插入排序性能提升更为明显
 
   // 选择排序（Selection sort） : 11.4011 s
-  // 插入排序（Selection sort） : 0.020248 s
+  // 插入排序（InsertionSort sort） : 0.020248 s
 
   delete[] arrTest1;
   delete[] arrTest2;
+  delete[] arrTest3;
+  delete[] arrTest4;
 
   std::cout << "----------------------------------------------------------------------" << std::endl;
 

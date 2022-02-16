@@ -71,7 +71,7 @@ namespace SortTestHelper
   // arr[] 要进行测试的测试用例
   // n 测试用例数组元素个数
   template <typename T>
-  void testSort(string sortName, void (*sort)(T[], int), T arr[], int n)
+  void testSort(const string &sortName, void (*sort)(T[], int), T arr[], int n)
   {
     clock_t startTime = clock();
     sort(arr, n);

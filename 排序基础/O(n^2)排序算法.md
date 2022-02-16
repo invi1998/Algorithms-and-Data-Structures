@@ -269,31 +269,27 @@ int *arrTest1 = SortTestHelper::gennerateNearlyOrderArray(n, 100);  // 近乎有
 下面我们对冒泡排序进行优化，使它效率更高一些：添加一个标记，如果一趟遍历中发生了交换，则标记为true，否则为false。如果某一趟没有发生交换，说明排序已经完成！
 
 ```c++
-voidbubble_sort2(int a[],int n)
-
+// 冒泡排序
+template<typename T>
+void BubbleSort(T arr[], int n)
 {
-
-	int i,j;
-
-	intflag;// 标记
+    int newn;   // 使用newn进行优化
     
-    for(i=n-1; i>0; i--)
-	{
-		flag =0;// 初始化标记为0
-
-		// 将a[0...i]中最大的数据放在末尾
-        for(j=0; j
-		{
-			if(a[j] > a[j+1])
-			{
-				swap(a[j], a[j+1]);
-				flag =1;// 若发生交换，则设标记为1
-             }
-		}
-		if(flag==0)
-			break;// 若没发生交换，则说明数列已有序。
-    }
-
+    do
+    {
+        newn = 0;
+        for(int i = 1; i < n; i++)
+        {
+            if(arr[i-1] > arr[i])
+            {
+                swap(arr[i-1], arr[i]);
+                
+                // 记录最后一次交换的位置，在此之后的元素在下一轮扫描中均不考虑
+                newn = i;
+            }
+        }
+        n = newn;
+    } while (newn > 0);
 }
 ```
 
@@ -332,3 +328,65 @@ voidbubble_sort2(int a[],int n)
 （3）第三趟，增量缩小为 1,得到最终排序结果
 
 ![img](../img/ShellSort-03.png)
+
+c++实现
+
+```c++
+// 希尔排序
+template<typename T>
+void ShellSort(T arr[], int n){
+
+    // 计算 increment sequence: 1, 4, 13, 40, 121, 364, 1093...
+    int h = 1;
+    while( h < n/3 )
+        h = 3 * h + 1;
+
+    while( h >= 1 ){
+
+        // h-sort the array
+        for( int i = h ; i < n ; i ++ ){
+
+            // 对 arr[i], arr[i-h], arr[i-2*h], arr[i-3*h]... 使用插入排序
+            T e = arr[i];
+            int j;
+            for( j = i ; j >= h && e < arr[j-h] ; j -= h )
+                arr[j] = arr[j-h];
+            arr[j] = e;
+        }
+
+        h /= 3;
+    }
+}
+```
+
+希尔排序，最重要的第一步就是分组。怎么分组？我们对这组数据找到一个间隔，然后每隔一定的间隔就将这些元素分到一组。这个间隔在希尔排序中一般是没有硬性要求的，我们一般会取数组元素的一半作为间隔。
+
+分完组后，我下一步要做的就是对组内每一个元素进行排序，组内排序使用插入排序进行。
+
+排好序后，我们对单前的数组再次拿到一个分组间隔，进行数据分组，然后插入排序。注意这个时候，我们的间隔要在原来的基础上减半。
+
+以此类推，知道我们的间隔变成1，那么这个时候，就只有一个分组，这个分组里经过了以上的排序，已经是一个近乎有序的数组，而我们知道，插入排序在处理有序性强的数组性能是很高的。这也就是为什么希尔排序性能高的根本所在。
+
+## 排序算法的性能测试
+
+```c++
+// int *arrTest1 = SortTestHelper::gennerateRandomArray(n, 0, n);   // 全无序随机数组
+    int *arrTest1 = SortTestHelper::gennerateNearlyOrderArray(n, 100);  // 近乎有序的数组（100个位置是错误的）
+    int *arrTest2 = SortTestHelper::copyIntArray(arrTest1, n);
+    int *arrTest3 = SortTestHelper::copyIntArray(arrTest1, n);
+    int *arrTest4 = SortTestHelper::copyIntArray(arrTest1, n);
+    SortTestHelper::testSort("选择排序（Selection sort）", SelectionSort, arrTest1, n);
+    SortTestHelper::testSort("插入排序（InsertionSort sort）", InsertionSort, arrTest2, n);
+    SortTestHelper::testSort("冒泡排序（BubbleSort sort）", BubbleSort, arrTest3, n);
+    SortTestHelper::testSort("希尔排序（Shell sort）", ShellSort, arrTest4, n);
+```
+
+测试10w无序数组
+
+![](../img/impicture_20220216_120355.png)
+
+测试10w近乎有序数组
+
+![](../img/impicture_20220216_120547.png)
+
+可以看到冒泡排序在处理无序数组的时候，性能最差，哪怕是有序数组性能也高不到哪。希尔排序无论是乱序还是有序，性能都是最优，插入排序处理有序性强的数据性能较好，选择排序处理无序和有序都是一样的，无差别
