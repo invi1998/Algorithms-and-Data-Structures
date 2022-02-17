@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include "ShortTestHelper.h"
+#include "InsertionSort.h"
 
 using namespace std;
 
@@ -117,7 +118,17 @@ void megeSort(T arr[], int n)
 
 int main()
 {
-  cout << "Hello World";
+  int n = 50000;
+  std::cout << "测试随机数组排序，数组大小 = " << n << ", 随机范围 [0, " << n << "]" << std::endl;
+
+  int *arr1 = SortTestHelper::gennerateRandomArray(n, 0, n);
+  int *arr2 = SortTestHelper::copyIntArray(arr1, n);
+
+  SortTestHelper::testSort("插入排序（Insertion Sort） ", InsertionSort, arr1, n);
+  SortTestHelper::testSort("归并排序（Merge Sort） ", megeSort, arr2, n);
+
+  delete[] arr1;
+  delete[] arr2;
 
   return 0;
 }
