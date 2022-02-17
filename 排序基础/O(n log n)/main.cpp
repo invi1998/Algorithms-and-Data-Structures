@@ -79,8 +79,17 @@ void __mergeSort(T arr[], int l, int r)
   // 这个时候我们还是需要进行一次排序
   // 但是当l>=r的时候，就表示我们只有一个元素，甚至一个元素都没有，l>r是不可能发生的情况
   // （也就是代表我们当前要处理的数据集为空）
-  if (l >= r)
+
+  // 代码优化
+  // if(l>=r)
+  // {
+  //     return;
+  // }
+
+  // 这里 r-1 = 15就表示有16个元素及其以下的时候使用插入排序
+  if (r - l <= 15)
   {
+    InsertionSort(arr, l, r);
     return;
   }
 
@@ -95,7 +104,17 @@ void __mergeSort(T arr[], int l, int r)
 
   // 这两部分都归并排序好之后，就要使用merge将归并排序好的这两个部分
   // 从l-mid,在从mid-r这两部分进行一个merge操作
-  __merge(arr, l, mid, r);
+
+  // 代码优化：
+  // 在我们对数组的左右两边进行递归的归并排序之后，不管三七二十一，
+  // 直接下一句操作就是将这左右两边的数组进行merge合并操作。
+  // 但是这个时候其实如果左边的最大值小于等于右边的最小值（也就是 arr[mid] <= arr[mid+1]），
+  // 那么就说明这个arr数组已经是有序的了。就不再需要进行merge操作了。
+
+  if (arr[mid] > arr[mid + 1])
+  {
+    __merge(arr, l, mid, r);
+  }
 
   // 这次merge完成之后我们就完成了整个归并排序的过程
 }
@@ -127,8 +146,27 @@ int main()
   SortTestHelper::testSort("插入排序（Insertion Sort） ", InsertionSort, arr1, n);
   SortTestHelper::testSort("归并排序（Merge Sort） ", megeSort, arr2, n);
 
+  // 测试随机数组排序，数组大小 = 50000, 随机范围 [0, 50000]
+  // 插入排序（Insertion Sort）  : 2.28427 s
+  // 归并排序（Merge Sort）  : 0.01264 s
+
+  int swapTime = 10;
+
+  std::cout << "测试近乎有序的数组排序，数组大小 = " << n << ", 乱序数: " << swapTime << std::endl;
+
+  int *arr3 = SortTestHelper::gennerateNearlyOrderArray(n, swapTime);
+  int *arr4 = SortTestHelper::copyIntArray(arr3, n);
+
+  SortTestHelper::testSort("插入排序（Insertion Sort） ", InsertionSort, arr3, n);
+  SortTestHelper::testSort("归并排序（Merge Sort） ", megeSort, arr4, n);
+  // 测试近乎有序��数组排序，数组大小 = 50000, 乱序数: 10
+  // 插入排序（Insertion Sort）  : 0.001073 s
+  // 归并排序（Merge Sort）  : 0.005798 s
+
   delete[] arr1;
   delete[] arr2;
+  delete[] arr3;
+  delete[] arr4;
 
   return 0;
 }
