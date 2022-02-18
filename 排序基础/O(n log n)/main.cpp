@@ -1,8 +1,9 @@
 
 #include <iostream>
-#include "ShortTestHelper.h"
+#include "SortTestHelper.h"
 #include "InsertionSort.h"
 #include "MergeSort.h"
+#include "QuickSort.h"
 
 using namespace std;
 
@@ -15,7 +16,7 @@ int main()
   int *arr2 = SortTestHelper::copyIntArray(arr1, n);
   int *arr5 = SortTestHelper::copyIntArray(arr1, n);
 
-  SortTestHelper::testSort("插入排序（Insertion Sort） ", InsertionSort, arr1, n);
+  SortTestHelper::testSort("插入排序（Insertion Sort） ", insertionSort, arr1, n);
   SortTestHelper::testSort("归并排序（Merge Sort） ", megeSort, arr2, n);
   SortTestHelper::testSort("归并排序（Merge Sort BU）", mergeSortBU, arr5, n);
 
@@ -31,7 +32,7 @@ int main()
   int *arr4 = SortTestHelper::copyIntArray(arr3, n);
   int *arr6 = SortTestHelper::copyIntArray(arr3, n);
 
-  SortTestHelper::testSort("插入排序（Insertion Sort） ", InsertionSort, arr3, n);
+  SortTestHelper::testSort("插入排序（Insertion Sort） ", insertionSort, arr3, n);
   SortTestHelper::testSort("归并排序（Merge Sort） ", megeSort, arr4, n);
   SortTestHelper::testSort("归并排序（Merge Sort BU）", mergeSortBU, arr6, n);
 
@@ -45,6 +46,35 @@ int main()
   delete[] arr4;
   delete[] arr5;
   delete[] arr6;
+
+  // -------------------------------------------------------------------------
+  std::cout << std::endl;
+
+  int m = 1000000;
+  std::cout << "-------------------------------------------------------------------------" << std::endl;
+  int *arrbw1 = SortTestHelper::gennerateRandomArray(m, 0, m);
+  int *arrbw2 = SortTestHelper::copyIntArray(arrbw1, m);
+
+  SortTestHelper::testSort("归并排序（Merge Sort）", megeSort, arrbw1, m);
+  SortTestHelper::testSort("快速排序（Quick Sort）", quickSort, arrbw2, m);
+
+  std::cout << "-------------------------------------------------------------------------" << std::endl;
+  std::cout << std::endl;
+  std::cout << "-------------------------------------------------------------------------" << std::endl;
+  int swapTime2 = 100;
+  std::cout << "测试近乎有序的数组排序：数组大小 " << m << ", 乱序数：" << swapTime2 << std::endl;
+  int *arrbw3 = SortTestHelper::gennerateNearlyOrderArray(m, swapTime2);
+  int *arrbw4 = SortTestHelper::copyIntArray(arrbw3, m);
+
+  SortTestHelper::testSort("归并排序（Merge Sort）", megeSort, arrbw3, m);
+  SortTestHelper::testSort("快速排序（Quick Sort）", quickSort, arrbw4, m);
+
+  std::cout << "-------------------------------------------------------------------------" << std::endl;
+
+  delete[] arrbw2;
+  delete[] arrbw1;
+  delete[] arrbw3;
+  delete[] arrbw4;
 
   return 0;
 }

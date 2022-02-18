@@ -8,7 +8,7 @@ using namespace std;
 // 插入排序
 
 template <typename T>
-void InsertionSort(T arr[], int n)
+void insertionSort(T arr[], int n)
 {
   for (int i = 1; i < n; i++)
   {
@@ -27,7 +27,7 @@ void InsertionSort(T arr[], int n)
 
 // 对arr[l...r]范围的数组进行插入排序
 template <typename T>
-void InsertionSort(T arr[], int l, int r)
+void insertionSort(T arr[], int l, int r)
 {
   for (int i = l + 1; i <= r; i++)
   {

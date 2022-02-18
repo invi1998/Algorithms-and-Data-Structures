@@ -2,6 +2,7 @@
 #define QUICKSORT_H
 
 #include <iostream>
+#include "InsertionSort.h"
 
 using namespace std;
 
@@ -15,7 +16,17 @@ int __partition(T arr[], int l, int r)
 {
   // 首先我们在快速排序中需要一个标准，我管这个标准叫做v
   // 这里这个比较标准我们这里就先简单的取要考察的这个数组的第一个元素
-  T v = arr[l];
+  // T v = arr[l];
+
+  // 算法优化2
+  // 上面我们每次标记点的元素都是选择数组中第一个元素，现在做优化，将这个标记点用一个随机选择的元素
+  // 我们随机的这个元素要在l和r之间，首先就需要随机化一个数，rand() 然后除以这个范围（r-l+1），然后加上l这个偏移量
+  // 这样一来我们就随机化生成一个[l,r]前闭后闭区间的一个索引范围的元素
+  // arr[rand()%(r-l+1) +l];
+  // 现在我需要将这个元素作为我们的标定元素v，其实很简单，将这个元素和我们最左边这个元素进行一下交换就好了
+  swap(arr[l], arr[rand() % (r - l + 1) + l]);
+
+  T v = arr[l]; // 然后继续走这行代码，取最左边这个元素，其实也就是我们上面交换过来设定的这个随机索引的元素
 
   // 接下来要做的就是逐步从l+1开始遍历整个数组
   // 让这整个数组从l+1之后分成两个部分
@@ -72,8 +83,14 @@ template <typename T>
 void __quickSort(T arr[], int l, int r)
 {
   // 因为是递归函数，所以首先对递归到底的情况进行处理（递归终止函数）
-  if (l >= r)
+  // if(l>=r)
+  // {
+  //     return;
+  // }
+  // 算法优化1，在递归底层采用插入排序进行替代优化
+  if (r - l <= 15)
   {
+    insertionSort(arr, l, r);
     return;
   }
 
@@ -92,6 +109,11 @@ void __quickSort(T arr[], int l, int r)
 template <typename T>
 void quickSort(T arr[], int n)
 {
+  // 算法优化2
+  // 在开始排序之前，我们调用srand函数设置一下随机种子
+  // 因为我们在此之后需要使用随机化的方式来设置我们的标定元素
+  srand(time(NULL));
+
   // 快速排序也是需要使用递归的方式来进行排序
   __quickSort(arr, 0, n - 1);
 }
