@@ -54,9 +54,11 @@ int main()
   std::cout << "-------------------------------------------------------------------------" << std::endl;
   int *arrbw1 = SortTestHelper::gennerateRandomArray(m, 0, m);
   int *arrbw2 = SortTestHelper::copyIntArray(arrbw1, m);
+  int *arrbw7 = SortTestHelper::copyIntArray(arrbw1, m);
 
   SortTestHelper::testSort("归并排序（Merge Sort）", megeSort, arrbw1, m);
   SortTestHelper::testSort("快速排序（Quick Sort）", quickSort, arrbw2, m);
+  SortTestHelper::testSort("快速排序2（Quick Sort）", quickSort2, arrbw7, m);
 
   std::cout << "-------------------------------------------------------------------------" << std::endl;
   std::cout << std::endl;
@@ -65,9 +67,25 @@ int main()
   std::cout << "测试近乎有序的数组排序：数组大小 " << m << ", 乱序数：" << swapTime2 << std::endl;
   int *arrbw3 = SortTestHelper::gennerateNearlyOrderArray(m, swapTime2);
   int *arrbw4 = SortTestHelper::copyIntArray(arrbw3, m);
+  int *arrbw8 = SortTestHelper::copyIntArray(arrbw3, m);
 
   SortTestHelper::testSort("归并排序（Merge Sort）", megeSort, arrbw3, m);
   SortTestHelper::testSort("快速排序（Quick Sort）", quickSort, arrbw4, m);
+  SortTestHelper::testSort("快速排序2（Quick Sort）", quickSort2, arrbw8, m);
+
+  std::cout << "-------------------------------------------------------------------------" << std::endl;
+
+  std::cout << std::endl;
+  std::cout << "-------------------------------------------------------------------------" << std::endl;
+
+  std::cout << "测试有大量重复数据的数组排序：数组大小 " << m << std::endl;
+  int *arrbw5 = SortTestHelper::gennerateRandomArray(m, 0, 10);
+  int *arrbw6 = SortTestHelper::copyIntArray(arrbw5, m);
+  int *arrbw9 = SortTestHelper::copyIntArray(arrbw5, m);
+
+  SortTestHelper::testSort("归并排序（Merge Sort）", megeSort, arrbw5, m);
+  SortTestHelper::testSort("快速排序（Quick Sort）", quickSort, arrbw6, m);
+  SortTestHelper::testSort("快速排序2（Quick Sort）", quickSort2, arrbw9, m);
 
   std::cout << "-------------------------------------------------------------------------" << std::endl;
 
@@ -75,6 +93,11 @@ int main()
   delete[] arrbw1;
   delete[] arrbw3;
   delete[] arrbw4;
+  delete[] arrbw5;
+  delete[] arrbw6;
+  delete[] arrbw7;
+  delete[] arrbw8;
+  delete[] arrbw9;
 
   return 0;
 }
