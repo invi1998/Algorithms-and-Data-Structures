@@ -55,10 +55,12 @@ int main()
   int *arrbw1 = SortTestHelper::gennerateRandomArray(m, 0, m);
   int *arrbw2 = SortTestHelper::copyIntArray(arrbw1, m);
   int *arrbw7 = SortTestHelper::copyIntArray(arrbw1, m);
+  int *arrbw10 = SortTestHelper::copyIntArray(arrbw1, m);
 
   SortTestHelper::testSort("归并排序（Merge Sort）", megeSort, arrbw1, m);
-  SortTestHelper::testSort("快速排序（Quick Sort）", quickSort, arrbw2, m);
-  SortTestHelper::testSort("快速排序2（Quick Sort）", quickSort2, arrbw7, m);
+  SortTestHelper::testSort("随机化快速排序（Quick Sort）", quickSort, arrbw2, m);
+  SortTestHelper::testSort("双路快速排序（Quick Sort）", quickSort2, arrbw7, m);
+  SortTestHelper::testSort("三路快速排序（Quick Sort）", quickSort3Ways, arrbw10, m);
 
   std::cout << "-------------------------------------------------------------------------" << std::endl;
   std::cout << std::endl;
@@ -68,10 +70,12 @@ int main()
   int *arrbw3 = SortTestHelper::gennerateNearlyOrderArray(m, swapTime2);
   int *arrbw4 = SortTestHelper::copyIntArray(arrbw3, m);
   int *arrbw8 = SortTestHelper::copyIntArray(arrbw3, m);
+  int *arrbw11 = SortTestHelper::copyIntArray(arrbw3, m);
 
   SortTestHelper::testSort("归并排序（Merge Sort）", megeSort, arrbw3, m);
   SortTestHelper::testSort("快速排序（Quick Sort）", quickSort, arrbw4, m);
-  SortTestHelper::testSort("快速排序2（Quick Sort）", quickSort2, arrbw8, m);
+  SortTestHelper::testSort("双路快速排序（Quick Sort）", quickSort2, arrbw8, m);
+  SortTestHelper::testSort("三路快速排序（Quick Sort）", quickSort3Ways, arrbw11, m);
 
   std::cout << "-------------------------------------------------------------------------" << std::endl;
 
@@ -82,15 +86,29 @@ int main()
   int *arrbw5 = SortTestHelper::gennerateRandomArray(m, 0, 10);
   int *arrbw6 = SortTestHelper::copyIntArray(arrbw5, m);
   int *arrbw9 = SortTestHelper::copyIntArray(arrbw5, m);
+  int *arrbw12 = SortTestHelper::copyIntArray(arrbw5, m);
 
   SortTestHelper::testSort("归并排序（Merge Sort）", megeSort, arrbw5, m);
   SortTestHelper::testSort("快速排序（Quick Sort）", quickSort, arrbw6, m);
-  SortTestHelper::testSort("快速排序2（Quick Sort）", quickSort2, arrbw9, m);
+  SortTestHelper::testSort("双路快速排序（Quick Sort）", quickSort2, arrbw9, m);
+  SortTestHelper::testSort("三路快速排序（Quick Sort）", quickSort3Ways, arrbw12, m);
 
   std::cout << "-------------------------------------------------------------------------" << std::endl;
 
-  delete[] arrbw2;
+  // m = 3;
+
+  int *arrbw13 = SortTestHelper::gennerateRandomArray(m, 0, m); // 完全随机
+  int *arrbw14 = SortTestHelper::generateOrderedArray(m);       // 完全有序
+  int *arrbw15 = SortTestHelper::generateInversedArray(m);      // 完全逆序
+
+  std::cout << std::endl;
+
+  std::cout << m << "大小的完全随机的数组【逆序对】: \t" << inversionCount(arrbw13, m) << std::endl;
+  std::cout << m << "大小的完全有序的数组【逆序对】: \t" << inversionCount(arrbw14, m) << std::endl;
+  std::cout << m << "大小的完全逆序的数组【逆序对】: \t" << inversionCount(arrbw15, m) << std::endl;
+
   delete[] arrbw1;
+  delete[] arrbw2;
   delete[] arrbw3;
   delete[] arrbw4;
   delete[] arrbw5;
@@ -98,6 +116,12 @@ int main()
   delete[] arrbw7;
   delete[] arrbw8;
   delete[] arrbw9;
+  delete[] arrbw10;
+  delete[] arrbw11;
+  delete[] arrbw12;
+  delete[] arrbw13;
+  delete[] arrbw14;
+  delete[] arrbw15;
 
   return 0;
 }

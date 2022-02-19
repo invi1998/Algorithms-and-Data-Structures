@@ -53,6 +53,23 @@ namespace SortTestHelper
     return arr;
   }
 
+  // 生成一个完全有序的数组
+  int *generateOrderedArray(int n)
+  {
+
+    return gennerateNearlyOrderArray(n, 0);
+  }
+
+  // 生成一个完全逆序的数组
+  int *generateInversedArray(int n)
+  {
+
+    int *arr = generateOrderedArray(n);
+    for (int i = n / 2 - 1; i >= 0; i--)
+      swap(arr[i], arr[n - i - 1]);
+    return arr;
+  }
+
   template <typename T>
   void printArray(T arr[], int n)
   {

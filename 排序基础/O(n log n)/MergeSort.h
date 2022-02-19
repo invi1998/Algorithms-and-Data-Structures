@@ -88,7 +88,7 @@ void __mergeSort(T arr[], int l, int r)
   // 这里 r-1 = 15就表示有16个元素及其以下的时候使用插入排序
   if (r - l <= 15)
   {
-    InsertionSort(arr, l, r);
+    insertionSort(arr, l, r);
     return;
   }
 
@@ -170,6 +170,85 @@ void mergeSortBU(T arr[], int n)
       __merge(arr, i, i + sz - 1, min(i + 2 * sz - 1, n - 1));
     }
   }
+}
+
+// -----------------------------------------------------------
+// 利用归并排序思想计算 逆序对
+
+// 计算逆序数对的结果以long long返回
+// 对于一个大小为N的数组, 其最大的逆序数对个数为 N*(N-1)/2, 非常容易产生整型溢出
+
+// mege求出在arr[l, mid]和arr[mid+1, r]有序的基础上， arr[l, r]的逆序对个数
+long long __mergeCount(int arr[], int l, int mid, int r)
+{
+  int *aux = new int[r - l + 1];
+  for (int i = l; i <= r; i++)
+  {
+    aux[i - l] = arr[i];
+  }
+
+  // 初始化有序对的个数res = 0;
+  long long res = 0;
+
+  // 初始化，i指向左半部分的其实索引位置l，j指向右半部分起始索引位置mid+1
+
+  int j = l, k = mid + 1;
+  for (int i = l; i <= r; i++)
+  {
+    if (j > mid) // 左半部分全都处理完毕
+    {
+      arr[i] = aux[k - l];
+      k++;
+    }
+    else if (k > r) // 如果右半部分全部都处理完毕
+    {
+      arr[i] = aux[j - l];
+      j++;
+    }
+    else if (aux[j - l] <= aux[k - l]) // 左半部分所指元素 <= 右半部分所指元素
+    {
+      arr[i] = aux[j - l];
+      j++;
+    }
+    else // 右半部分所指元素 < 左半部分所指元素
+    {
+      arr[i] = aux[k - l];
+      k++;
+      // 此时因为右半部分k所指元素小，
+      // 这个元素和左半部分的所有未处理的元素都构成了逆序对
+      // 左半部分此时未处理的元素为 mid-j+1;
+      res += (long long)(mid - j + 1);
+    }
+  }
+
+  delete[] aux;
+
+  return res;
+}
+
+// 求arr[l, r]范围的逆序对个数
+long long __inversionCount(int arr[], int l, int r)
+{
+  if (l >= r)
+  {
+    return 0;
+  }
+
+  int mid = l + (r - l) / 2;
+
+  // 求出arr[l, mid]范围的逆序数
+  long long res1 = __inversionCount(arr, l, mid);
+
+  // 求出arr[mid+1, r]范围内的逆序数
+  long long res2 = __inversionCount(arr, mid + 1, r);
+
+  return res1 + res2 + __mergeCount(arr, l, mid, r);
+}
+
+// 递归求arr[]的逆序对个数
+long long inversionCount(int arr[], int n)
+{
+  return __inversionCount(arr, 0, n - 1);
 }
 
 #endif
