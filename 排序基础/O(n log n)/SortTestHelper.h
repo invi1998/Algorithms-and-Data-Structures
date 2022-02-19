@@ -70,6 +70,18 @@ namespace SortTestHelper
     return arr;
   }
 
+  // 将数组arr随机化
+  void shuffleArray(int arr[], int n)
+  {
+
+    srand(time(NULL));
+    for (int i = 0; i < n; i++)
+    {
+      int j = rand() % (n - i) + i;
+      swap(arr[i], arr[j]);
+    }
+  }
+
   template <typename T>
   void printArray(T arr[], int n)
   {

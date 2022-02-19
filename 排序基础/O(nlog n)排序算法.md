@@ -1222,7 +1222,7 @@ long long inversionCount(int arr[], int n)
 
 但是在这里，其实我们可以使用快速排序算法的思路来使用O(n)级别的算法复杂度求数组中第n大的元素。
 
-![](D:\study\c++\算法与数据结构\Algorithms-and-Data-Structures\img\impicture_20220219_144054.png)
+![](../img/impicture_20220219_144054.png)
 
 回忆我们快速排序的过程，我们每一次快速排序的过程都是找一个标定点，然后将这个标点点挪到数组中合适的位置。这里要注意，我们这里说的这个合适的位置，其实就是这个元素最终排好序后所处的位置。换句话说，比如在这个例子中，如果我们把4挪到了这个位置，这个位置相应的也就是数组中的第4个位置，那么整个数组中第4名也就是4。第4名以前的元素都在4的前面，第四名以后的元素都在4的后面。
 
@@ -1235,5 +1235,78 @@ long long inversionCount(int arr[], int n)
 算法实现：
 
 ```c++
+// 利用快速排序思路查找数组中第n小的元素是谁
+
+// partition 过程, 和快排的partition一样
+// 思考: 双路快排和三路快排的思想能不能用在selection算法中? :)
+template <typename T>
+int __partition( T arr[], int l, int r ){
+
+    int p = rand()%(r-l+1) + l;
+    swap( arr[l] , arr[p] );
+
+    int j = l; //[l+1...j] < p ; [lt+1..i) > p
+    for( int i = l + 1 ; i <= r ; i ++ )
+        if( arr[i] < arr[l] )
+            swap(arr[i], arr[++j]);
+
+    swap(arr[l], arr[j]);
+
+    return j;
+}
+
+// 求出arr[l, r]范围里第k小的数
+template<typename T>
+T __selection(T arr[], int l, int r, int k)
+{
+    if(l == r)
+    {
+        return arr[l];
+    }
+    
+    // partition之后，arr[p]的正确位置就在索引p上
+    int p = __partition(arr, l, r);
+    
+    // 注意这里，这里我们使用的partition函数是随机化partition，而不是双路或者三路
+    // 思考: 双路快排和三路快排的思想能不能用在selection算法中? :)
+    
+    if(k==p)    // 如果k == p ，直接返回arr[p]
+    {
+        return arr[p];
+    }
+    else if(k<p)    // 如果k<p,只需要在arr[l, p-1]中找地k小的元素即可
+    {
+        return __selection(arr, l, p-1, k);
+    }
+    else
+    {
+        // 如果 k> p,则需要在arr[p_1, r]中去寻找第k-p-1小的元素
+        // 注意：由于我们传入__selection的依然是arr, 而不是arr[p+1, r]
+        // 所以传入的最后一个参数依然是k，而不是k-p-1
+        return __selection(arr, p+1, r, k);
+    }
+}
+
+
+// 寻找arr数组中第k小的元素
+// 注意：在我们的算法中，k是从0开始索引的，即最小的元素是第0小的元素，以此类推
+// 如果希望我们的算法中k的语义是从1开始，只需要在整个逻辑开始进行k--即可，可以参考selection2
+template<typename T>
+T selection(T arr[], int n, int k)
+{
+    assert(k >= 0 && k < n);
+    
+    srand(time(NULL));
+    
+    return __selection(arr, 0, n-1, k);
+}
+
+// 寻找arr数组中第 k 小的元素， k从1开始索引，即最小的元素是第1小元素，以此类推
+template<typename T>
+T selection2(T arr[], int n, int k)
+{
+    return selection(arr, n, k-1);
+}
 ```
 
+![](../img/impicture_20220219_152724.png)

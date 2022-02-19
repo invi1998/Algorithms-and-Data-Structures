@@ -89,8 +89,8 @@ int main()
   int *arrbw12 = SortTestHelper::copyIntArray(arrbw5, m);
 
   SortTestHelper::testSort("归并排序（Merge Sort）", megeSort, arrbw5, m);
-  SortTestHelper::testSort("快速排序（Quick Sort）", quickSort, arrbw6, m);
-  SortTestHelper::testSort("双路快速排序（Quick Sort）", quickSort2, arrbw9, m);
+  // SortTestHelper::testSort("快速排序（Quick Sort）", quickSort, arrbw6, m);
+  // SortTestHelper::testSort("双路快速排序（Quick Sort）", quickSort2, arrbw9, m);
   SortTestHelper::testSort("三路快速排序（Quick Sort）", quickSort3Ways, arrbw12, m);
 
   std::cout << "-------------------------------------------------------------------------" << std::endl;
@@ -106,6 +106,37 @@ int main()
   std::cout << m << "大小的完全随机的数组【逆序对】: \t" << inversionCount(arrbw13, m) << std::endl;
   std::cout << m << "大小的完全有序的数组【逆序对】: \t" << inversionCount(arrbw14, m) << std::endl;
   std::cout << m << "大小的完全逆序的数组【逆序对】: \t" << inversionCount(arrbw15, m) << std::endl;
+
+  std::cout << "-------------------------------------------------------------------------" << std::endl;
+
+  // 生成一个大小为n, 包含0...n-1这n个元素的随机数组arr
+  n = 10000;
+  int *arr = SortTestHelper::generateOrderedArray(n);
+  SortTestHelper::shuffleArray(arr, n);
+
+  // 验证selection算法, 对arr数组求第i小元素, 应该为i
+  for (int i = 0; i < n; i++)
+  {
+    assert(selection(arr, n, i) == i);
+  }
+  cout << "Test selection completed." << endl;
+
+  delete[] arr;
+
+  cout << endl;
+
+  // 验证selection2算法
+  arr = SortTestHelper::generateOrderedArray(n);
+  SortTestHelper::shuffleArray(arr, n);
+
+  // 对arr数组求第i小元素, 应该为i - 1 (在selection2中, 第k小元素的k是从1索引的)
+  for (int i = 1; i <= n; i++)
+  {
+    assert(selection2(arr, n, i) == i - 1);
+  }
+  cout << "Test selection2 completed." << endl;
+
+  delete[] arr;
 
   delete[] arrbw1;
   delete[] arrbw2;
