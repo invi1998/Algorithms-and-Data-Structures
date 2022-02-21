@@ -319,6 +319,60 @@ public:
 
 依次将堆中的元素从大到小取出来。
 
-![](D:\study\c++\算法与数据结构\Algorithms-and-Data-Structures\img\impicture_20220221_181034.png)
+![](../img/impicture_20220221_181034.png)
 
 从这个测试用例我们也可以很容易感知到，我们可以使用堆来实现一个排序过程。
+
+### 堆排序1
+
+利用最大堆实现的第一个堆排序算法
+
+```c++
+#ifndef HEAP_SORT_1_H
+#define HEAP_SORT_1_H
+
+#include <iostream>
+#include "Heap.h"
+
+using namespace std;
+
+// 第一个基于堆的排序算法
+template<typename T>
+void heapSort1(T arr[], int n)
+{
+    // 首先在这个排序算法中，先实例化一个最大堆。存放的就是T类型的数据
+    MaxHeap<T> maxheap = MaxHeap<T>(n);
+    
+    // 遍历依次将传入的待排序的数组中的元素放入我们的最大堆中
+    for(int i = 0; i < n; i++)
+    {
+        maxheap.insert(arr[i]);
+    }
+    
+    // 接下来我们只需要不停地调用maxheap的extractMax就能将这些以从大到小的顺序取出来了
+    // 但是如果我们希望排序结果是从小到大，为此，我们可以反向的来遍历一下这个n个数据，
+    // 将maxheap中从extractMax返回的元素反向的返回到arr中就完成了从小到大的排序。
+    for(int i = n-1; i>=0; i--)
+    {
+        arr[i] = maxheap.extractMax();
+    }
+}
+
+#endif
+```
+
+将我们的堆排序和快速排序和归并排序做一个比较测试，测试结果如下
+
+![](../img/impicture_20220221_200242.png)
+
+从测试结果上看，我们的第一个堆排序对比快速排序和归并排序，基本上每一个测试用例都会慢一些，但是他的速度其实也是可以让我们接受的。
+
+让这100w的数据堆排序也能在很短的时间内排序完成，是因为堆排序它也是一个O(n long n)级别的排序算法。简单分析一下，上面我们的堆排序中，有两重循环，每重循环都要对n个元素进行遍历。每一次遍历，无论是 insert操作（shift up)还是extractMax操作（shift down)他的时间复杂度都是log n级别的，这是因为他们背后的两个主要操作shif up和shift down，不论是从下向上还是从上向下去找元素的合适位置，都是和层序相关的，所以它是log n级别。
+
+## Heapify
+
+那这里可不可能对我们上面的堆排序进行优化，让他更快些呢？
+
+我们现在是将这个数组中的所有元素使用最大堆提供的插入函数挨个放入堆中，事实上，将整个数组构建成一个堆这个过程有一个更好的方式，
+
+给定一个数组，我们让这个数组的排列形成一个堆的形状，我们管这个过程叫做Heapify
