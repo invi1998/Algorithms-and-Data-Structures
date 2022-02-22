@@ -90,6 +90,31 @@ public:
     this->capacity = capacity;
   }
 
+  // 构造函数，该构造函数我们传入一个数组参数arr和数组元素个数n
+  MaxHeap(Item *arr, int n)
+  {
+    // 这个构造函数，首先依旧是需要对data这个数组指针开空间
+    data = new Item[n + 1];
+    capacity = n;
+    for (int i = 0; i < n; i++)
+    {
+      // 注意这里，因为我们data是从1开始的，所以在赋值的时候需要i+1，跳过第0个元素
+      data[i + 1] = arr[i];
+    }
+    // 数据遍历赋值完毕之后，我们的堆数组中就有n个元素了
+    count = n;
+
+    // 之后就开始我们的 Heapify过程了
+    // 从count/2开始（也就是完全二叉树的第一个非叶子节点索引，以后没次从该索引-1都是非叶子节点）
+    for (int i = count / 2; i >= 1; i--)
+    {
+      // 然后每次对这个i索引的节点进行shiftDown操作
+      shiftDown(i);
+    }
+
+    // 执行完上面这次循环之后，我们的data这个数组就被建成了一个最大堆
+  }
+
   ~MaxHeap()
   {
     delete[] data;
