@@ -1,4 +1,5 @@
 #include <iostream>
+#include "HeapSort.h"
 #include "HeapSort1.h"
 #include "HeapSort2.h"
 #include "MergeSort.h"
@@ -19,18 +20,21 @@ int main()
   int *arr3 = SortTestHelper::copyIntArray(arr1, n);
   int *arr4 = SortTestHelper::copyIntArray(arr1, n);
   int *arr5 = SortTestHelper::copyIntArray(arr1, n);
+  int *arr6 = SortTestHelper::copyIntArray(arr1, n);
 
   SortTestHelper::testSort("归并排序（Merge Sort）", megeSort, arr1, n);
   SortTestHelper::testSort("快速排序（Quick Sort）", quickSort2, arr2, n);
   SortTestHelper::testSort("三路快速排序（Quick Sort 3 ways）", quickSort3Ways, arr3, n);
   SortTestHelper::testSort("堆排序1（Heap Sort）", heapSort1, arr4, n);
   SortTestHelper::testSort("堆排序2（Heap Sort，Heapify）", heapSort2, arr5, n);
+  SortTestHelper::testSort("原地堆排序（Heap Sort）", heapSort, arr6, n);
 
   delete[] arr1;
   delete[] arr2;
   delete[] arr3;
   delete[] arr4;
   delete[] arr5;
+  delete[] arr6;
   std::cout << "--------------------------------------------------------------------------------------" << std::endl
             << std::endl;
 
@@ -44,18 +48,21 @@ int main()
   arr3 = SortTestHelper::copyIntArray(arr1, n);
   arr4 = SortTestHelper::copyIntArray(arr1, n);
   arr5 = SortTestHelper::copyIntArray(arr1, n);
+  arr6 = SortTestHelper::copyIntArray(arr1, n);
 
   SortTestHelper::testSort("归并排序（Merge Sort）", megeSort, arr1, n);
   SortTestHelper::testSort("快速排序（Quick Sort）", quickSort2, arr2, n);
   SortTestHelper::testSort("三路快速排序（Quick Sort 3 ways）", quickSort3Ways, arr3, n);
   SortTestHelper::testSort("堆排序1（Heap Sort）", heapSort1, arr4, n);
   SortTestHelper::testSort("堆排序2（Heap Sort，Heapify）", heapSort2, arr5, n);
+  SortTestHelper::testSort("原地堆排序（Heap Sort）", heapSort, arr6, n);
 
   delete[] arr1;
   delete[] arr2;
   delete[] arr3;
   delete[] arr4;
   delete[] arr5;
+  delete[] arr6;
   std::cout << "--------------------------------------------------------------------------------------" << std::endl
             << std::endl;
 
@@ -68,18 +75,21 @@ int main()
   arr3 = SortTestHelper::copyIntArray(arr1, n);
   arr4 = SortTestHelper::copyIntArray(arr1, n);
   arr5 = SortTestHelper::copyIntArray(arr1, n);
+  arr6 = SortTestHelper::copyIntArray(arr1, n);
 
   SortTestHelper::testSort("归并排序（Merge Sort）", megeSort, arr1, n);
   SortTestHelper::testSort("快速排序（Quick Sort）", quickSort2, arr2, n);
   SortTestHelper::testSort("三路快速排序（Quick Sort 3 ways）", quickSort3Ways, arr3, n);
   SortTestHelper::testSort("堆排序1（Heap Sort）", heapSort1, arr4, n);
   SortTestHelper::testSort("堆排序2（Heap Sort，Heapify）", heapSort2, arr5, n);
+  SortTestHelper::testSort("原地堆排序（Heap Sort）", heapSort, arr6, n);
 
   delete[] arr1;
   delete[] arr2;
   delete[] arr3;
   delete[] arr4;
   delete[] arr5;
+  delete[] arr6;
   std::cout << "--------------------------------------------------------------------------------------" << std::endl
             << std::endl;
 

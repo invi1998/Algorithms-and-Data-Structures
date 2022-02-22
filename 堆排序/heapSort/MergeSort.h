@@ -1,255 +1,254 @@
-#ifndef HEAP_MAX_HEAP_H
-#define HEAP_MAX_HEAP_H
+#ifndef MERGE_SORT_H
+#define MERGE_SORT_H
 
 #include <iostream>
-#include <algorithm>
-#include <ctime>
-#include <cmath>
-#include <cassert>
+#include "InsertionSort.h"
 
-using namespace std;
-
-// 最大堆类
-
-template <typename Item>
-class MaxHeap
+// 将arr[l..mid]和arr[mid...r]这两部分进行归并
+template <typename T>
+void __merge(T arr[], int l, int mid, int r)
 {
+  // 对于这个归并。我们首先需要开辟一个临时的空间
+  // 这个空间需要多大呢？
+  // 需要r-l+1,是因为我们这里l和r都是闭空间，所以需要+1
+  // 其实很好理解，比如l=0, r=3; [0, 3]是一个4个元素的数组大小，3-0+1 = 4
+  T aux[r - l + 1];
 
-private:
-  Item *data;   // 存储堆中的数据的数组
-  int count;    // 存储堆中有多少个元素
-  int capacity; // 数组大小（堆中元素的容量上限）
-
-  // 将K这个索引的位置的元素尝试着向上移动来维持堆的定义
-  void shiftUp(int k)
+  // 将我们要处理的这个arr数组中的元素全都复制到我们的辅助数组aux中
+  for (int i = l; i <= r; i++)
   {
-    // 我们每一次就是要看一下索引K这个位置，他的父节点（k/2）
-    // 相应的元素是不是比k这个位置的元素还要小
-    // 同时有索引存在，就需要考虑越界问题，这里我们就需要保证k是大于1的
-    // 也就是k的取值最多到2，k到2的时候，就和k/2 = 1的那个父节点（也就是最顶部的节点）
-    // 进行最后一次比较。这轮比较完成之后，k=1已经是这个树的跟节点了，已经不需要继续再进行比较了。
-    while (k > 1 && data[k / 2] < data[k])
-    {
-      // 如果父节点的元素比k节点的元素还要小，说明此时违背了最大堆的定义。
+    // 在具体赋值的时候，要注意，我们的aux这个空间是从0开始的，
+    // 但是我们的这arr这个空间是从l开始的，他们之间有一个l的偏移量
+    // 所以我们赋值的时候应该是将arr的第i个元素赋值给aux的第i-l个元素
+    aux[i - l] = arr[i];
+  }
 
-      // 那么就把这个节点和其父节点进行位置交换
-      swap(data[k], data[k / 2]);
-      // 然后更新k的值
-      k /= 2;
+  // 设置两个索引指向这两个已经排好序的这两个子数组（左右两边）
+  int i = l, j = mid + 1;
+
+  // 使用一个新的索引k来进行遍历，来决定arr[k]的位置究竟应该是谁
+  for (int k = l; k <= r; k++)
+  {
+    // i,j数组越界情况考虑
+    // 我们能访问i-l和j-l的前提是i和j这两个索引还在这两个数组相应的位置里面（i还在左边数组里，j还在右边数组里）
+
+    // 但是很有可能我们算法运行到一定的时候，对于i这个索引来说，它已经超出了它的范围，也就是i已经大于mid
+    // 在这种情况如果我们的k还没有遍历完，就说明j索引所指的这数组中的元素（右边这个数组中的元素）
+    // 还没有归并完全，这个时候我们的arr[k]就应该取的是aux[j-l]相应的位置的元素值
+    if (i > mid)
+    {
+      // 其实说白了就是左边归并完了，右边还有值没归并，那么就直接将右边的值挨个放入arr[k]中
+      arr[k] = aux[j - l];
+      j++;
     }
-  }
-
-  void shiftDown(int k)
-  {
-    // 我们什么时候应该继续进行shiftDown操作呢？
-    // 首先k这个索引所在的节点应该有孩子。怎么判断有孩子？在一个完全二叉树中，只要他有左孩子，那么我就能确定它有孩子
-    // 这是因为在一个完全二叉树中它不可能只有右孩子没有左孩子
-    while (2 * k <= count)
+    else if (j > r)
     {
-      // 在这种情况下，我们要做的事情就是比较它的两个左右孩子，谁大和谁换。
-      // 这个时候要注意，有可能这个节点没有右孩子。所以这里需要把这个边界情况考虑上
-
-      // 为此我这里设置一个新的变量索引为j，j初始化成 2*k,这个j表示扫描意思呢？
-      // 表示在此轮循环中，data[k]这哥元素应该喝data[j]这个位置元素交换
-      // 因为它有左孩子，所以就有可能是和左孩子交换位置，这个就是初始化的值为 2*k
-      int j = 2 * k;
-
-      // 之后我们就判断一下它有没有右孩子，他的右孩子表示成 j+1 就可以了
-      // 如果j+1<=count，说明它有右孩子，然后在右孩子存在的基础上比较两个左右孩子的大小
-      if (j + 1 <= count && data[j + 1] > data[j])
-      {
-        // 如果右孩子比左孩子大，那么这里就把j更新成j+1.
-        // 因为j是要进行交换的索引，注意这里谁大谁就是要交换的值
-        j = j + 1;
-      }
-      // 继续判断，单前k节点是否比他要进行交换的子节点小，小就交换
-      if (data[k] < data[j])
-      {
-        swap(data[k], data[j]);
-        // 交换完成之后，我们k这个索引就变到了j这个位置
-        k = j;
-      }
-      else
-      {
-        break;
-      }
+      // 同样对于j越界，也是一样的，右边归并完了，但是左边还有值没有归并完，那就直接将左边挨个放入arr[k]中
+      arr[k] = aux[i - l];
+      i++;
     }
-  }
+    // 如果这两个条件都不满足，才说明这个时候i和j都是有效的，这个时候才进行左右比对归并
+    // 所以要先判断索引的合法性，才能放心的比较两个索引的值
 
-public:
-  // 构造函数。这个构造函数最重要的功能就是为上面存储数据的数组开辟空间
-  MaxHeap(int capacity)
-  {
-    data = new Item[capacity + 1];
-    // 注意这里数组空间需要 + 1，是因为我们这个堆是从索引1开始标记，0号标记我们是不使用的
-
-    count = 0;
-
-    // 这里要注意，因为我们的这个数组值开辟了一次空间，也就是我们这个数组最多容纳 capacity
-    // 这么多个元素，所以在我们的insert函数中也隐含着数组越界的问题
-    this->capacity = capacity;
-  }
-
-  ~MaxHeap()
-  {
-    delete[] data;
-  }
-
-  // 查询堆中的元素个数
-  int size()
-  {
-    return count;
-  }
-
-  // 查询是否是一个空堆
-  bool isEmpty()
-  {
-    return count == 0;
-  }
-
-  // 往最大堆中添加一个新的元素
-  void insert(Item item)
-  {
-    if (count + 1 > capacity)
+    // 注意这里，也是同样的，因为有aux和arr之间有一个l的偏移，所以不能直接用aux[i]和aux[j]进行比较
+    // 而是应该减去这个偏移
+    else if (aux[i - l] < aux[j - l])
     {
-      std::cout << item << std::endl;
-    }
-    assert(count + 1 <= capacity);
-    // 对于data来说，给他的[count+1]这个位置赋值为我们要插入的这个新元素item。
-    // 在这里一定要注意，我们现在这个堆，对于我们的数组来说，索引是从1开始的，
-    // 所以在这个堆中一共有count个元素存在，从1一直到count这些索引的位置中，
-    // 和我们平时的数组 从0开始索引到count-1是有区别的，这里一定要小心
-    data[count + 1] = item;
-    // 我们的堆中多了一个元素，那么我们的计数器count就可以++
-    count++;
-
-    // 因为我们新加入的元素有可能破坏了堆的定义，所以这里调用我们提供的shiftUp方法来将这个元素向上移动来保持堆的定义
-    shiftUp(count);
-  }
-
-  // 将堆中的最大值取出来。
-  Item extractMax()
-  {
-    // 首先我们要从堆中取出一个最大值，第一步就是保证我们的堆不为空
-    assert(count > 0);
-
-    Item ret = data[1];
-
-    // 将堆顶元素取出后，首先先将堆中最后一个元素放在堆顶位置
-    swap(data[1], data[count]);
-    // 交换完成之后，count--，表示最后这个元素（已经取出来的这个元素）我们再也不进行考虑了
-    count--;
-
-    // 然后要做的事情就是调用我们的shiftDown这个函数，想办法将这第一个元素向下挪，放在它合适的位置
-    // 维持我们最大堆的性质。
-    shiftDown(1);
-
-    return ret;
-  }
-
-public:
-  // 以树状打印整个堆结构(在控制台中以树的形式打印出堆的样子)
-  // （使用限制就是只能打印100个元素以内的堆，同时这里也只支持打印int类型的堆）
-  void testPrint()
-  {
-
-    // 我们的testPrint只能打印100个元素以内的堆的树状信息
-    if (size() >= 100)
-    {
-      cout << "This print function can only work for less than 100 int";
-      return;
-    }
-
-    // 我们的testPrint只能处理整数信息
-    if (typeid(Item) != typeid(int))
-    {
-      cout << "This print function can only work for int item";
-      return;
-    }
-
-    cout << "The max heap size is: " << size() << endl;
-    cout << "Data in the max heap: ";
-    for (int i = 1; i <= size(); i++)
-    {
-      // 我们的testPrint要求堆中的所有整数在[0, 100)的范围内
-      assert(data[i] >= 0 && data[i] < 100);
-      cout << data[i] << " ";
-    }
-    cout << endl;
-    cout << endl;
-
-    int n = size();
-    int max_level = 0;
-    int number_per_level = 1;
-    while (n > 0)
-    {
-      max_level += 1;
-      n -= number_per_level;
-      number_per_level *= 2;
-    }
-
-    int max_level_number = int(pow(2, max_level - 1));
-    int cur_tree_max_level_number = max_level_number;
-    int index = 1;
-    for (int level = 0; level < max_level; level++)
-    {
-      string line1 = string(max_level_number * 3 - 1, ' ');
-
-      int cur_level_number = min(count - int(pow(2, level)) + 1, int(pow(2, level)));
-      bool isLeft = true;
-      for (int index_cur_level = 0; index_cur_level < cur_level_number; index++, index_cur_level++)
-      {
-        putNumberInLine(data[index], line1, index_cur_level, cur_tree_max_level_number * 3 - 1, isLeft);
-        isLeft = !isLeft;
-      }
-      cout << line1 << endl;
-
-      if (level == max_level - 1)
-        break;
-
-      string line2 = string(max_level_number * 3 - 1, ' ');
-      for (int index_cur_level = 0; index_cur_level < cur_level_number; index_cur_level++)
-        putBranchInLine(line2, index_cur_level, cur_tree_max_level_number * 3 - 1);
-      cout << line2 << endl;
-
-      cur_tree_max_level_number /= 2;
-    }
-  }
-
-private:
-  void putNumberInLine(int num, string &line, int index_cur_level, int cur_tree_width, bool isLeft)
-  {
-
-    int sub_tree_width = (cur_tree_width - 1) / 2;
-    int offset = index_cur_level * (cur_tree_width + 1) + sub_tree_width;
-    assert(offset + 1 < line.size());
-    if (num >= 10)
-    {
-      line[offset + 0] = '0' + num / 10;
-      line[offset + 1] = '0' + num % 10;
+      // 如果小于，那么显然arr[k]这个位置应该存放的就是aux[i-l]相应的这个元素
+      arr[k] = aux[i - l];
+      // 随后i往后走一个位置
+      i++;
     }
     else
     {
-      if (isLeft)
-        line[offset + 0] = '0' + num;
-      else
-        line[offset + 1] = '0' + num;
+      // 否者的话，arr[k]这个位置就应该存放aux[j-l]
+      arr[k] = aux[j - l];
+      // 同样j++
+      j++;
+    }
+  }
+}
+
+// 递归使用归并排序，对arr[l, ...r]的范围进行排序
+template <typename T>
+void __mergeSort(T arr[], int l, int r)
+{
+  // 对于一个递归函数来说，我们首先要处理的就是递归到底的情况。
+  // 很容易想到，当l<r的时候，我们要处理的这部分，就至少由两个元素，左边一个，右边一个
+  // 这个时候我们还是需要进行一次排序
+  // 但是当l>=r的时候，就表示我们只有一个元素，甚至一个元素都没有，l>r是不可能发生的情况
+  // （也就是代表我们当前要处理的数据集为空）
+
+  // 代码优化
+  // if(l>=r)
+  // {
+  //     return;
+  // }
+
+  // 这里 r-1 = 15就表示有16个元素及其以下的时候使用插入排序
+  if (r - l <= 15)
+  {
+    insertionSort(arr, l, r);
+    return;
+  }
+
+  // 否者的话我们就进行一次归并排序
+  // 首先计算这个区间他的中点位置在哪？
+  int mid = (l + r) / 2;
+  // 注意这里有个隐含的潜在bug，就是当这个数据集非常大的时候（l和r都是非常大的int），这里l+r很可能会溢出int类型
+
+  // 下面就可以对分开的左右两个部分分别进行归并排序
+  __mergeSort(arr, l, mid);
+  __mergeSort(arr, mid + 1, r);
+
+  // 这两部分都归并排序好之后，就要使用merge将归并排序好的这两个部分
+  // 从l-mid,在从mid-r这两部分进行一个merge操作
+
+  // 代码优化：
+  // 在我们对数组的左右两边进行递归的归并排序之后，不管三七二十一，
+  // 直接下一句操作就是将这左右两边的数组进行merge合并操作。
+  // 但是这个时候其实如果左边的最大值小于等于右边的最小值（也就是 arr[mid] <= arr[mid+1]），
+  // 那么就说明这个arr数组已经是有序的了。就不再需要进行merge操作了。
+
+  if (arr[mid] > arr[mid + 1])
+  {
+    __merge(arr, l, mid, r);
+  }
+
+  // 这次merge完成之后我们就完成了整个归并排序的过程
+}
+
+template <typename T>
+void megeSort(T arr[], int n)
+{
+  // 在具体的实现中，归并排序的本质是一次递归的排序的过程，
+  // 在这个过程中我们需要依次的对这个数组的不同部分继续进行一个归并排序
+  // 为此我们这里会作为一个子函数。
+
+  // 他的参数就是我们传递进来的这个数组以及单前要处理的数组的起始位置，以及结束位置
+  __mergeSort(arr, 0, n - 1);
+
+  // 注意，因为我们这个数组范围区间定义是一个前闭后闭的区间，也就是__mergeSort这个函数
+  // 中，参数r的定义，这里我们定义为最后一个元素的位置，而不是最后一个元素后一个的位置。
+  // 为此，我们这里掉用的就是n-1
+  // 这个定义非常重要，在写算法的，这些细微的边界问题，很有可能会直接决定我们算法的准确信
+}
+
+// 以上是自顶向下的归并排序实现
+
+// -----------------------------------------------------------
+
+// 以下是自底向上的归并排序实现
+
+template <typename T>
+void mergeSortBU(T arr[], int n)
+{
+  // 首先需要一轮循环，这轮循环是对进行merge的元素个数进行遍历
+  // 这里归并排序每次开始只看一个元素，然后2个，然后4个，然后8个，每次翻一倍
+  for (int sz = 1; sz <= n; sz *= 2)
+  {
+    // 下面我们的第二轮循环，就是具体每一轮在归并的过程中，起始的元素位置
+    // 这个位置我们从0开始，每次i位置的平移应该是2个sz这个位置
+    // 也就是说，在第一轮我们将对从 [0, sz-1], [sz, 2sz-1]这两部分进行一次归并
+    // 第二轮我们将对 [2sz, 3sz-1],[3sz, 4sz-1]这两部分进行一次归并
+    // ...
+    for (int i = 0; i + sz < n; i += sz + sz)
+    {
+      // 数组边界问题处理
+      // 首先对于归并过程来说，我们要对至少两个部分进行归并，否者整个归并是没有意义的
+      // 因为我们的归并过程就是要将两个已经有序的数组给合并成一个有序数组
+
+      // 上面for里的 i + sz < n; 保证了i+sz-1不会再数组arr里越界
+
+      // 另外在数组的末尾的部分，有可能不足size那么多个元素，换句话说 i+2*sz-1 这个有可能会越界
+      // 为此我们去 i+2*sz-1 和 n-1他们之间的最小值，也就是说，当i+2*sz-1比n-1还要大（数组越界）的时候
+      // 我们就取n-1
+      // 可以想象，我们这个mege函数在遍历到数组靠近后面的时候，第二部分可能不足size那么大小
+      // 但是没有关系，我们之前实现的__mege函数在这种情况下依旧能够正常运行
+
+      // 对arr[i, i+sz-1]和arr[i+sz, i+2sz-1]这两部分进行归并
+      __merge(arr, i, i + sz - 1, min(i + 2 * sz - 1, n - 1));
+    }
+  }
+}
+
+// -----------------------------------------------------------
+// 利用归并排序思想计算 逆序对
+
+// 计算逆序数对的结果以long long返回
+// 对于一个大小为N的数组, 其最大的逆序数对个数为 N*(N-1)/2, 非常容易产生整型溢出
+
+// mege求出在arr[l, mid]和arr[mid+1, r]有序的基础上， arr[l, r]的逆序对个数
+long long __mergeCount(int arr[], int l, int mid, int r)
+{
+  int *aux = new int[r - l + 1];
+  for (int i = l; i <= r; i++)
+  {
+    aux[i - l] = arr[i];
+  }
+
+  // 初始化有序对的个数res = 0;
+  long long res = 0;
+
+  // 初始化，i指向左半部分的其实索引位置l，j指向右半部分起始索引位置mid+1
+
+  int j = l, k = mid + 1;
+  for (int i = l; i <= r; i++)
+  {
+    if (j > mid) // 左半部分全都处理完毕
+    {
+      arr[i] = aux[k - l];
+      k++;
+    }
+    else if (k > r) // 如果右半部分全部都处理完毕
+    {
+      arr[i] = aux[j - l];
+      j++;
+    }
+    else if (aux[j - l] <= aux[k - l]) // 左半部分所指元素 <= 右半部分所指元素
+    {
+      arr[i] = aux[j - l];
+      j++;
+    }
+    else // 右半部分所指元素 < 左半部分所指元素
+    {
+      arr[i] = aux[k - l];
+      k++;
+      // 此时因为右半部分k所指元素小，
+      // 这个元素和左半部分的所有未处理的元素都构成了逆序对
+      // 左半部分此时未处理的元素为 mid-j+1;
+      res += (long long)(mid - j + 1);
     }
   }
 
-  void putBranchInLine(string &line, int index_cur_level, int cur_tree_width)
+  delete[] aux;
+
+  return res;
+}
+
+// 求arr[l, r]范围的逆序对个数
+long long __inversionCount(int arr[], int l, int r)
+{
+  if (l >= r)
   {
-
-    int sub_tree_width = (cur_tree_width - 1) / 2;
-    int sub_sub_tree_width = (sub_tree_width - 1) / 2;
-    int offset_left = index_cur_level * (cur_tree_width + 1) + sub_sub_tree_width;
-    assert(offset_left + 1 < line.size());
-    int offset_right = index_cur_level * (cur_tree_width + 1) + sub_tree_width + 1 + sub_sub_tree_width;
-    assert(offset_right < line.size());
-
-    line[offset_left + 1] = '/';
-    line[offset_right + 0] = '\\';
+    return 0;
   }
-};
+
+  int mid = l + (r - l) / 2;
+
+  // 求出arr[l, mid]范围的逆序数
+  long long res1 = __inversionCount(arr, l, mid);
+
+  // 求出arr[mid+1, r]范围内的逆序数
+  long long res2 = __inversionCount(arr, mid + 1, r);
+
+  return res1 + res2 + __mergeCount(arr, l, mid, r);
+}
+
+// 递归求arr[]的逆序对个数
+long long inversionCount(int arr[], int n)
+{
+  return __inversionCount(arr, 0, n - 1);
+}
 
 #endif
