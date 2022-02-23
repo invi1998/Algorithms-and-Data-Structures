@@ -1,6 +1,9 @@
 #ifndef BINARY_SEARCH_H
 #define BINARY_SEARCH_H
 
+#include <iostream>
+#include <cassert>
+
 // 二分查找法，在有序数组中查找target
 // 如果找到target，返回相对应的索引index
 // 如果没有找到target，返回-1
