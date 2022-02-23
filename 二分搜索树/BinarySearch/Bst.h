@@ -55,6 +55,52 @@ public:
   {
     return count == 0;
   }
+
+  // 往二叉搜索树中插入一个新的键值对
+  void insert(Key key, Value value)
+  {
+    // 在这个函数这里调用一个insert的重载版本(写法随意，看自己习惯)
+    // 这里调用这个函数传入的参数，
+    // root节点，表示这个insert动作从root这个根节点那开始插入这个key-value
+    // 然后这个insert函数它也有返回值，返回的就是我们插入这个到的这个二叉搜索树的根
+    root = insert(root, key, value);
+  }
+
+private:
+  // 向以node为根节点的二叉搜索树中，插入节点（key,value）
+  // 返回的是插入新节点后的二叉搜索树的根（返回回去的目的就是为了做上一级的左子树或者右子树的根）
+  Node *insert(Node *node, Key key, Value value)
+  {
+    if (node == nullptr)
+    {
+      // 传入的这个node节点为kong，就表示这个位置就是我们需要插入的这个新节点的位置
+      // 这个时候我们的节点计数器count++
+      count++;
+      return new Node(key, value);
+      // 这个时候我们就可以理解成，对于插入完成后要返回的这个二叉搜索树的根，就是我们新创建的这个Node节点
+    }
+
+    // 之后我们要做的要么是修改node节点的value，要么是给node添加新的左子树或者新的右子树
+
+    if (key == node->key)
+    {
+      node->value = value;
+    }
+    else if (key < node->key)
+    {
+      // 往node的左子树插入
+      // 插入节点之后，返回的这个节点的根，就应该重新赋值给这个node节点的左孩子节点
+      node->left = insert(node->left, key, value);
+    }
+    else
+    {
+      // 往node节点的右子树插入
+      node->right = insert(node->right, key, value);
+    }
+
+    // 最后我们返回的任然是这个处理过的node
+    return node;
+  }
 };
 
 #endif
