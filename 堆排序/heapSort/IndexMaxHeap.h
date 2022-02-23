@@ -18,6 +18,7 @@ class IndexMaxHeap
 private:
   Item *data;
   int *indexes; // 存储索引堆中的索引
+  int *reverse; // reverse[i]就表示索引 i 在indexes堆中相应的位置
   int count;
   int capacity;
 
@@ -41,6 +42,11 @@ private:
       // 注意这里进行交换的时候，不是交换data数组里的数据，（因为本身索引堆就是为了避免直接操作data数据）
       // 这里交换的是交换data的索引数据（本身我们索引堆维护的也是这个索引数组）
       swap(indexes[k], indexes[k / 2]);
+      // 将indexes中这两个位置进行了交换，相应的也需要维护reverse
+      // 换句话说，由于这里这个交换操作，使得k/2和k这两个索引的位置发生了改变，
+      // 那么这里就要维护相对应的k/2和k的reverse
+      reverse[indexes[k / 2]] = k / 2;
+      reverse[indexes[k]] = k;
       // 然后更新k的值
       k /= 2;
     }
@@ -77,6 +83,11 @@ private:
         // 因为索引堆维护的是索引数组，所以这里交换的就是索引的值
         swap(indexes[k], indexes[j]);
         // 交换完成之后，我们k这个索引就变到了j这个位置
+
+        // 修改了indexes这个数组，所以相对应的就需要维护k和j的reverse
+        reverse[indexes[k]] = k;
+        reverse[indexes[j]] = j;
+
         k = j;
       }
       else
@@ -94,6 +105,20 @@ public:
     // 注意这里数组空间需要 + 1，是因为我们这个堆是从索引1开始标记，0号标记我们是不使用的
 
     indexes = new int[capacity + 1];
+
+    reverse = new int[capacity + 1];
+
+    // 这里要注意
+    // reverse[i]表示的是i这个索引在在堆中的位置，我们应该取一个标记值，
+    // 用于表明如果i这个索引不存在，那么reverse[i]应该是什么
+    // 在这里我们初始化，将这个reverse全都初始化为0，也就是说在我们这个堆里，
+    // 一个元素都没有，所以i这个索引所对应的位置全都指向0，
+    // 这里因为我们的堆是从1开始索引的，所以这里指向0实际上是没有意义的
+    // reverse[i] = 0就表示i这个索引在堆中根本就不存在
+    for (int i = 0; i <= capacity; i++)
+    {
+      reverse[i] = 0;
+    }
 
     count = 0;
 
@@ -131,6 +156,7 @@ public:
   {
     delete[] data;
     delete[] indexes;
+    delete[] reverse;
   }
 
   // 查询堆中的元素个数
@@ -163,6 +189,7 @@ public:
     data[i] = item;
     // 然后相应的 indexes[count+1]的位置添加上传入的这个新的索引i
     indexes[count + 1] = i;
+    reverse[i] = count + 1;
     // 我们的堆中多了一个元素，那么我们的计数器count就可以++
     count++;
 
@@ -183,6 +210,16 @@ public:
     // 注意，同样的，交换的时候也是交换的indexes这个索引数组中的元素
     swap(indexes[1], indexes[count]);
     // 交换完成之后，count--，表示最后这个元素（已经取出来的这个元素）我们再也不进行考虑了
+
+    // 上面这句交换操作修改了indexes中的索引位置，那么就需要维护相对应的reverse数组
+    reverse[indexes[1]] = 1;
+
+    reverse[indexes[count]] = 0;
+    // 而对于reverse[indexes[count]]它的值我们这里需要注意，他的值在上面这步交换中
+    // 相当于把栈顶的元素放到了最后，之后我们要通过count--将这个元素移除出堆
+    // 通过之前对于reverse的定义，我们知道，删除一个元素，就表示这个元素不存在
+    // 指向一个不存在的元素，就让它指向0就可以
+
     count--;
 
     // 然后要做的事情就是调用我们的shiftDown这个函数，想办法将这第一个元素向下挪，放在它合适的位置
@@ -208,6 +245,16 @@ public:
     // 注意，同样的，交换的时候也是交换的indexes这个索引数组中的元素
     swap(indexes[1], indexes[count]);
     // 交换完成之后，count--，表示最后这个元素（已经取出来的这个元素）我们再也不进行考虑了
+
+    // 上面这句交换操作修改了indexes中的索引位置，那么就需要维护相对应的reverse数组
+    reverse[indexes[1]] = 1;
+
+    reverse[indexes[count]] = 0;
+    // 而对于reverse[indexes[count]]它的值我们这里需要注意，他的值在上面这步交换中
+    // 相当于把栈顶的元素放到了最后，之后我们要通过count--将这个元素移除出堆
+    // 通过之前对于reverse的定义，我们知道，删除一个元素，就表示这个元素不存在
+    // 指向一个不存在的元素，就让它指向0就可以
+
     count--;
 
     // 然后要做的事情就是调用我们的shiftDown这个函数，想办法将这第一个元素向下挪，放在它合适的位置
@@ -217,11 +264,19 @@ public:
     return ret;
   }
 
+  //   用于判断我们当前这个索引堆真的包含i这个索引
+  bool contain(int i)
+  {
+    assert(i >= 1 && i <= capacity);
+    //   他的判断逻辑很简单，只需要判断reverse[i+1]是否等于0,等于0表示i+1这个索引没有堆元素
+    return reverse[i] != 0;
+  }
+
   //   同样，因为我们这个是一个最大索引堆，所以用户就还能得到一个很方便的操作
   // 通过给定一个索引值i，去找到对应的数组元素
   Item getItem(int i)
   {
-    assert(i + 1 <= capacity);
+    assert(contain(i + 1));
     // 同样，对于用户来说它使用的索引是从0开始的，但是我们类里的是从1开始的
     // 所以这里要+1
     return data[i];
@@ -232,6 +287,17 @@ public:
   // 注意这个时候，不仅仅是修改data值这么简单那，还需要维护我们的最大索引堆的定义
   void change(int i, Item newItem)
   {
+    //   这里程序代码依旧存在潜在的风险，风险在于对于用户传入的这个i，他有可能并不存在这个堆中
+    // 我们需要对这个i进行一定的检查来防止数组越界的问题
+    // 这里需要注意的是,我们不能仅仅让这个i大于等于1，小于等于capacity就说它是一个合法的i
+    // 因为我们这个函数要做的是将i这个索引的元素修改成newItem,所以我们首先需要保证i这个索引位置的元素
+    // 它真的存在在这个堆中，这里要注意，i这个索引在容量范围里，不代表这个索引就在堆中
+    // 因为很容易想到我们之前的删除堆顶元素的操作，在删除一个堆顶元素后，并没有改变原始数组的大小，而是将堆的范围变小
+    // 为此我们新编写一个函数，叫做 contain 用于判断我们当前这个索引堆真的包含i这个索引
+    assert(contain(i + 1));
+    // 同样，对于用户来说它使用的索引是从0开始的，但是我们类里的是从1开始的，所以这里要+1
+    // 然后才能继续进行下面的操作。
+
     // 外部用户从0开始索引，在堆内部是从1开始，所以这里+1改为从1开始索引
     i += 1;
 
@@ -246,15 +312,15 @@ public:
     // 找到这个j之后，就可以很简单的指向shiftUp(j)和shiftDown(j)
 
     // 那怎么找到这个j呢？最简单的方法就是for循环遍历一遍indexes数组
-    for (int j = 1; j <= count; j++)
-    {
-      if (indexes[j] == i)
-      {
-        shiftDown(j);
-        shiftUp(j);
-        return;
-      }
-    }
+    // for(int j = 1; j<= count; j++)
+    // {
+    //     if(indexes[j] == i)
+    //     {
+    //         shiftDown(j);
+    //         shiftUp(j);
+    //         return;
+    //     }
+    // }
     // 这样一来我们就将i这个索引的data修改为了新的item，同时维护了我们索引堆的性质
 
     // 这里分析一下这个 change 的时间复杂度
@@ -262,6 +328,15 @@ public:
     // 然后下面的shiftDown和shiftUp 操作是O(log n)
     // 所以这里这个函数的时间复杂度他最差是O（n + log n）级别的
     // 也就是一个O(n)级别的函数
+
+    // 通过上面引入了reverse这个数组后，我们就不需要继续遍历一遍这个数组了
+    shiftDown(indexes[reverse[i]]);
+    shiftUp(indexes[reverse[i]]);
+
+    // 通过这两个语句可以看出来，我们直接通过索引定位的方式就找到了i这个索引所在的堆中的位置
+    // 这个时间复杂度是O(1)
+    // 所以这么一改动之后，我们这整个change操作变成了logn级别
+    // 加入了反向查找的技术，我们的性能得到了巨大的提升。
   }
 };
 
