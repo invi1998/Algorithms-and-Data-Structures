@@ -18,7 +18,7 @@ private:
     Node *right; // 该节点的右孩子节点
 
     // 这个结构体的构造函数
-    Node(key k, value v)
+    Node(Key k, Value v)
     {
       this->key = k;
       this->value = v;
@@ -66,6 +66,19 @@ public:
     root = insert(root, key, value);
   }
 
+  // 查看二叉搜索树中是否包含key这个键
+  bool contain(Key key)
+  {
+    // 传入一个节点，查找以这个节点为根的二叉搜索树中是否包含key
+    // 那这里就是从根节点root开始查找
+    return contain(root, key);
+  }
+
+  Value *search(Key key)
+  {
+    return search(root, key);
+  }
+
 private:
   // 向以node为根节点的二叉搜索树中，插入节点（key,value）
   // 返回的是插入新节点后的二叉搜索树的根（返回回去的目的就是为了做上一级的左子树或者右子树的根）
@@ -100,6 +113,56 @@ private:
 
     // 最后我们返回的任然是这个处理过的node
     return node;
+  }
+
+  // 在以node为根的二叉搜索树中来查找是否包含有键值为key的节点
+  bool contain(Node *node, Key key)
+  {
+    // 如果我们单前访问的节点已经为空了的话，就表示找不到等于key的节点，
+    // 返回false
+    if (node == nullptr)
+    {
+      return false;
+    }
+
+    // 如果这个key == 单前node的key，那么就说明找到这个键值为key的节点，返回true
+    if (key == node->key)
+    {
+      return true;
+    }
+    // 如果key小于node的key,我们相对应的就应该递归进去这个node节点中相对应的左子树中去查找
+    else if (key < node->key)
+    {
+      return contain(node->left, key);
+    }
+    else // 如果key大于node的key,我们相对应的就应该递归进去这个node节点中相对应的右子树中去查找
+    {
+      return contain(node->right, key);
+    }
+  }
+
+  // 在以node为根的二叉搜索树中来查找是否包含有键值为key的节点
+  // 如果找到该节点，就返回该节点的Value指针
+  // 没找到就返回空指针
+  Value *search(Node *node, Key key)
+  {
+    if (node == nullptr)
+    {
+      return nullptr;
+    }
+
+    if (node->key == key)
+    {
+      return &(node->value);
+    }
+    else if (node->key < key)
+    {
+      return search(node->left, key);
+    }
+    else
+    {
+      return search(node->right, key);
+    }
   }
 };
 
