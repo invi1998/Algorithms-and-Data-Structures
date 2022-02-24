@@ -154,6 +154,26 @@ public:
     return maxNode->key;
   }
 
+  // 从二叉搜索树中删除最小键值所在的节点
+  void removeMin()
+  {
+    // 首先，这个函数只在根不为空的情况下才做具体的事情
+    if (root)
+      root = removeMin(root);
+    // 同样的，这里调用一个递归函数，这个函数将删除以root节点为根的这个二叉树中最小的那个key的节点
+    // 之后将新的根传回来
+  }
+
+  // 从二叉搜索树中删除最大键值所在的节点
+  void removeMax()
+  {
+    // 首先，这个函数只在根不为空的情况下才做具体的事情
+    if (root)
+      root = removeMax(root);
+    // 同样的，这里调用一个递归函数，这个函数将删除以root节点为根的这个二叉树中最大的那个key的节点
+    // 之后将新的根传回来
+  }
+
 private:
   // 向以node为根节点的二叉搜索树中，插入节点（key,value）
   // 返回的是插入新节点后的二叉搜索树的根（返回回去的目的就是为了做上一级的左子树或者右子树的根）
@@ -313,6 +333,49 @@ private:
 
     // 否者就递归的传入他的右孩子，去向以node右孩子为根的这个树去找它的最大节点
     return maxmum(node->right);
+  }
+
+  // 删除掉以node节点为根的二叉搜索树中最小的节点
+  // 返回删除节点后新的二分搜索树的根
+  Node *removeMin(Node *node)
+  {
+    // 首先我们要来看单前这个节点他的左孩子是否已经为空了。如果为空，表示它就是那个最小节点
+    if (node->left == nullptr)
+    {
+      // 这个时候就需要看单前节点是否存在右节点
+      // 其实存不存在这里我们的操作都一样，都是将他的右节点作为根节点返回回去
+      Node *rightNode = node->right;
+      delete node;
+      count--;
+      return rightNode;
+    }
+
+    // 否者就表示单前节点不是最小节点，继续递归进单前这个node的左孩子去找树的最小节点并删除
+    // 然后将删除的那个节点返回的新的左孩子赋回给这个node的左孩子
+    node->left = removeMin(node->left);
+    return node;
+  }
+
+  // 删除掉以node节点为根的二叉搜索树中最大的节点
+  // 返回删除节点后新的二分搜索树的根
+  Node *removeMax(Node *node)
+  {
+    // 首先我们要来看单前这个节点他的右孩子是否已经为空了。如果为空，表示它就是那个最大节点
+    if (node->right == nullptr)
+    {
+      // 这个时候就需要看单前节点是否存在左节点
+      // 其实存不存在这里我们的操作都一样，都是将他的左节点作为根节点返回回去
+      // 不存在就返回空
+      Node *leftNode = node->left;
+      delete node;
+      count--;
+      return leftNode;
+    }
+
+    // 否者就表示单前节点不是最大节点，继续递归进单前这个node的左孩子去找树的最大节点并删除
+    // 然后将删除的那个节点返回的新的右孩子赋回给这个node的右孩子
+    node->right = removeMax(node->right);
+    return node;
   }
 };
 
