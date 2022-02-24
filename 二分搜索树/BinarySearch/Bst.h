@@ -157,11 +157,11 @@ private:
     }
     else if (node->key < key)
     {
-      return search(node->left, key);
+      return search(node->right, key);
     }
     else
     {
-      return search(node->right, key);
+      return search(node->left, key);
     }
   }
 };
