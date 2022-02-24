@@ -26,6 +26,15 @@ private:
       this->value = v;
       this->left = this->right = nullptr;
     }
+
+    // 拷贝构造函数
+    Node(Node *node)
+    {
+      this->key = node->key;
+      this->value = node->value;
+      this->left = node->left;
+      this->right = node->right;
+    }
   };
 
   // 对于我们这整棵树来说，他需要有一个根节点
@@ -172,6 +181,14 @@ public:
       root = removeMax(root);
     // 同样的，这里调用一个递归函数，这个函数将删除以root节点为根的这个二叉树中最大的那个key的节点
     // 之后将新的根传回来
+  }
+
+  // 从二叉搜索树中删除键值为key的节点
+  void remoce(Key key)
+  {
+    // 调用一个递归函数，该函数首先尝试从root中删除键值为key的节点
+    // 最终将删除的结果再返回给root
+    root = remove(root, key);
   }
 
 private:
@@ -376,6 +393,85 @@ private:
     // 然后将删除的那个节点返回的新的右孩子赋回给这个node的右孩子
     node->right = removeMax(node->right);
     return node;
+  }
+
+  // 删除掉以node为根的二分搜索树中键值为key的节点
+  // 返回删除节点后新的二分搜索树的根
+  Node *remove(Node *node, Key key)
+  {
+    // 首先在这个函数中，首先包含了寻找这个键值为key的节点的过程
+    if (node == nullptr)
+    {
+      // 表示在这颗树中没有找到键值为key的节点
+      return nullptr;
+    }
+
+    // 我们要找到的这个key和单前它这个node中的key做一个比较
+    if (key < node->key)
+    {
+      // 如果小于单前node的key，那么就需要递归的进一步在node的左孩子中去查找和这个key节点并且将它删除
+      // 将删除后的节点赋值回来给单前node的左孩子
+      node->left = remove(node->left, key);
+      // 这样一来我们就成功的删除了这个node节点，将这个node节点返回回去
+      return node;
+    }
+    else if (key > node->key)
+    {
+      // 我们发现key大于单前node的key，那么就需要递归的进一步在node的右孩子中去查找和这个key节点并且安静他删除
+      // 将删除返回的根节点赋值给单前node的右孩子
+      node->right = remove(node->right, key);
+      return node;
+    }
+    else // key == node->key
+    {
+      // 否者的haul就是找到了这个等于key的节点
+      // 首先我们先看一下node到底有几个孩子？
+      // 如果node只有右孩子
+      if (node->left == nullptr)
+      {
+        Node *rightNode = node->right;
+        delete node;
+        count--;
+        return rightNode;
+      }
+      if (node->right == nullptr)
+      {
+        Node *leftNode = node->left;
+        delete node;
+        count--;
+        return leftNode;
+      }
+
+      // 走到这里，表示node它左右孩子都是存在的
+      // node->left != nullptr && node->right != nullptr
+      // 接着就在这个待删除节点node的右子树中找那个最小值,作为要删除节点node的后继节点（替代节点）
+      // Node* successor = minmum(node->right);
+      // 根据node的右子树的最小值拷贝构造一个node节点，赋值给我们的后继节点
+      // 这里为什么不直接用返回的那个最小值节点，而需要拷贝构造一个新的Node节点？见下
+      Node *successor = new Node(minmum(node->right));
+      // 这里我们新建立了这个node节点，放入二叉树中，所以count++
+      count++; // 这里不用担心count值不对，因为下面removeMin里面会把那个最小节点给抹除，计数会减一
+      // 这里加1，那里减1，正好维持了正确的计数
+
+      // 接下来做的事情就是为我们要删除节点的后继节点的左右节点进行赋值
+      // 其中右孩子就是我们removeMin移除最小值之后返回回来的这个节点指针
+      // 这里需要注意使用c++写这个的一个陷阱，我们的successor在上面那句代码中，指向了node的右子树的最小值
+      // 而我们下面这句代码（removeMin）又将node右子树的最小值给删除了，
+      // 这里需要注意，单这个节点给删除了以后，我们这个 successor 指向也就相对应的失败了。
+      // 怎么解决这个问题呢？
+      // 就是在上面那个代码里，将node右子树里最小值复制一份，（为了完成这个赋值，需要Node结构体提供一个拷贝构造函数）
+      successor->right = removeMin(node->right);
+
+      // 相应的后继节点的左孩子赋值就很简单了，直接就是我的删除节点的左孩子
+      successor->left = node->left;
+
+      // 当我们这样做好之后，就可以放心的删除我们的那个节点了
+      delete node;
+      count--;
+
+      // 同时将 后继节点successor返回回去作为删除节点后，这个新的二叉搜索树的根节点返回给原来node节点他的父节点
+      return successor;
+    }
   }
 };
 
