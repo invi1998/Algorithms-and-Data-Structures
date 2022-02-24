@@ -2,6 +2,7 @@
 #define __BST_H__
 
 #include <iostream>
+#include <queue>
 
 // BinarySearchTree (二叉搜索树)
 template <typename Key, typename Value>
@@ -96,6 +97,38 @@ public:
   void postOrder()
   {
     postOrder(root);
+  }
+
+  // 广度优先遍历(层序遍历)
+  void levelOrder()
+  {
+    // 广度优先遍历需要一个队列进行辅助，这里声明一个队列q，它存储的是Node*
+    std::queue<Node *> q;
+    // 然后将我们的根节点入队
+    q.push(root);
+    // 在我们的队列q不为空的时候进行循环
+    while (!q.empty())
+    {
+      // 每次循环首先需要取出队首的元素
+      Node *node = q.front();
+      // 之后就可以让这个队首的元素出队（从队列中删除）
+      q.pop();
+
+      // 接下来要做的事情就是对我们刚刚拿出来的node节点进行操作
+      std::cout << node->key << std::endl;
+
+      // 然后，看node是否有左右孩子，如果有，那就将左右孩子入队
+      if (node->left != nullptr)
+      {
+        q.push(node->left);
+      }
+      if (node->right != nullptr)
+      {
+        q.push(node->right);
+      }
+
+      // 之后这个循环继续进行，直到我们的队列为空
+    }
   }
 
 private:
