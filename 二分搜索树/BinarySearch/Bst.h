@@ -41,7 +41,7 @@ public:
   // 析构函数
   ~BST()
   {
-    // todo
+    destroy(root);
   }
 
   // 获取节点数
@@ -77,6 +77,25 @@ public:
   Value *search(Key key)
   {
     return search(root, key);
+  }
+
+  // 前序遍历
+  void preOrder()
+  {
+    // 这里依旧调用私有的preorder函数，传入一个根节点root表示从根节点进行前序遍历
+    preOrder(root);
+  }
+
+  // 中序遍历
+  void inOrder()
+  {
+    inOrder(root);
+  }
+
+  // 后续遍历
+  void postOrder()
+  {
+    postOrder(root);
   }
 
 private:
@@ -162,6 +181,55 @@ private:
     else
     {
       return search(node->left, key);
+    }
+  }
+
+  // 前序遍历
+  // 对以node为根的二叉搜索树进行前序遍历
+  void preOrder(Node *node)
+  {
+    if (node != nullptr)
+    {
+      std::cout << node->key << std::endl;
+      preOrder(node->left);
+      preOrder(node->right);
+    }
+  }
+
+  // 中序遍历
+  // 对以node为根的二叉搜索树进行中序遍历
+  void inOrder(Node *node)
+  {
+    if (node != nullptr)
+    {
+      inOrder(node->left);
+      std::cout << node->key << std::endl;
+      inOrder(node->right);
+    }
+  }
+
+  // 后续遍历
+  // 对以node为根的二叉搜索树进行后序遍历
+  void postOrder(Node *node)
+  {
+    if (node != nullptr)
+    {
+      postOrder(node->left);
+      postOrder(node->right);
+      std::cout << node->key << std::endl;
+    }
+  }
+
+  // 采用后续遍历的方式对二叉搜索树的所有节点进行释放
+  void destroy(Node *node)
+  {
+    if (node != nullptr)
+    {
+      destroy(node->left);
+      destroy(node->right);
+
+      delete node;
+      count--;
     }
   }
 };
