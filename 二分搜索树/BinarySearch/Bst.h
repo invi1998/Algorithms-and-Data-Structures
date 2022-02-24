@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <queue>
+#include <cassert>
 
 // BinarySearchTree (二叉搜索树)
 template <typename Key, typename Value>
@@ -129,6 +130,28 @@ public:
 
       // 之后这个循环继续进行，直到我们的队列为空
     }
+  }
+
+  // 寻找最小键值
+  Key minimum()
+  {
+    // 找二叉树的最小值，那么首先我们得保证二叉树不为空
+    assert(count != 0);
+    // 依然使用递归的方式来寻找最小值
+    // 传入根节点开始寻找key最小的值，返回的是哪个最小key值的node节点
+    Node *minNode = minimum(root);
+    return minNode->key;
+  }
+
+  // 寻找最大键值
+  Key maxmum()
+  {
+    // 找二叉树的最大值，那么首先我们得保证二叉树不为空
+    assert(count != 0);
+    // 依然使用递归的方式来寻找最大值
+    // 传入根节点开始寻找key最大的值，返回的是哪个最大key值的node节点
+    Node *maxNode = maxmum(root);
+    return maxNode->key;
   }
 
 private:
@@ -264,6 +287,32 @@ private:
       delete node;
       count--;
     }
+  }
+
+  // 以node为根的二叉搜索树中，返回最小键值的节点
+  Node *minimum(Node *node)
+  {
+    // 首先判断传入的这个node节点他的左孩子是否为空，如果是空，表示它没有左孩子，那么他就是这个最小节点，直接返回node
+    if (node->left == nullptr)
+    {
+      return node;
+    }
+
+    // 否者就递归的传入他的左孩子，去向以node左孩子为根的这个树去找它的最小节点
+    return minimun(node->left);
+  }
+
+  // 以node为根的二叉搜索树中，返回最大键值的节点
+  Node *maxmum(Node *node)
+  {
+    // 首先判断传入的这个node节点他的右孩子是否为空，如果是空，表示它没有右孩子，那么他就是这个最大节点，直接返回node
+    if (node->right == nullptr)
+    {
+      return node;
+    }
+
+    // 否者就递归的传入他的右孩子，去向以node右孩子为根的这个树去找它的最大节点
+    return maxmum(node->right);
   }
 };
 
