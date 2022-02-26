@@ -276,3 +276,78 @@ public:
 虽然这样合并来说，怎么合并都是没有问题的，但是可以看到，对于这棵树来说，他的高度就增加了，我们在查找4或者3的时候，就需要回溯更多次，从而花费更多的查找时间。
 
 怎么解决这个问题呢？答案也非常简单，只需要在进行Union合并的时候，我们不应该固定的将第一个元素的根指向第二个元素的根，而是在合并之前，先进行一次比较。我们可以先存储一下，对于每一个集合，在这个集合里它有多少个元素，在具体的进行union操作的时候，永远将元素少的那个集合的根指向集合元素多的那个集合的根。换句话说，在这个例子中，我们合并4和9,发现9的元素少，只有一个，而4所在的集合有3个，那么我们就应该将9指向4的根节点8。这样一来，将会更高概率的形成一棵层数较低的树。
+
+```C++
+class UnionFind
+{
+
+private:
+  int* parent;
+  int count;
+// 记录对于每一节点以他为根的那个集合的节点个数
+  int* sz;  // sz[i]就表示以i为根的集合中元素个数
+
+public:
+  UnionFind(int n)
+  {
+    parent = new int[n];
+    sz = new int[n];
+    count = n;
+    for(int i = 0; i < count; i++)
+      {
+        parent[i] = i;
+        sz[i] = 1;
+      }
+  }
+
+  ~UnionFind()
+  {
+    delete[] parent;
+    delete[] sz;
+  }
+
+public:
+  int find(int p)
+  {
+    assert(p >= 0 && p < count);
+    // find操作就是不断的通过p索引追溯他的父亲节点，知道他的父亲节点等于自身
+    while(parent[p] != p)
+      {
+        p = parent[p];
+      }
+
+    return p;
+  }
+
+  bool isConnected(int p, int q)
+  {
+    return find(p) == find(q);
+  }
+
+  void unionElements(int p, int q)
+  {
+    
+    int pRoot = find(p);
+    int qRoot = find(q);
+    if(pRoot != qRoot)
+    {
+      if(sz[pRoot] < sz[qRoot])
+      {
+        parent[pRoot] = qRoot;
+        sz[qRoot]+=sz[pRoot];
+      }
+      else
+      {
+        parent[qRoot] = pRoot;
+        sz[pRoot]+=sz[qRoot];
+      }
+    }
+  }
+};
+```
+
+![](../img/impicture_20220226_154913.png)
+
+从这个测试结果可以看到，这步优化效果是非常好的，提升了近百倍的效率
+
+通常来说，我们实现并查集，实现这个UF3版本的就足够了，不过还是会有极端的测试用例。会让我们的UF3相对应的也慢些。
