@@ -369,3 +369,91 @@ public:
 上面两个例子就说明了，我们单纯依靠集合的size(节点数的多少)来判断由谁指向谁并不是完全准确的，更准确的方式应该是我们根据这两个集合所表示的树他们的层数来具体的判断谁连接谁。
 
 通常我们在并查集中，使用rank这样一个数组来表示。这也就是非常经典的并查集中基于rank的优化。我们设立一个数组rank，rank[i]表示以i为根节点的树的高度
+
+```c++
+class UnionFind
+{
+
+private:
+  int* parent;
+  int count;
+// 记录对于每一节点以他为根的那个集合的层数
+  int* rank;  // rank[i]就表示以i为根的集合中树的层数
+
+public:
+  UnionFind(int n)
+  {
+    parent = new int[n];
+    rank = new int[n];
+    count = n;
+    for(int i = 0; i < count; i++)
+      {
+        parent[i] = i;
+        rank[i] = 1;
+      }
+  }
+
+  ~UnionFind()
+  {
+    delete[] parent;
+    delete[] rank;
+  }
+
+public:
+  int find(int p)
+  {
+    assert(p >= 0 && p < count);
+    // find操作就是不断的通过p索引追溯他的父亲节点，知道他的父亲节点等于自身
+    while(parent[p] != p)
+      {
+        p = parent[p];
+      }
+
+    return p;
+  }
+
+  bool isConnected(int p, int q)
+  {
+    return find(p) == find(q);
+  }
+
+  void unionElements(int p, int q)
+  {
+    
+    int pRoot = find(p);
+    int qRoot = find(q);
+    if(pRoot != qRoot)
+    {
+      if(rank[pRoot] < rank[qRoot])
+      {
+        parent[pRoot] = qRoot;
+      }
+      else if(rank[pRoot] > rank[qRoot])
+      {
+        parent[qRoot] = pRoot;
+      }
+      else  // rank[pRoot] == rank[qRoot]
+      {
+        // 在这种情况下，谁指向谁并不重要，重要的是要根据指向情况，维护rank
+        parent[pRoot] = qRoot;
+        rank[qRoot]+=1;
+      }
+      
+    }
+  }
+};
+```
+
+
+
+测试10w数据
+
+![](../img/impicture_20220226_164311.png)
+
+测试百万数据（因为第一第二太慢了，这里就只测试UF3和UF4）
+
+![](../img/impicture_20220226_164338.png)
+
+从测试结果上看，虽然UF4使用rank来判断谁指向谁是有一点性能提升，但是这个提升对比之前size（UF3）并不明显。，这是因为需要使用rank才能确定谁指向谁的场景特别少，不是很多见。甚至在某些情况下，rank还会比size慢一点，这是因为rank里的判断更多了，这些多出来的判断hi消耗额外的一些性能，不过即使慢一点，他的速度也是非常快的，并且能够克服一些极端的情况。
+
+所以总结下来，实现并查集的时候，使用rank数组，来决定在合并的时候，谁指向谁。

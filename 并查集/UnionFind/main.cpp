@@ -5,11 +5,13 @@ using namespace std;
 
 int main()
 {
-  int n = 1000000;
+  int n = 100000;
 
   UnionFindTestHelper::testUF1(n);
   cout << endl;
   UnionFindTestHelper::testUF2(n);
   cout << endl;
   UnionFindTestHelper::testUF3(n);
+  cout << endl;
+  UnionFindTestHelper::testUF4(n);
 }
