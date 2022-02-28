@@ -1039,3 +1039,87 @@ public:
 自此，我们所有的节点就全都遍历完了，与此同时我们也找到了这棵最小生成树。
 
 回忆一下上面的过程，在我们找最小生成树的时候，我们将所有的边都考虑了一遍，只不过我们现在这个最小索引堆他的元素个数和图中节点的元素个数是一致的，所以基于堆的这个操作就变快了一些。与此同时，我们每访问到一个节点的时候，考察这些节点的邻边，对于那些不是横切边的边，我们一旦判断出来以后，也会马上把他们扔掉。所以对于prim算法来说，虽然他的时间复杂度是O(E log V)，字面上好像只是将logE改进到了logV，但是实际上除了对于堆的改进之外，我们遍历边的次数也更少了。因此整体而言，使用了最小索引堆以后，我们这个prim算法的时间复杂度改进还是很可观的。
+
+```c++
+template <class Graph, class Weight> class PrimMST {
+
+private:
+  Graph &G;
+  IndexMinHeap<Weight> ipq;
+
+  // 这里要注意，我们有一个新的容器叫做edgeTo,因为我这里最小索引堆只存储和每个节点相邻的可选横切边相应的权值，而我们使用edgeTo来存储和每一个节点相邻的那一个最短的横切边。
+  // 存取一个指向这条边的Edge指针
+  std::vector<Edge<Weight> *> edgeTo;
+  bool *marked;
+  std::vector<Edge<Weight>> mst; // 存储最小生成树相应的边
+  Weight mstWeight;
+
+  void visit(int v) {
+    // 依然是，在访问这个顶点的时候，我们要保证这个点没有被marked过
+    assert(!marked[v]);
+    marked[v] = true;
+
+    typename Graph::adjIterator adj(G, v);
+    for (Edge<Weight> *e = adj.begin(); !adj.end(); e = adj.next) {
+      // 使用临边迭代器，访问顶点v的所有相邻临边
+
+      // 找到e的相邻节点w
+      int w = e->other();
+      if (!marked[w]) {
+        // 此时e是一条横切边
+        // 然后对这条横切边进行判断，我们之前是否有在edgeTo中添加过w节点相邻的横切边
+        if (!edgeTo[w]) {
+          // 和w相邻的横切边没有添加过，那就把这条横切边添加进最下索引堆中。
+          ipq.insert(w, e->wt());
+          // 与此同时，我们的edgeTo这个数组要对w进行记录
+          edgeTo[w] = e;
+        } else if (edgeTo[w].wt() > e->wt()) {
+          // 如果我们edgeTo中保存的那条和w相邻的横切边的权值大于我们刚刚遍历到的这条边的权值，那么就需要用我们小权值（刚刚遍历到的这条边）替换掉之前的这条边
+          // 使用change方法将我们最小索引堆中的元素进行替换
+          ipq.change(w, e->wt());
+          edgeTo[w] = e;
+        }
+      }
+    }
+  }
+
+public:
+  PrimMST(Graph graph) : G(graph), ipq(IndexMinHeap<Weight>(graph.V())) {
+    marked = new bool[G.V()];
+    for (int i = 0; i < G.V(); i++) {
+      marked[i] = false;
+      edgeTo.push_back(NULL);
+    }
+
+    mst.clear();
+
+    // prim
+    visit(0);
+    // 只要我们的最小索引堆还有数据（也就是还有边还需要我们继续考虑，就一直while循环）
+    while (ipq.isEmpty()) {
+      // 将此时最小的那个横切边索引取出来，做visit
+      int v = ipq.extractMinIndex();
+      // 这里使用断言确保索引v所应的横切边是存在的。使用edgeTo[v]就能拿到这个横切边
+      assert(edgeTo[v]);
+      mst.push_back(*edgeTo[v]);
+      visit(v);
+    }
+
+    // 整个这个while循环就将我们的最小生成树给拿到了
+
+    // 计算最小生成树的权值
+    for (auto iter = mst.begin(); iter != mst.end(); ++iter) {
+      mstWeight += (*iter).wt();
+    }
+  }
+
+  std::vector<Edge<Weight>> mstEdges() { return mst; }
+
+  Weight result() { return mstWeight; }
+};
+
+```
+
+打印测试如下
+
+![](../img/impicture_20220228_194048.png)
