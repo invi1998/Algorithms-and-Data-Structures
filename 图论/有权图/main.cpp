@@ -1,8 +1,10 @@
 #include <iostream>
 #include <iomanip>
+#include <vector>
 #include "DenseGraph.h"
 #include "ReadGraph.h"
 #include "SparseGraph.h"
+#include "LazyPrimMST.h"
 
 using namespace std;
 
@@ -40,6 +42,33 @@ int main()
   // vertex 6 :      ( to: 2, wt: 0.40 )     ( to: 3, wt: 0.52 )     ( to: 0, wt: 0.58 )     ( to: 4, wt: 0.93 )
   // vertex 7 :      ( to: 4, wt: 0.37 )     ( to: 5, wt: 0.28 )     ( to: 0, wt: 0.16 )     ( to: 1, wt: 0.19 )     ( to: 2, wt: 0.34 )
   std::cout << std::endl;
+
+  std::cout << "----------------------------------------------------------------------------------" << std::endl;
+  cout << "测试 lazy prim （最小生成树）" << endl;
+  LazyPrimMST<SparseGraph<double>, double> lazPrimMST(g2);
+  vector<Edge<double>> mst = lazPrimMST.mstEdges();
+
+  for (auto iter = mst.begin(); iter != mst.end(); ++iter)
+  {
+    cout << *iter << endl;
+  }
+
+  cout << "带权图测试用例（邻接表）的最小生成树（MST）的最小权值为：" << lazPrimMST.result() << endl;
+
+  std::cout << std::endl;
+
+  std::cout << "----------------------------------------------------------------------------------" << std::endl;
+  cout << "测试 lazy prim （最小生成树）" << endl;
+  LazyPrimMST<DenseGraph<double>, double> lazPrimMST2(g1);
+  vector<Edge<double>> mst2 = lazPrimMST2.mstEdges();
+
+  for (auto iter = mst2.begin(); iter != mst2.end(); ++iter)
+  {
+    cout << *iter << endl;
+  }
+
+  cout << "带权图测试用例（邻接矩阵）的最小生成树（MST）的最小权值为：" << lazPrimMST2.result() << endl;
+  std::cout << "----------------------------------------------------------------------------------" << std::endl;
 
   return 0;
 }
