@@ -66,6 +66,170 @@ V和E通常被认为是有限的，对于无限图，许多众所周知的结果
 
    ![](../img/impicture_20220208_210410.png)
 
+```c++
+// 稠密图
+
+#ifndef GRAPH_DENSEGRAPH_H
+#define GRAPH_DENSEGRAPH_H
+
+#include <iostream>
+#include <vector>
+#include <cassert>
+
+using namespace std;
+
+// 稠密图-邻接矩阵
+class DenseGraph
+{
+
+private:
+    int n, m;      //  n 和 m 分别存放该图的点数和边数
+    bool directed; // 该bool变量用于表示是有向图还是无向图
+    vector<vector<bool>> g;
+    // 采用一个二维矩阵（该二维矩阵使用一个vector套vector的结构来实现）来保存。
+    // 每一个位置我们存储的数据类型为 bool 型， true代表有这一条边，false代表没有这条边
+
+public:
+    // 构造函数
+    DenseGraph(int n, bool directed) : n(n), m(0), directed(directed)
+    {
+        // 在初始化这个图的时候，他的顶点数就是他传进来的n，边数都设置为0，
+        // 后面会提供函数 添加边，来逐步完善这个图的边
+        for (int i = 0; i < n; i++)
+        {
+            g.push_back(vector<bool>(n, false));
+            // 这个for循环，在它的循环过程中，g里面它要push_back一个新的vector，
+            // 这个vector中保存的是 n 个 元素，每一个元素都是false；
+            // 这样一来我们就创建了一个 n * n 的矩阵，矩阵中每个元素都是false
+        }
+    }
+
+    ~DenseGraph()
+    {
+    }
+
+    int V() { return n; } // 该函数返回图中有多少个顶点
+    int E() { return m; } // 该函数返回图中有多少条边
+
+    // 给该图添加一条边
+    // 对于这个方法，我们传入 v 和 w 分别代表该要设置这条边时相对应的 顶点索引
+    // 其实这里也可以观察到,对于我们一个图来说,我们的顶点使用整形来表示, 为 0 到 n-1；
+    // 我们调用 addEdge(v, w) 就表示我们要在顶点 v 和 顶点 w之间添加一条边。
+    void addEdge(int v, int w)
+    {
+        // 对于这个方法，我们首先严谨一点，
+        // 利用断言来考察 v 和 w 这两个索引值都不越界
+        assert(v >= 0 && v < n);
+        assert(w >= 0 && w < n);
+
+        // 先判断 g[v][w]之间是否已经有边了
+        // 有边那就直接返回，没边再继续添加
+        if (hasEdge(v, w))
+        {
+            return;
+        }
+
+        // 然后我们就可以很安全的在 g[v][w]上让它的值为true，从而完成  v -> w 的这条边的添加
+        g[v][w] = true;
+
+        // 然后我们判断这个图是不是无向图，如果是无向图，这里我们还要添加一条 w -> v 的边
+        if (directed == false)
+        {
+            g[w][v] = true;
+        }
+
+        // 这里隐含一个潜在的bug，那就如果此前我们已经给这两个顶点之间添加过边了
+        // 虽然上面的操作不会影响，但是下面这个 m++; 边的数量加1就不合理了，
+        // 所以这里我们再添加一个函数，用来判断这两个节点之间是否已经添加过边了
+        m++;
+    }
+
+    // 这里可能会有疑惑，说破案是否有边，直接 g[v][w] 判断不行吗？为什么还要封装一个函数？
+    // 这是因为封装函数是为了考虑到可能外部用户会希望进行两个点之间是否有边的判断，如果不提供这个函数
+    // 外部用户将很难判断
+    bool hasEdge(int v, int w)
+    {
+        assert(v >= 0 && v < n);
+        assert(w >= 0 && w < n);
+
+        return g[v][w];
+
+        // 该函数的时间复杂度为O(1)，也正是因为如此，在addEdge添加边的时候，
+        // 调用该函数进行平行边的取消，
+        // addEdge的时间复杂度也就是O(1)，
+        // 所以，从这里可以看出，邻接矩阵对于处理平行边是有着天然的优势（基本不会付出额外的代价）
+    }
+
+public:
+    void show()
+    {
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                std::cout << g[i][j] << "\t";
+            }
+            std::cout << std::endl;
+        }
+    }
+
+public:
+    // 实现稠密图的邻边迭代器
+    class adjIterator
+    {
+    private:
+        DenseGraph &G; // 保存要迭代的图
+        int V;         // 保存要迭代的顶点
+        int index;     // 迭代到哪里了
+
+    public:
+        adjIterator(DenseGraph &graph, int v) : G(graph), V(v), index(-1)
+        {
+        }
+
+        int begin()
+        {
+            // 在稠密图中我们应该遍历的是 v 所在的这一行中的所有元素
+            // 如果这个元素时false，就说明没有这个边
+            // 如果这个元素是true，说明有这个边
+            // 也就是说，在begin这里，对于稠密图来说，不见得是取第0个元素
+            // 而是应该去找这一行中第一个值为true的元素
+            // 所以这里初始化的时候将 index设置为 -1 (这也是上面构造函数中为什么要将这个index这是为 -1的原因)
+            index = -1;
+            // 然后我们直接通过 next 去找第一个元素
+            return next();
+        }
+
+        int next()
+        {
+            // next 这个函数做的事情就是从当前这个 index 开始，
+            // 去找之后第一个为 true 的这个元素
+            // 遍历V个顶点
+            for (index += 1; index < G.V(); index++)
+            {
+                // g[V][index] 表示 g[V] 这一行，他的第 index个元素是否为 true
+                // 一旦为true ，那么当前的index就能返回回去
+                if (G.g[V][index])
+                {
+                    return index;
+                }
+            }
+            // 如果经过这轮循环没有找到一个为 true的元素，那么就说明所有的邻边都已经遍历完了
+            return -1;
+        }
+
+        bool end()
+        {
+            return index >= G.V();
+            // 判断是否迭代完，直接用index的值来和当前顶点的个数做比较
+            // 如果大于等于 顶点个数，就说明这一行中所有的顶点的都已经遍历完了
+        }
+    };
+};
+
+#endif
+```
+
 邻接矩阵表示有向图
 
 ![](../img/impicture_20220208_210551.png)
@@ -100,9 +264,172 @@ V和E通常被认为是有限的，对于无限图，许多众所周知的结果
 
 ![](../img/impicture_20220208_210809.png)
 
+```c++
+// 稀疏图
+
+#ifndef GRAPH_SPARSEGRAPH_H
+#define GRAPH_SPARSEGRAPH_H
+
+using namespace std;
+
+// 稀疏图-邻接表
+class SparseGraph
+{
+private:
+  int n, m;      // 点数 和 边数
+  bool directed; // 表示有向图还是无向图
+  vector<vector<int>> g;
+  // 这里同样用一个二维容器来存储图中的边
+  // 只不过这里元素的种类是 int 型，是因为邻接表g[i] 里面存储的就是和i这个顶点相邻的所有顶点编号
+
+public:
+  SparseGraph(int n, bool directed) : n(n), m(0), directed(directed)
+  {
+    for (int i = 0; i < n; i++)
+    {
+      g.push_back(vector<int>());
+      // 初始化的时候，遍历这n个点，然后把每个点都push一个空int型vector
+      // 表示初始化的时候，每一个顶点都没有与之相邻的顶点
+    }
+  }
+
+  ~SparseGraph() {}
+
+  int V() { return n; } // 该函数返回图中有多少个顶点
+  int E() { return m; } // 该函数返回图中有多少条边
+
+  void addEdge(int v, int w)
+  {
+    // 确保 v, w 不越界
+    assert(v >= 0 && v < n);
+    assert(w >= 0 && w < n);
+
+    // 将 顶点 w push进g[v]中，表示 节点 v 与 w相连
+    g[v].push_back(w);
+
+    // 同样的判断该图是不是一个无向图，如果是无向图，那么还需要再添加一个 由 w 指向 v的节点连接
+    // 同时这里还要注意一点，如果这条边时一个自环边（也就是自己和自己连接，v == w）
+    // 那么就只需要执行上面那一条边添加就可以了
+    if (v != w && !directed)
+    {
+      g[w].push_back(v);
+    }
+
+    m++;
+  }
+
+  bool hasEdge(int v, int w)
+  {
+    assert(v >= 0 && v < n);
+    assert(w >= 0 && w < n);
+
+    // 对于邻接表，我们怎么判断它是否存在一条由 V -> w 的边呢？
+    // 这里对比与邻接矩阵，就会显得稍微复杂
+    // 这里我们必须循环边里 节点 v的所有相邻的节点
+    for (int i = 0; i < g[v].size(); i++)
+    {
+      // 然后依次判断个相邻节点，如果该节点 == w，就说明 v -> w相连
+      if (g[v][i] == w)
+      {
+        return true;
+      }
+      return false;
+    }
+
+    // 所以从这里可以看到，这个邻接表的函数对比于邻接矩阵，他的时间复杂度在最差的情况下是O(n)级别的
+    // 而邻接矩阵他的时间复杂度 是 O(1)；
+
+    // 同样的如果我们在addEdge的时候如果要取消掉平行边（两条或者多条指向相同的边），
+    // 那么就需要调用这个函数,那么添加边的函数他的时间复杂度也就变成了 O(n),
+    // 所以，如果我们需要在 邻接表中取消平行边，是需要付出很大代价的
+
+    // 所以，一般我们在绘制邻接表的时候，就不去管平行边问题了（也就是我们默认允许平行边存在）
+
+    // 或者我们也可以在邻接表绘制完成后，在对这个图进行整体的遍历，然后将平行边处理掉（练习--）
+    // todo
+  }
+
+public:
+  // 打印图
+  void show()
+  {
+    for (int i = 0; i < n; i++)
+    {
+      std::cout << "vertex" << i << ":\t";
+      for (int j = 0; j < g[i].size(); j++)
+      {
+        std::cout << g[i][j] << "\t";
+      }
+      std::cout << std::endl;
+    }
+  }
+
+public:
+  // 在稀疏图这个类中实现一个新的类，表示一个相邻边的迭代器
+  class adjIterator
+  {
+  private:
+    SparseGraph &G; // 保存要迭代的图
+    int V;          // 保存要迭代的顶点
+    int index;      // 该变量用于指示迭代到哪里了
+
+  public:
+    // 对于构造函数，这里我希望用户高数迭代器两个内容
+    // graph 表示我们要迭代的是那张图
+    // v 表示用户要迭代的是哪一个顶点 他相邻的边
+    adjIterator(SparseGraph &graph, int v) : G(graph), V(v), index(0)
+    {
+    }
+
+    // 返回要迭代的第一个元素
+    int begin()
+    {
+      int index = 0;
+      // 对于begin这个函数，我们首先要检查对于G这个图
+      // 他里面g[V]这个分量的size是否为0
+      // 如果不为 0 ，那么我们就返回这个g[V]分量的第一个元素即可
+      // 否者返回 -1 就行
+      if (G.g[V].size())
+      {
+        return G.g[V][index];
+      }
+      return -1;
+
+      // 这样我们就找到了v这个节点在这个图中的第一个相邻节点，如果没有的话返回的就是-1
+    }
+
+    // 从当前迭代的元素向下偏移找下一个元素
+    int next()
+    {
+      index++;
+
+      // 判断当前index值是否越界
+      if (index < G.g[V].size())
+      {
+        return G.g[V][index];
+      }
+      return -1;
+    }
+
+    // 用于指示我们的迭代终止没有
+    bool end()
+    {
+      return index >= G.g[V].size();
+      // 如果迭代指示器 index 大于等于 单前向量g[v]的size，表示已经越界（对于g[v]这个分量来说已经迭代完成了）
+    }
+  };
+};
+
+#endif
+```
+
+
+
 ## 遍历邻边
 
 ![](../img/impicture_20220208_192901.png)
+
+邻边遍历代码见上方
 
 ## 图的遍历
 
@@ -251,6 +578,161 @@ V和E通常被认为是有限的，对于无限图，许多众所周知的结果
 这个作用于有向图和无向图的无权图。对于有权图，后面会探讨。
 
 ![](../img/impicture_20220212_110113.png)
+
+```c++
+//
+// 寻路算法
+//
+
+#ifndef PATH_H
+#define PATH_H
+
+#include <iostream>
+#include <cassert>
+#include <vector>
+#include <stack>
+
+using namespace std;
+
+template <typename Graph>
+class Path
+{
+private:
+  Graph &G;
+  int s; // 本类的原点
+  bool *visited;
+  int *from;
+  // from这个数组存储的就是我们每访问到一个节点，就需要存储一下我们所访问到的这个节点是从哪个节点遍历过来的
+  // 根据from这个数组我们就能倒推出两个节点之间相应的路径
+
+private:
+  void dfs(int v)
+  {
+    visited[v] = true;
+    typename Graph::adjIterator adj(G, v);
+    for (int i = adj.begin(); !adj.end(); i = adj.next())
+    {
+      // 这里深度优先遍历的算法和之前的大致都是一样的
+      // 唯一不同的是我们这里要在遍历过程中维护一个from路径数组
+
+      // 我们遍历V这个节点它所有相邻的节点，一旦发现它相邻的节点没有被访问过
+      // 我们就将去 dfs 遍历这个相邻的i节点
+      if (!visited[i])
+      {
+        // 在真正的进入i节点之前，那么就把这个 from[i]的值设置为 v
+        from[i] = v;
+        // 这样也就是说，我们访问的i这个节点是从v这个节点过来的
+        dfs(i);
+      }
+    }
+    // 至此，我们就通过一次dfs的过程，就将和s相邻接的所有的点相应的from的值给设置完成了
+  }
+
+public:
+  Path(Graph &graph, int s) : G(graph)
+  {
+    // 算法初始化
+    assert(s >= 0 && s < G.V());
+
+    visited = new bool[G.V()];
+    from = new int[G.V()];
+
+    for (int i = 0; i < G.V(); i++)
+    {
+      visited[i] = false;
+      from[i] = -1;
+    }
+
+    this->s = s;
+
+    // 寻路算法
+    dfs(s);
+  }
+
+  ~Path()
+  {
+    delete[] visited;
+    delete[] from;
+  }
+
+  // 对于这个类，我们可以设置3个函数
+
+  // 首先我们可以判断这个类的原点s到我们给定的一个节点w是否有路径？
+  bool hasPath(int w)
+  {
+    // 回答这个问题，只需要返回visted[w]是否为true就可，
+    // 因为只要w被遍历到，就说明从s到w有路径
+    return visited[w];
+  }
+
+  // 原点s到w的具体路径是怎样的？将路径存储到一个vector容器向量中中
+  void path(int w, std::vector<int> &vec)
+  {
+    // 如何获取从s到w的路径？
+    // 其实有了from这个数组，我们只需要在from数组中从w这个点倒着推回去就可以
+    // 然后由于这个过程是一个倒推的过程，所以我们将这个倒推的节点放在一个 stack 中
+    // 最后再从这个stack取回到我们的vector中
+
+    std::stack<int> ss; // 声明一个stack容器
+
+    // 从 w 开始推，将w赋给一个新的变量 p
+    int p = w;
+
+    while (p != -1)
+    {
+      // while 循环，只要每次我们的p不等于 -1,那么就把这个 p 入栈到 ss中
+      ss.push(p);
+      // 然后p等于from[p]
+      // 这里很好理解，比如from里存的是 2  3  6  1
+      // 代表的就是 0 -> 2 ,1 -> 3, 2 -> 6
+      // 其实也就是from这个数组里存的信息就是他每个下标代表的节点是从哪个节点（这个下标保存的那个数节点）过来的
+      p = from[p];
+    }
+    // 这里就是我们从 w开始往回推，直到推到原节点（s），因为我们从来没有给源节点sfrom赋值过
+    // 他都是原节点 from 的值一直都是 -1
+    // 这样一来我们的从 s->w的路径就以倒叙的方式存到了stack中
+
+    // 然后下面要做的事就是将stack中的数据取出来放到vector中
+    // 为了安全起见，这里先对vector进行清空
+    vec.clear();
+
+    while (!ss.empty())
+    {
+      vec.push_back(ss.top()); // 将栈顶元素放入容器中
+      ss.pop();                // 将栈顶元素出栈
+    }
+  }
+
+  // 将路径进行打印输出
+  void showPath(int w)
+  {
+    // 路径打印只需要遍历这个容器即可
+    vector<int> vec;
+
+    path(w, vec);
+    for (auto iter = vec.begin(); iter != vec.end(); ++iter)
+    {
+      std::cout << *iter;
+
+      // 平淡单前是否是容器的最后一个元素
+      if (iter == vec.end() - 1)
+      {
+        // 最后一个元素打印一个回车
+        std::cout << std::endl;
+      }
+      else
+      {
+        // 不是最后一个元素打印一个 ->
+        std::cout << " -> ";
+      }
+    }
+  }
+};
+
+#endif
+```
+
+
 
 ---
 
