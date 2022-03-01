@@ -1,10 +1,10 @@
 #ifndef LAZY_PRIM_MST_H
 #define LAZY_PRIM_MST_H
 
-#include <iostream>
-#include <vector>
 #include "Edge.h"
 #include "MinHeap.h"
+#include <iostream>
+#include <vector>
 
 template <typename Graph, typename Weight>
 class LazyPrimMST
@@ -12,7 +12,8 @@ class LazyPrimMST
 
 private:
   Graph &G;
-  MinHeap<Edge<Weight>> pq; // 这个最小堆充当一个优先队列，在这个优先队列中，存储的是这个图中的边（确切的说是最小生成树的候选边）
+  MinHeap<Edge<Weight>>
+      pq; // 这个最小堆充当一个优先队列，在这个优先队列中，存储的是这个图中的边（确切的说是最小生成树的候选边）
   // 首先，我们在划分切分的时候，需要将我们的顶点一个一个的划分到另一边去，marked[i]表示这个点是否被标记了
   // 如果被标记了，就表示被划分到另外一个切分区去了（相当于文档中节点一个一个从蓝色变成了红色）
   bool *marked;
@@ -33,7 +34,8 @@ private:
     typename Graph::adjIterator adj(G, v);
     for (Edge<Weight> *e = adj.begin(); !adj.end(); e = adj.next())
     {
-      // 我们依次访问v这个节点的所有邻边，一旦我们发现，v这个节点他的邻边对应的另外一个节点，没有被marked标记上，那么这条邻边就是一个 横切边
+      // 我们依次访问v这个节点的所有邻边，一旦我们发现，v这个节点他的邻边对应的另外一个节点，没有被marked标记上，那么这条邻边就是一个
+      // 横切边
       if (!marked[e->other(v)])
       {
         // 找到了一条横切边，那么就意味着我们可以将这条边放入我们的堆中，作为我们的最小生成树的候选边
@@ -67,7 +69,8 @@ public:
       // 每次我们从最小堆中取出一个最小的元素（边）
       Edge<Weight> e = pq.extractMin();
 
-      // 因为我们是lazyPrim，所以有可能我们取出来的这个边，它根本就不是横切边， 所以我们需要判断这条边它是否是一个横切边
+      // 因为我们是lazyPrim，所以有可能我们取出来的这个边，它根本就不是横切边，
+      // 所以我们需要判断这条边它是否是一个横切边
       if (marked[e.w()] == marked[e.v()])
       {
         // 如果我们取出来的这条边它相应的两个顶点的marked标记相同的话，说明这条边的两个顶点都被访问过了
@@ -86,35 +89,26 @@ public:
         // 如果marked[e.v()]是false，表示他就是那个蓝色点，我们就应该从这个新点开始继续下一轮的visit,把这个新点的所有横切边加入到最小堆（优先队列中来）
         visit(e.v());
       }
-      else // (!marked[e.w()])
+      else // !marked[e.w()]
       {
         // 否者的话,e.v()不是false，那么e.w()就是false，那么我们就把e.w()的横切边加入到优先队列中去
         visit(e.w());
       }
     }
 
-    // while 之后，我们就得到了最小生成树，这个时候，我们只需要对最小权值进行计算，计算完成之后，本函数功能就齐备了
-    mstWeight = mst[0].wt();
+    // while
+    // 之后，我们就得到了最小生成树，这个时候，我们只需要对最小权值进行计算，计算完成之后，本函数功能就齐备了
     for (auto iter = mst.begin(); iter != mst.end(); ++iter)
     {
       mstWeight += (*iter).wt();
     }
   }
 
-  ~LazyPrimMST()
-  {
-    delete[] marked;
-  }
+  ~LazyPrimMST() { delete[] marked; }
 
-  std::vector<Edge<Weight>> mstEdges()
-  {
-    return mst;
-  }
+  std::vector<Edge<Weight>> mstEdges() { return mst; }
 
-  Weight result()
-  {
-    return mstWeight;
-  }
+  Weight result() { return mstWeight; }
 };
 
 #endif

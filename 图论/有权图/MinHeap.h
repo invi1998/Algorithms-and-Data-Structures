@@ -6,8 +6,8 @@
 #ifndef MINHEAP_H
 #define MINHEAP_H
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
 
 using namespace std;
 
@@ -37,17 +37,14 @@ private:
 
       if (j + 1 <= count && data[j + 1] < data[j])
       {
-        j = j + 1;
+        j++;
       }
-      if (data[k] > data[j])
-      {
-        swap(data[k], data[j]);
-        k = j;
-      }
-      else
+      if (data[k] <= data[j])
       {
         break;
       }
+      swap(data[k], data[j]);
+      k = j;
     }
   }
 
@@ -80,22 +77,13 @@ public:
     }
   }
 
-  ~MinHeap()
-  {
-    delete[] data;
-  }
+  ~MinHeap() { delete[] data; }
 
   // 返回堆中的元素个数
-  int size()
-  {
-    return count;
-  }
+  int size() { return count; }
 
   // 返回一个布尔值, 表示堆中是否为空
-  bool isEmpty()
-  {
-    return count == 0;
-  }
+  bool isEmpty() { return count == 0; }
 
   // 向最小堆中插入一个新的元素 item
   void insert(Item item)

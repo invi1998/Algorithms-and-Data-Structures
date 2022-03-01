@@ -1,8 +1,9 @@
 #include "DenseGraph.h"
+#include "KruskalMST.h"
 #include "LazyPrimMST.h"
+#include "PrimMST.h"
 #include "ReadGraph.h"
 #include "SparseGraph.h"
-#include "PrimMST.h"
 #include <iomanip>
 #include <iostream>
 #include <vector>
@@ -72,9 +73,9 @@ int main()
             << std::endl;
   cout << "测试 lazy prim （最小生成树）" << endl;
   LazyPrimMST<DenseGraph<double>, double> lazPrimMST2(g1);
-  vector<Edge<double>> mst2 = lazPrimMST2.mstEdges();
+  mst = lazPrimMST2.mstEdges();
 
-  for (auto iter = mst2.begin(); iter != mst2.end(); ++iter)
+  for (auto iter = mst.begin(); iter != mst.end(); ++iter)
   {
     cout << *iter << endl;
   }
@@ -89,10 +90,11 @@ int main()
                "-------------------"
             << std::endl;
   cout << "测试 prim （最小生成树）" << endl;
-  LazyPrimMST<SparseGraph<double>, double> primMST1(g2);
-  vector<Edge<double>> mst3 = primMST1.mstEdges();
+  PrimMST<SparseGraph<double>, double> primMST1(g2);
+  mst = primMST1.mstEdges();
+  cout << "大小 = " << mst.size() << endl;
 
-  for (auto iter = mst3.begin(); iter != mst3.end(); ++iter)
+  for (auto iter = mst.begin(); iter != mst.end(); ++iter)
   {
     cout << *iter << endl;
   }
@@ -106,16 +108,51 @@ int main()
                "-------------------"
             << std::endl;
   cout << "测试 prim （最小生成树）" << endl;
-  LazyPrimMST<DenseGraph<double>, double> primMST2(g1);
-  vector<Edge<double>> mst4 = primMST2.mstEdges();
+  PrimMST<DenseGraph<double>, double> primMST2(g1);
+  mst = primMST2.mstEdges();
 
-  for (auto iter = mst4.begin(); iter != mst4.end(); ++iter)
+  for (auto iter = mst.begin(); iter != mst.end(); ++iter)
   {
     cout << *iter << endl;
   }
 
   cout << "带权图测试用例（邻接矩阵）的最小生成树（MST）的最小权值为："
        << primMST2.result() << endl;
+  std::cout << "---------------------------------------------------------------"
+               "-------------------"
+            << std::endl;
+
+  std::cout << "---------------------------------------------------------------"
+               "-------------------"
+            << std::endl;
+  cout << "测试 Kruskal （最小生成树）" << endl;
+  KruskalMST<SparseGraph<double>, double> kruskalMST1(g2);
+  mst = kruskalMST1.mstEdges();
+
+  for (auto iter = mst.begin(); iter != mst.end(); ++iter)
+  {
+    cout << *iter << endl;
+  }
+
+  cout << "带权图测试用例（邻接表）的最小生成树（MST）的最小权值为："
+       << kruskalMST1.result() << endl;
+
+  std::cout << std::endl;
+
+  std::cout << "---------------------------------------------------------------"
+               "-------------------"
+            << std::endl;
+  cout << "测试 Kruskal （最小生成树）" << endl;
+  KruskalMST<DenseGraph<double>, double> kruskalMST2(g1);
+  mst = kruskalMST2.mstEdges();
+
+  for (auto iter = mst.begin(); iter != mst.end(); ++iter)
+  {
+    cout << *iter << endl;
+  }
+
+  cout << "带权图测试用例（邻接矩阵）的最小生成树（MST）的最小权值为："
+       << kruskalMST2.result() << endl;
   std::cout << "---------------------------------------------------------------"
                "-------------------"
             << std::endl;

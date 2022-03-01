@@ -5,8 +5,8 @@
 #ifndef MINIMUMSPANTREE_EDGE_H
 #define MINIMUMSPANTREE_EDGE_H
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
 
 using namespace std;
 
@@ -63,37 +63,20 @@ public:
   }
 
   // 后续我们的图算法经常要对两个边的信息进行比较，所以这里重载一下比较运算符
-  bool operator<(Edge<Weight> &e)
-  {
-    return weight < e.wt();
-  }
+  bool operator<(Edge<Weight> &e) { return weight < e.wt(); }
 
-  bool operator>(Edge<Weight> &e)
-  {
-    return weight > e.wt();
-  }
+  bool operator>(Edge<Weight> &e) { return weight > e.wt(); }
 
-  bool operator==(Edge<Weight> &e)
-  {
-    return weight > e.wt();
-  }
+  bool operator==(Edge<Weight> &e) { return weight > e.wt(); }
 
-  bool operator!=(Edge<Weight> &e)
-  {
-    return weight != e.wt();
-  }
+  bool operator!=(Edge<Weight> &e) { return weight != e.wt(); }
 
-  bool operator<=(Edge<Weight> &e)
-  {
-    return weight <= e.wt();
-  }
+  bool operator<=(Edge<Weight> &e) { return weight <= e.wt(); }
 
-  bool operator>=(Edge<Weight> &e)
-  {
-    return weight >= e.wt();
-  }
+  bool operator>=(Edge<Weight> &e) { return weight >= e.wt(); }
 
-  // 当然对于这6个重载运算符，如果是在c++20中，可以使用 <=> 三路比较运算符来进行书写
+  // 当然对于这6个重载运算符，如果是在c++20中，可以使用 <=>
+  // 三路比较运算符来进行书写
 };
 
 #endif
