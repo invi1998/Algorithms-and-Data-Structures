@@ -1,5 +1,7 @@
 # 图论 Graph Theory
 
+[^https://replit.com/@invi1998]: 代码仓库
+
 **图论**是对图的研究，图是用来模拟物体之间两两关系的数学结构。图由顶点、节点或由边、弧或线连接的点组成。
 
 一个图可能是无向的，这意味着与每条边相关的两个顶点之间没有区别，或者它的边可能从一个顶点指向另一个顶点;参见图(离散数学)了解更多详细的定义，以及通常考虑的图类型的其他变化。
@@ -1382,3 +1384,187 @@ dijkstra算法的时间复杂度是O(E log(V) )，，我们之前的最小生成
 至此，我们就对这个简单的图完成了dijkstra单源最短路径算法求出来从源点0到图中其他所有点的最短路径。换句话说，我们找到了一个以0为根的最短路径树。
 
 接下来我们考虑一下实现细节，首先我们我们所有的操作都是在右侧的列表上做的，我们主要做两件事情，第一件事情就是在这个列表中找到没有访问过的那些节点中的最短的路径相对应的节点这个最值的位置，另外一个事情就是我们要更新这个列表，那么这时候和prim算法一样，我们也可以使用最小索引堆（IndexMinHeap）这种数据结构来非常容易的实现这两步操作。也正是因为我们使用IndexMinHeap这种数据结构，所以我们只需要开辟节点个数这么大的数组空间，并且每一次的插入操作或者更新操作都是logV的时间复杂度。而整个dijkstra算法的过程中，需要对所有的边进行一次遍历，所以最终使得我们整个算法的时间复杂度是O(E log(V) )
+
+```c++
+template <class Graph, class Weight> class Dijkstra {
+
+private:
+  Graph &G; // 图的引用
+  int s;    // 单源最短路径的 源
+
+  // 首先，我们从源点s到每一个节点最终他的最短距离是多少保存在这份数组中
+  Weight *distTo;
+  // 我们是一步一步的逐个找到每个节点的单源最短路径
+  // 那么对于已经找到最短路径的顶点需要做一个标记，这个标记就保存在这个数组中
+  bool *marked;
+  // 我们这个算法，不但能求出到每一个顶点的单源最短路径权值，还能得到具体的最短路径是谁，这个最短路径就保存在这个容器中
+  // from用来记录到达的每一个节点，到的这个节点它是从哪一个节点过来的
+  std::vector<Edge<Weight> *> from;
+
+public:
+  Dijkstra(Graph &graph, int s) : G(graph) {
+    assert( s >= 0 && s < G.V() );
+    this->s = s;
+    distTo = new Weight[G.V()];
+    marked = new bool[G.V()];
+
+    for (int i = 0; i < G.V(); i++) {
+      // 对于distTo的初始化，我们默认初始化为0，因为这里不知道权值Weight的具体类型是什么，所以这里调用模板参数Weight的默认构造函数进行初始化
+      distTo[i] = Weight();
+      marked[i] = false;
+      from.push_back(nullptr);
+    }
+    // 声明一个最小索引堆（为其开辟图顶点个数那么大的内存空间）
+    IndexMinHeap<Weight> ipq(G.V());
+
+    // Dijkstra
+
+    // 我们首先要做的事情就是对我们的源点s做一次初始化操作
+    distTo[s] = Weight(); // 从源点到源点的距离一定为 0
+                  // （不过如果权值是类类型，那么就是默认构成出来的初值）
+
+    from[s] = new Edge<Weight>(s, s, Weight());  // 源点s到s自己的路径
+
+    ipq.insert(s, distTo[s]);
+    
+    marked[s] = true; // 然后相应的s这个点就被我们访问过了，将其标记为true
+
+    // 然后将s这个源点压入我们的最小索引堆中，然后s这个节点距离源点s的距离就是distTo[s];
+    ipq.insert(s, distTo[s]);
+
+    // 然后进行我们的循环，在这个循环中只要我们的最小索引堆中的元素还存在，它不为空的话，就进行这个循环
+    while (!ipq.isEmpty()) {
+      // 在这个循环中，首先我们要做的就是找到这个最小索引堆中存在的元素中相应的离源点s最近的那个节点，把这个节点用v存储
+      int v = ipq.extracMinIndex();
+
+      // distTo[v]就是s到节点v的最短距离
+      marked[v] = true; // 那么此时v这个节点就被访问过了，堆marked这个数组进行更新，将v这个节点进行标识
+
+      // Relaxation (松弛操作)
+
+      // 接下来要做的事情就是针对v这个节点进行一遍松弛操作（也就是看是否存在经过v这个节点进行中转到另外一个点 比 不经过v这个点直接到那个点的距离要小）
+      // 所以堆v这个节点的松弛操作，我们就需要访问一下v这个节点的所有的邻边
+      typename Graph::adjIterator adj(G, v);
+      for (Edge<Weight> *e = adj.begin(); !adj.end(); e = adj.next()) {
+        int w = e->other(v); // 找到v这个节点的邻边e的对端端点 w
+        // 如果这个对端端点w没有被标记过（也就是代表从源点s到w的最短路径我们还没有找到过的话），那么相应的我们就需要进行松弛的判断
+        if (!marked[w])
+        {
+          // 如果w没有被访问过的话 （from[w] == nullptr）那么不用说要进行松弛操作
+          // 或者如果w被访问过，那我们就需要比对一下经过v（也就是从源点s到v的距离distTo[v]）中转去访问w（也就是加上v到w的这条边的权值 e->wt() ）的路径权值是否小于直接访问w的权值 distTo[w],如果小于那么我们就需要进行松弛操作
+          if (from[w] == nullptr || distTo[v] + e->wt() < distTo[w]) {
+            // 在这个松弛操作里，首先我们需要将源点s到达w的最短路径更新为我们松弛出来的这条路径
+            distTo[w] = distTo[v] + e->wt();
+            // 其次我们需要更新节点w的form信息，它是从v这个节点通过e这条边过来的
+            from[w] = e;
+            // 之后我们要维护一下我们的最小索引堆
+            // 首先我们需要判断我们的最小索引堆中是否包含我们的w节点
+            if (ipq.contain(w)) {
+              // 如果包含，那么我们就使用change函数来更新节点v及其对应的data值（也就是最小距离权值）
+              ipq.change(w, distTo[w]);
+            } else {
+              // 否者的话，在我们的最小索引堆中还没有w节点信息，那么就使用insert函数添加
+              ipq.insert(w, distTo[w]);
+            }
+          }
+        }
+      }
+      // 通过这轮循环，我们就完成了节点v它所有邻边的松弛操作
+    }
+  }
+
+  ~Dijkstra() {
+    delete[] distTo;
+    delete[] marked;
+    delete from[s];
+  }
+
+  // 查询从源点s到节点w的最短路径权值
+  Weight sortestPathTo(int w) {
+    assert( w >= 0 && w < G.V() );
+    assert( hasPathTo(w) );
+    return distTo[w];
+  }
+
+  // 查询从源点s到节点w是否存在通路
+  bool hasPathTo(int w) {
+    assert( w >= 0 && w < G.V() );
+    return marked[w];
+  }
+
+  // 求从源点s到节点w的最短路径，并将最短路径保存到用户传进来的容器中
+  void sortestPath(int w, std::vector<Edge<Weight>> &vec) {
+
+    assert( w >= 0 && w < G.V() );
+    assert( hasPathTo(w) );
+    
+    std::stack<Edge<Weight> *> s;
+    Edge<Weight> *e = from[w]; // 将from中的数据（边）从w开始，以倒序的方式放进栈中
+    while (e->v() != this->s) {
+      s.push(e);
+      e = from[e->v()];
+    }
+
+    s.push(e);
+
+    // 将栈中的元素一个一个拿出来，放到用户传递进来的容器vec中，就得到了源点s到节点w的最短路径
+    while (!s.empty()) {
+      e = s.top();
+      vec.push_back(*e);
+      s.pop();
+    }
+  }
+
+  // 打印从源点s到w的最短路径
+  void showPath(int w) {
+    assert(w >= 0 && w < G.V());
+    assert( hasPathTo(w) );
+
+    std::vector<Edge<Weight>> vec;
+    sortestPath(w, vec);
+    for (auto iter = vec.begin(); iter != vec.end(); ++iter) {
+      std::cout << (*iter).v() << " -> ";
+      if (iter == vec.end() - 1) {
+        std::cout << (*iter).w() << std::endl;
+      }
+    }
+  }
+};
+
+```
+
+然后我们使用上面的图例来测试我们的Dijkstra算法。分别打印从源点0到图中其他点的最短路径和相应的最小权值
+
+测试代码
+
+```c++
+int main() {
+
+  string filename = "testG1.txt";
+  int V = 5;
+  // SparseGraph<int> g = SparseGraph<int>(V, true); // 创建一个节点数为5的有向图邻接表对象
+  SparseGraph<int> g = SparseGraph<int>(V, false); // 创建一个节点数为5的无向图邻接表对象
+  ReadGraph<SparseGraph<int>, int> readGraph(g, filename); // 将文件filename中的图读到g对象中
+
+  cout << "--------------------------------------------------------------------"
+          "------"
+       << endl;
+  cout << "测试 迪杰斯拉特(Dijkstra) 算法求图的最短单源路径" << endl;
+  Dijkstra<SparseGraph<int>, int> dij(g, 0); // 创建一个 dijkstra对象，传入图g和设置源点为节点0
+  for (int i = 0; i < V; i++) {
+    cout << "从源点 0 到 节点 " << i << " 的最短路径权值为："
+         << dij.sortestPathTo(i) << endl;
+    cout << "路径：";
+    dij.showPath(i);
+    cout << "......................................" << endl;
+  }
+
+  return 0;
+}
+```
+
+![](../img/impicture_20220302_112640.png)
+
+同样的，我们这个算法它对无向图来说，也是可以求出其单源最短路径
+
+![](../img/impicture_20220302_113032.png)
