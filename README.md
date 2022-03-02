@@ -5,4 +5,8 @@ c++算法与数据结构
 
 ![](./img/1526552-20190312193917730-754648225.png)
 
-https://replit.com/@invi1998/
+https://replit.com/@invi1998
+
+所学的这些算法涉及到的算法设计思想
+
+![](./img/impicture_20220302_180046.png)
