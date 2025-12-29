@@ -402,3 +402,391 @@ int main()
 0 0 0 0 0 0 
 0 0 0 0 0 0 
 ```
+
+
+
+
+
+# 数组去重
+
+在 C++ 中，有多种方法可以实现数组去重，选择哪种方法取决于你的需求（是否要保持顺序、是否需要原地操作等）。以下是各种方法的详细说明：
+
+## 一、使用 `std::unique` + `std::sort`（适合可排序类型）
+
+### 1. **排序后去重（不保持原顺序）**
+```cpp
+#include <algorithm>
+#include <vector>
+
+std::vector<int> removeDuplicates(std::vector<int>& nums) {
+    // 1. 先排序
+    std::sort(nums.begin(), nums.end());
+    
+    // 2. 使用 unique 将重复元素移到末尾，返回去重后的新结尾
+    auto new_end = std::unique(nums.begin(), nums.end());
+    
+    // 3. 删除重复元素
+    nums.erase(new_end, nums.end());
+    
+    return nums;
+}
+```
+
+### 2. **如果数组已排序**
+```cpp
+std::vector<int> removeDuplicatesFromSorted(std::vector<int>& nums) {
+    // 数组已排序的情况下，直接去重
+    nums.erase(std::unique(nums.begin(), nums.end()), nums.end());
+    return nums;
+}
+```
+
+## 二、使用哈希集合（保持原顺序）
+
+### 1. **使用 `std::unordered_set`（不保持顺序）**
+```cpp
+#include <unordered_set>
+#include <vector>
+
+std::vector<int> removeDuplicatesUnordered(std::vector<int>& nums) {
+    std::unordered_set<int> seen;
+    std::vector<int> result;
+    result.reserve(nums.size());
+    
+    for (int num : nums) {
+        if (seen.insert(num).second) {  // insert 返回 pair<iterator, bool>
+            result.push_back(num);
+        }
+    }
+    
+    return result;
+}
+```
+
+### 2. **使用 `std::set`（保持插入顺序的近似）**
+```cpp
+#include <set>
+#include <vector>
+
+std::vector<int> removeDuplicatesOrdered(std::vector<int>& nums) {
+    std::set<int> seen;
+    std::vector<int> result;
+    result.reserve(nums.size());
+    
+    for (int num : nums) {
+        if (seen.insert(num).second) {
+            result.push_back(num);
+        }
+    }
+    
+    return result;
+}
+```
+
+### 3. **使用哈希集合 + 双指针（原地修改）**
+```cpp
+#include <unordered_set>
+#include <vector>
+
+std::vector<int> removeDuplicatesInPlace(std::vector<int>& nums) {
+    std::unordered_set<int> seen;
+    int write_index = 0;
+    
+    for (int read_index = 0; read_index < nums.size(); ++read_index) {
+        if (seen.insert(nums[read_index]).second) {
+            nums[write_index++] = nums[read_index];
+        }
+    }
+    
+    nums.resize(write_index);
+    return nums;
+}
+```
+
+## 三、针对特定场景的优化方法
+
+### 1. **元素范围有限（如 0-1000）**
+```cpp
+#include <vector>
+#include <bitset>
+
+std::vector<int> removeDuplicatesLimitedRange(const std::vector<int>& nums, int max_value = 1000) {
+    std::bitset<1001> seen;  // 假设最大值为1000
+    std::vector<int> result;
+    result.reserve(nums.size());
+    
+    for (int num : nums) {
+        if (num >= 0 && num <= max_value && !seen.test(num)) {
+            seen.set(num);
+            result.push_back(num);
+        }
+    }
+    
+    return result;
+}
+```
+
+### 2. **使用布尔数组代替哈希集合（更快）**
+```cpp
+#include <vector>
+
+std::vector<int> removeDuplicatesBoolArray(const std::vector<int>& nums, int max_value) {
+    std::vector<bool> seen(max_value + 1, false);
+    std::vector<int> result;
+    result.reserve(nums.size());
+    
+    for (int num : nums) {
+        if (num >= 0 && num <= max_value && !seen[num]) {
+            seen[num] = true;
+            result.push_back(num);
+        }
+    }
+    
+    return result;
+}
+```
+
+## 四、通用模板函数
+
+### 1. **模板函数（支持任何容器）**
+```cpp
+#include <algorithm>
+#include <unordered_set>
+#include <vector>
+
+template<typename T>
+std::vector<T> removeDuplicates(const std::vector<T>& vec, bool keep_order = true) {
+    if (!keep_order) {
+        // 排序去重法
+        std::vector<T> result = vec;
+        std::sort(result.begin(), result.end());
+        result.erase(std::unique(result.begin(), result.end()), result.end());
+        return result;
+    } else {
+        // 哈希集合法（保持顺序）
+        std::unordered_set<T> seen;
+        std::vector<T> result;
+        result.reserve(vec.size());
+        
+        for (const T& elem : vec) {
+            if (seen.insert(elem).second) {
+                result.push_back(elem);
+            }
+        }
+        
+        return result;
+    }
+}
+
+// 使用示例
+std::vector<int> vec = {3, 1, 2, 3, 4, 2, 1};
+auto result1 = removeDuplicates(vec, true);    // 保持顺序：3, 1, 2, 4
+auto result2 = removeDuplicates(vec, false);   // 排序去重：1, 2, 3, 4
+```
+
+### 2. **原地去重模板**
+```cpp
+template<typename T>
+void removeDuplicatesInPlace(std::vector<T>& vec, bool keep_order = true) {
+    if (!keep_order) {
+        std::sort(vec.begin(), vec.end());
+        vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
+    } else {
+        std::unordered_set<T> seen;
+        size_t write_index = 0;
+        
+        for (size_t read_index = 0; read_index < vec.size(); ++read_index) {
+            if (seen.insert(vec[read_index]).second) {
+                vec[write_index++] = vec[read_index];
+            }
+        }
+        
+        vec.resize(write_index);
+    }
+}
+```
+
+## 五、C++20 的简化写法
+
+### 使用 `std::ranges`（C++20）
+```cpp
+#include <algorithm>
+#include <ranges>
+#include <vector>
+
+std::vector<int> removeDuplicatesRanges(std::vector<int>& nums) {
+    // 排序去重
+    std::ranges::sort(nums);
+    auto [new_end, _] = std::ranges::unique(nums);
+    nums.erase(new_end, nums.end());
+    return nums;
+}
+```
+
+## 六、性能对比和选择建议
+
+| 方法              | 时间复杂度 | 空间复杂度     | 是否保持顺序 | 适用场景                   |
+| ----------------- | ---------- | -------------- | ------------ | -------------------------- |
+| **排序+unique**   | O(n log n) | O(1) 原地      | 否           | 不需要保持顺序，可排序类型 |
+| **unordered_set** | O(n)       | O(n)           | 是           | 需要保持顺序，任意类型     |
+| **set**           | O(n log n) | O(n)           | 是           | 需要保持顺序且自动排序     |
+| **布尔数组**      | O(n)       | O(max_value)   | 是           | 整数且范围有限             |
+| **bitset**        | O(n)       | O(max_value/8) | 是           | 整数且范围有限，内存敏感   |
+
+## 七、实际应用示例
+
+### 示例1：快速去重（不关心顺序）
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> nums = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5};
+    
+    // 方法1：排序去重（最快，不保持顺序）
+    std::sort(nums.begin(), nums.end());
+    auto last = std::unique(nums.begin(), nums.end());
+    nums.erase(last, nums.end());
+    
+    for (int n : nums) std::cout << n << " ";  // 1 2 3 4 5 6 9
+    std::cout << std::endl;
+    
+    return 0;
+}
+```
+
+### 示例2：保持顺序去重
+```cpp
+#include <iostream>
+#include <vector>
+#include <unordered_set>
+
+int main() {
+    std::vector<int> nums = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5};
+    
+    // 方法2：哈希集合（保持顺序）
+    std::unordered_set<int> seen;
+    std::vector<int> result;
+    
+    for (int num : nums) {
+        if (seen.find(num) == seen.end()) {
+            seen.insert(num);
+            result.push_back(num);
+        }
+    }
+    
+    for (int n : result) std::cout << n << " ";  // 3 1 4 5 9 2 6
+    std::cout << std::endl;
+    
+    return 0;
+}
+```
+
+### 示例3：C++17 结构化绑定简化
+```cpp
+#include <iostream>
+#include <vector>
+#include <unordered_set>
+
+int main() {
+    std::vector<int> nums = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5};
+    std::unordered_set<int> seen;
+    std::vector<int> result;
+    
+    for (int num : nums) {
+        auto [_, inserted] = seen.insert(num);  // C++17
+        if (inserted) {
+            result.push_back(num);
+        }
+    }
+    
+    for (int n : result) std::cout << n << " ";
+    std::cout << std::endl;
+    
+    return 0;
+}
+```
+
+## 八、推荐的最佳实践
+
+### 1. **如果需要保持原顺序**
+```cpp
+std::vector<int> removeDuplicatesKeepOrder(const std::vector<int>& nums) {
+    std::unordered_set<int> seen;
+    std::vector<int> result;
+    result.reserve(nums.size());  // 预分配空间，提高性能
+    
+    for (int num : nums) {
+        if (seen.insert(num).second) {
+            result.push_back(num);
+        }
+    }
+    
+    return result;
+}
+```
+
+### 2. **如果不需要保持顺序（追求性能）**
+```cpp
+std::vector<int> removeDuplicatesFast(std::vector<int>& nums) {
+    // 原地去重，不保持顺序
+    std::sort(nums.begin(), nums.end());
+    nums.erase(std::unique(nums.begin(), nums.end()), nums.end());
+    return nums;
+}
+```
+
+### 3. **如果数组已排序**
+```cpp
+std::vector<int> removeDuplicatesFromSorted(std::vector<int>& nums) {
+    // 假设 nums 已排序
+    nums.erase(std::unique(nums.begin(), nums.end()), nums.end());
+    return nums;
+}
+```
+
+## 九、注意事项
+
+1. **`std::unique` 只移除连续的重复元素**，所以必须先排序
+2. **哈希集合方法会保持元素插入的顺序**
+3. **如果元素类型没有定义哈希函数**，需要自定义哈希函数或使用 `std::set`
+4. **对于自定义类型**，需要重载 `<` 运算符（用于排序）或 `==` 运算符（用于 `std::unique`）
+
+### 自定义类型的去重示例：
+```cpp
+struct Point {
+    int x, y;
+    
+    // 用于 unordered_set 需要定义相等和哈希
+    bool operator==(const Point& other) const {
+        return x == other.x && y == other.y;
+    }
+};
+
+// 自定义哈希函数
+struct PointHash {
+    size_t operator()(const Point& p) const {
+        return std::hash<int>()(p.x) ^ (std::hash<int>()(p.y) << 1);
+    }
+};
+
+// 使用 unordered_set 去重自定义类型
+std::vector<Point> removeDuplicates(const std::vector<Point>& points) {
+    std::unordered_set<Point, PointHash> seen;
+    std::vector<Point> result;
+    
+    for (const auto& p : points) {
+        if (seen.insert(p).second) {
+            result.push_back(p);
+        }
+    }
+    
+    return result;
+}
+```
+
+根据你的具体需求选择合适的去重方法。一般来说：
+- 如果需要保持顺序，用哈希集合
+- 如果不需要保持顺序且可排序，用排序+unique
+- 如果元素范围有限，用布尔数组或bitset
