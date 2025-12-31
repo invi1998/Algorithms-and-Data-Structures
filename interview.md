@@ -7296,3 +7296,222 @@ private:
 };
 ```
 
+
+
+
+
+
+
+## [105. 从前序与中序遍历序列构造二叉树](https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
+
+
+
+给定两个整数数组 `preorder` 和 `inorder` ，其中 `preorder` 是二叉树的**先序遍历**， `inorder` 是同一棵树的**中序遍历**，请构造二叉树并返回其根节点。
+
+ 
+
+**示例 1:**
+
+![img](https://assets.leetcode.com/uploads/2021/02/19/tree.jpg)
+
+```
+输入: preorder = [3,9,20,15,7], inorder = [9,3,15,20,7]
+输出: [3,9,20,null,null,15,7]
+```
+
+**示例 2:**
+
+```
+输入: preorder = [-1], inorder = [-1]
+输出: [-1]
+```
+
+ 
+
+**提示:**
+
+- `1 <= preorder.length <= 3000`
+- `inorder.length == preorder.length`
+- `-3000 <= preorder[i], inorder[i] <= 3000`
+- `preorder` 和 `inorder` 均 **无重复** 元素
+- `inorder` 均出现在 `preorder`
+- `preorder` **保证** 为二叉树的前序遍历序列
+- `inorder` **保证** 为二叉树的中序遍历序列
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
+        // 前序遍历的第一个数是当前子树的根节点
+        // 在中序遍历中找到这个根节点，根节点的左边部分就是左子树的中序遍历，右部分就是右子树的中序遍历
+        // 根据左子树中序遍历的长度，我们可以在前序遍历总确定左子树的前序遍历和右子树的前序遍历
+        // 递归的构造左右子树
+
+        // if (preorder.empty() || inorder.empty()) return nullptr;
+
+        // int currentRootVal = preorder[0];
+        // // 当前树的根节点
+        // TreeNode* root = new TreeNode(currentRootVal);
+        // // 取出值后，将该节点从数组中删除
+        // preorder.erase(preorder.begin());
+        // // 从中序遍历中找到该值所在位置
+        // vector<int>::iterator itInorder = find(inorder.begin(), inorder.end(), currentRootVal);
+        // // 在该位置左边的都是当前根节点的左子树节点
+        // // 然后取出中序遍历里的当前节点左侧的子数组作为左子树的遍历数组
+        // vector<int> leftValArray;
+        // leftValArray.assign(inorder.begin(), itInorder);
+        // root->left = buildTree(preorder, leftValArray);
+        // // 左子树构建完后，开始构建右子树
+        // vector<int> rightValArray;
+        // rightValArray.assign(itInorder + 1, inorder.end());
+        // root->right = buildTree(preorder, rightValArray);
+
+        // return root;
+
+        // 建立中序遍历值到索引的映射
+        for (int i = 0; i < inorder.size(); i++) {
+            indexMap[inorder[i]] = i;
+        }
+        return helperFunc(preorder, 0, preorder.size()-1, inorder, 0, inorder.size()-1);
+
+    }
+
+
+private:
+    // 上述方法总的来说没有问题，只是每次都要创建新的子数组，这一步很耗时，可以优化一下
+    TreeNode* helperFunc(vector<int>& preorder, int preStart, int preEnd,
+                        vector<int>& inorder, int inStart, int inEnd)
+    {
+        if (preStart > preEnd || inStart > inEnd)
+        {
+            return nullptr;
+        }
+
+        // 从前序遍历中获取根节点
+        TreeNode* root = new TreeNode(preorder[preStart]);
+
+        // 然后在中序遍历中找到根节点位置
+        int rootIdx = indexMap[preorder[preStart]];
+
+        // 计算左子树节点个数
+        int leftSize = rootIdx - inStart;
+
+        // 递归构建左右子树
+        // 左子树：前序[preStart+1, preStart+leftSize]，中序[inStart, rootIdx-1]
+        root->left = helperFunc(preorder, preStart + 1, preStart + leftSize, inorder, inStart, rootIdx - 1);
+        // 右子树：前序[preStart+leftSize+1, preEnd]，中序[rootIdx+1, inEnd]
+        root->right = helperFunc(preorder, preStart+leftSize+1, preEnd, inorder, rootIdx+1, inEnd);
+
+        // 返回构建好的子树
+        return root;
+    }
+
+    unordered_map<int, int> indexMap;
+
+
+};
+```
+
+
+
+
+
+## [106. 从中序与后序遍历序列构造二叉树](https://leetcode.cn/problems/construct-binary-tree-from-inorder-and-postorder-traversal/)
+
+
+
+给定两个整数数组 `inorder` 和 `postorder` ，其中 `inorder` 是二叉树的中序遍历， `postorder` 是同一棵树的后序遍历，请你构造并返回这颗 *二叉树* 。
+
+ 
+
+**示例 1:**
+
+![img](https://assets.leetcode.com/uploads/2021/02/19/tree.jpg)
+
+```
+输入：inorder = [9,3,15,20,7], postorder = [9,15,7,20,3]
+输出：[3,9,20,null,null,15,7]
+```
+
+**示例 2:**
+
+```
+输入：inorder = [-1], postorder = [-1]
+输出：[-1]
+```
+
+ 
+
+**提示:**
+
+- `1 <= inorder.length <= 3000`
+- `postorder.length == inorder.length`
+- `-3000 <= inorder[i], postorder[i] <= 3000`
+- `inorder` 和 `postorder` 都由 **不同** 的值组成
+- `postorder` 中每一个值都在 `inorder` 中
+- `inorder` **保证**是树的中序遍历
+- `postorder` **保证**是树的后序遍历
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* buildTree(vector<int>& inorder, vector<int>& postorder) {
+        // 和先序遍历版本的构造思路想同，只不过，对于后续遍历，二叉树的根节点一定在数组的最末尾
+        for (int i = 0; i < inorder.size(); i++) {
+            indexMap[inorder[i]] = i;
+        }
+        return helper(inorder, 0, inorder.size()-1, postorder, 0, postorder.size()-1);
+    }
+
+
+private:
+    unordered_map<int, int> indexMap;
+    TreeNode* helper(vector<int>& inorder, int inStart, int inEnd,
+                    vector<int>& postorder, int postStart, int postEnd)
+    {
+        if (inStart > inEnd || postStart > postEnd) return nullptr;
+
+        // 从后续遍历的尾部获取当前子树的根节点
+        TreeNode* root = new TreeNode(postorder[postEnd]);
+        // 然后在中序遍历中找到根节点位置
+        int rootIndex = indexMap[postorder[postEnd]];
+
+        // 计算左子树节点个数
+        int leftSize = rootIndex - inStart;
+        // 递归构建左右子树
+        // 左子树：中序[inStart, rootIndex-1]，后序[postStart, postStart+leftSize-1]
+        root->left = helper(inorder, inStart, rootIndex - 1, postorder, postStart, postStart+leftSize-1);
+        // 右子树：中序[rootIndex+1, inEnd]，后序[postStart+leftSize, postEnd-1]
+        root->right = helper(inorder, rootIndex+1, inEnd, postorder, postStart+leftSize, postEnd-1);
+
+        // 返回构建好的子树
+        return root;
+
+    }
+
+
+};
+```
+
