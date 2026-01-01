@@ -7951,3 +7951,577 @@ public:
 };
 ```
 
+
+
+
+
+
+
+## [124. 二叉树中的最大路径和](https://leetcode.cn/problems/binary-tree-maximum-path-sum/)
+
+
+
+二叉树中的 **路径** 被定义为一条节点序列，序列中每对相邻节点之间都存在一条边。同一个节点在一条路径序列中 **至多出现一次** 。该路径 **至少包含一个** 节点，且不一定经过根节点。
+
+**路径和** 是路径中各节点值的总和。
+
+给你一个二叉树的根节点 `root` ，返回其 **最大路径和** 。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/10/13/exx1.jpg)
+
+```
+输入：root = [1,2,3]
+输出：6
+解释：最优路径是 2 -> 1 -> 3 ，路径和为 2 + 1 + 3 = 6
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2020/10/13/exx2.jpg)
+
+```
+输入：root = [-10,9,20,null,null,15,7]
+输出：42
+解释：最优路径是 15 -> 20 -> 7 ，路径和为 15 + 20 + 7 = 42
+```
+
+ 
+
+**提示：**
+
+- 树中节点数目范围是 `[1, 3 * 104]`
+- `-1000 <= Node.val <= 1000`
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    int maxPathSum(TreeNode* root) {
+        maxSum = INT_MIN;
+        dfs(root);
+        return maxSum;
+    }
+
+private:
+    int maxSum = 0;
+
+    // 使用递归。对于每个节点，我们计算以该节点为“根”的路径的最大和（即从该节点出发向下延伸的路径）。同时，在递归过程中，我们更新全局最大路径和。
+    // 虽然是这么说，但是这是该算法的直观解法，实际我们并不能真的从每个节点为跟作为新的树进行遍历了，因为要这样做，我们就得基于此构建一颗新树
+    // 对于每个节点，我们计算以该节点为“根”的路径的最大和，即节点值加上左子树的最大路径和（如果左子树的最大路径和大于0）加上右子树的最大路径和（如果右子树的最大路径和大于0）。
+    // 注意：这里左子树的最大路径和是指从该节点左孩子出发向下延伸的路径（不能同时走左右两边，因为这样就不是一条路径了）。但是，当我们计算以该节点为“根”的路径时，我们可以同时走左右两边，因为从该节点出发，向左走一段再向右走一段，仍然是一条路径（相当于以该节点为转折点）
+    // 然而，在递归返回时，我们只能返回从该节点出发向下的单边路径的最大和（即只能选择左或右的一边），因为要供上层节点使用（上层节点需要的是从它出发向下的一条路径）
+    
+    int dfs(TreeNode* node)
+    {
+        if (!node) return 0;
+
+        // 计算左右子树的贡献值（复值则取0）
+        int left_gain = max(dfs(node->left), 0);
+        int right_gain = max(dfs(node->right), 0);
+
+        // 当前节点为转折点的路径和
+        int current_path_sum = node->val + left_gain + right_gain;
+
+        // 更新全局最大值
+        maxSum = max(maxSum, current_path_sum);
+
+        // 返回当前节点的最大贡献值
+        return node->val + max(left_gain, right_gain); 
+
+    }
+
+
+
+
+};
+```
+
+
+
+
+
+## [173. 二叉搜索树迭代器](https://leetcode.cn/problems/binary-search-tree-iterator/)
+
+
+
+实现一个二叉搜索树迭代器类`BSTIterator` ，表示一个按中序遍历二叉搜索树（BST）的迭代器：
+
+- `BSTIterator(TreeNode root)` 初始化 `BSTIterator` 类的一个对象。BST 的根节点 `root` 会作为构造函数的一部分给出。指针应初始化为一个不存在于 BST 中的数字，且该数字小于 BST 中的任何元素。
+- `boolean hasNext()` 如果向指针右侧遍历存在数字，则返回 `true` ；否则返回 `false` 。
+- `int next()`将指针向右移动，然后返回指针处的数字。
+
+注意，指针初始化为一个不存在于 BST 中的数字，所以对 `next()` 的首次调用将返回 BST 中的最小元素。
+
+你可以假设 `next()` 调用总是有效的，也就是说，当调用 `next()` 时，BST 的中序遍历中至少存在一个下一个数字。
+
+ 
+
+**示例：**
+
+![img](https://assets.leetcode.com/uploads/2018/12/25/bst-tree.png)
+
+```
+输入
+["BSTIterator", "next", "next", "hasNext", "next", "hasNext", "next", "hasNext", "next", "hasNext"]
+[[[7, 3, 15, null, null, 9, 20]], [], [], [], [], [], [], [], [], []]
+输出
+[null, 3, 7, true, 9, true, 15, true, 20, false]
+
+解释
+BSTIterator bSTIterator = new BSTIterator([7, 3, 15, null, null, 9, 20]);
+bSTIterator.next();    // 返回 3
+bSTIterator.next();    // 返回 7
+bSTIterator.hasNext(); // 返回 True
+bSTIterator.next();    // 返回 9
+bSTIterator.hasNext(); // 返回 True
+bSTIterator.next();    // 返回 15
+bSTIterator.hasNext(); // 返回 True
+bSTIterator.next();    // 返回 20
+bSTIterator.hasNext(); // 返回 False
+```
+
+ 
+
+**提示：**
+
+- 树中节点的数目在范围 `[1, 105]` 内
+- `0 <= Node.val <= 106`
+- 最多调用 `105` 次 `hasNext` 和 `next` 操作
+
+ 
+
+**进阶：**
+
+- 你可以设计一个满足下述条件的解决方案吗？`next()` 和 `hasNext()` 操作均摊时间复杂度为 `O(1)` ，并使用 `O(h)` 内存。其中 `h` 是树的高度。
+
+```c++
+// /**
+//  * Definition for a binary tree node.
+//  * struct TreeNode {
+//  *     int val;
+//  *     TreeNode *left;
+//  *     TreeNode *right;
+//  *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+//  *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+//  *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+//  * };
+//  */
+//  #include <coroutine>
+
+// class BSTIterator {
+// public:
+// private:
+//     // 协程生成器类型
+//     struct Generator {
+//         struct promise_type {
+//             int current_value;
+            
+//             Generator get_return_object() {
+//                 return Generator{std::coroutine_handle<promise_type>::from_promise(*this)};
+//             }
+//             std::suspend_always initial_suspend() { return {}; }
+//             std::suspend_always final_suspend() noexcept { return {}; }
+//             void unhandled_exception() { std::terminate(); }
+            
+//             std::suspend_always yield_value(int value) {
+//                 current_value = value;
+//                 return {};
+//             }
+//             void return_void() {}
+//         };
+        
+//         std::coroutine_handle<promise_type> handle;
+        
+//         explicit Generator(std::coroutine_handle<promise_type> h) : handle(h) {}
+//         ~Generator() { if (handle) handle.destroy(); }
+        
+//         Generator(const Generator&) = delete;
+//         Generator& operator=(const Generator&) = delete;
+//         Generator(Generator&& other) noexcept : handle(other.handle) {
+//             other.handle = nullptr;
+//         }
+//         Generator& operator=(Generator&& other) noexcept {
+//             if (this != &other) {
+//                 if (handle) handle.destroy();
+//                 handle = other.handle;
+//                 other.handle = nullptr;
+//             }
+//             return *this;
+//         }
+        
+//         bool move_next() {
+//             if (handle && !handle.done()) {
+//                 handle.resume();
+//                 return !handle.done();
+//             }
+//             return false;
+//         }
+        
+//         int current_value() const {
+//             return handle.promise().current_value;
+//         }
+        
+//         bool done() const {
+//             return !handle || handle.done();
+//         }
+//     };
+    
+//     Generator generator;
+    
+//     // 中序遍历协程
+//     static Generator inorder_traversal(TreeNode* root) {
+//         std::stack<TreeNode*> stack;
+//         TreeNode* current = root;
+        
+//         while (current || !stack.empty()) {
+//             while (current) {
+//                 stack.push(current);
+//                 current = current->left;
+//             }
+            
+//             current = stack.top();
+//             stack.pop();
+            
+//             co_yield current->val;  // 在这里暂停，等待下一次调用
+            
+//             current = current->right;
+//         }
+//     }
+    
+// public:
+//     BSTIterator(TreeNode* root) : generator(inorder_traversal(root)) {
+//         // 初始化时先让协程运行到第一个yield
+//         if (root) generator.move_next();
+//     }
+    
+//     // 获取下一个值
+//     int next() {
+//         if (generator.done()) {
+//             throw std::out_of_range("No more elements");
+//         }
+        
+//         int value = generator.current_value();
+//         generator.move_next();
+//         return value;
+//     }
+    
+//     // 检查是否还有下一个元素
+//     bool hasNext() const {
+//         return !generator.done();
+//     }
+    
+//     // 重置迭代器
+//     void reset(TreeNode* root) {
+//         if (generator.handle) {
+//             generator.handle.destroy();
+//         }
+//         generator = inorder_traversal(root);
+//         if (root) generator.move_next();
+//     }
+// };
+
+// /**
+//  * Your BSTIterator object will be instantiated and called as such:
+//  * BSTIterator* obj = new BSTIterator(root);
+//  * int param_1 = obj->next();
+//  * bool param_2 = obj->hasNext();
+//  */
+
+
+class BSTIterator {
+private:
+    std::stack<TreeNode*> st;
+    
+    // 将节点的所有左子节点压入栈
+    void pushAllLeft(TreeNode* node) {
+        while (node)
+        {
+            st.push(node);
+            node = node->left;
+        }
+    }
+    
+public:
+    BSTIterator(TreeNode* root) {
+        pushAllLeft(root);
+    }
+    
+    /** @return the next smallest number */
+    int next() {
+        TreeNode* topNode = st.top();
+        st.pop();
+        // 如果当前节点有右子树
+        if (topNode->right)
+        {
+            pushAllLeft(topNode->right);
+        }
+        return topNode->val;
+    }
+    
+    /** @return whether we have a next smallest number */
+    bool hasNext() {
+        return !st.empty();
+    }
+};
+```
+
+
+
+
+
+## [222. 完全二叉树的节点个数](https://leetcode.cn/problems/count-complete-tree-nodes/)
+
+
+
+给你一棵 **完全二叉树** 的根节点 `root` ，求出该树的节点个数。
+
+[完全二叉树](https://baike.baidu.com/item/完全二叉树/7773232?fr=aladdin) 的定义如下：在完全二叉树中，除了最底层节点可能没填满外，其余每层节点数都达到最大值，并且最下面一层的节点都集中在该层最左边的若干位置。若最底层为第 `h` 层（从第 0 层开始），则该层包含 `1~ 2h` 个节点。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/01/14/complete.jpg)
+
+```
+输入：root = [1,2,3,4,5,6]
+输出：6
+```
+
+**示例 2：**
+
+```
+输入：root = []
+输出：0
+```
+
+**示例 3：**
+
+```
+输入：root = [1]
+输出：1
+```
+
+ 
+
+**提示：**
+
+- 树中节点的数目范围是`[0, 5 * 104]`
+- `0 <= Node.val <= 5 * 104`
+- 题目数据保证输入的树是 **完全二叉树**
+
+ 
+
+**进阶：**遍历树来统计节点是一种时间复杂度为 `O(n)` 的简单解决方案。你可以设计一个更快的算法吗？
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    int countNodes(TreeNode* root) {
+        int count = 0;
+        std::function<void(TreeNode*)> factorial = [&](TreeNode* node)->void
+        {
+            if (!node) return;
+            count++;
+            factorial(node->left);
+            factorial(node->right);
+        };
+
+        factorial(root);
+        return count;
+
+    }
+
+};
+```
+
+
+
+
+
+## [236. 二叉树的最近公共祖先](https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-tree/)
+
+
+
+给定一个二叉树, 找到该树中两个指定节点的最近公共祖先。
+
+[百度百科](https://baike.baidu.com/item/最近公共祖先/8918834?fr=aladdin)中最近公共祖先的定义为：“对于有根树 T 的两个节点 p、q，最近公共祖先表示为一个节点 x，满足 x 是 p、q 的祖先且 x 的深度尽可能大（**一个节点也可以是它自己的祖先**）。”
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2018/12/14/binarytree.png)
+
+```
+输入：root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 1
+输出：3
+解释：节点 5 和节点 1 的最近公共祖先是节点 3 。
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2018/12/14/binarytree.png)
+
+```
+输入：root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 4
+输出：5
+解释：节点 5 和节点 4 的最近公共祖先是节点 5 。因为根据定义最近公共祖先节点可以为节点本身。
+```
+
+**示例 3：**
+
+```
+输入：root = [1,2], p = 1, q = 2
+输出：1
+```
+
+ 
+
+**提示：**
+
+- 树中节点数目在范围 `[2, 105]` 内。
+- `-109 <= Node.val <= 109`
+- 所有 `Node.val` `互不相同` 。
+- `p != q`
+- `p` 和 `q` 均存在于给定的二叉树中。
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        if (!root || p == root || q == root) return root;
+        
+        TreeNode* left = lowestCommonAncestor(root->left, p, q);
+        TreeNode* right = lowestCommonAncestor(root->right, p, q);
+
+        if (left && right) return root;
+        
+        return left ? left : right;
+    }
+};
+```
+
+
+
+
+
+## [199. 二叉树的右视图](https://leetcode.cn/problems/binary-tree-right-side-view/)
+
+给定一个二叉树的 **根节点** `root`，想象自己站在它的右侧，按照从顶部到底部的顺序，返回从右侧所能看到的节点值。
+
+ 
+
+**示例 1：**
+
+**输入：**root = [1,2,3,null,5,null,4]
+
+**输出：**[1,3,4]
+
+**解释：**
+
+![img](https://assets.leetcode.com/uploads/2024/11/24/tmpd5jn43fs-1.png)
+
+**示例 2：**
+
+**输入：**root = [1,2,3,4,null,null,null,5]
+
+**输出：**[1,3,4,5]
+
+**解释：**
+
+![img](https://assets.leetcode.com/uploads/2024/11/24/tmpkpe40xeh-1.png)
+
+**示例 3：**
+
+**输入：**root = [1,null,3]
+
+**输出：**[1,3]
+
+**示例 4：**
+
+**输入：**root = []
+
+**输出：**[]
+
+ 
+
+**提示:**
+
+- 二叉树的节点个数的范围是 `[0,100]`
+- `-100 <= Node.val <= 100` 
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    vector<int> rightSideView(TreeNode* root) {
+        if (!root) return {};
+        queue<TreeNode*> q;
+        q.push(root);
+
+        vector<int> result;
+        while (!q.empty())
+        {
+            int n = q.size();
+            int value = 0;
+            while (n--)
+            {
+                TreeNode* node = q.front();
+                value = node->val;
+                q.pop();
+                if (node->left) q.push(node->left);
+                if (node->right) q.push(node->right);
+            }
+            result.push_back(value);
+        }
+
+        return result;
+    }
+};
+```
+
