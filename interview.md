@@ -7515,3 +7515,439 @@ private:
 };
 ```
 
+
+
+
+
+## [117. 填充每个节点的下一个右侧节点指针 II](https://leetcode.cn/problems/populating-next-right-pointers-in-each-node-ii/)
+
+
+
+给定一个二叉树：
+
+```
+struct Node {
+  int val;
+  Node *left;
+  Node *right;
+  Node *next;
+}
+```
+
+填充它的每个 next 指针，让这个指针指向其下一个右侧节点。如果找不到下一个右侧节点，则将 next 指针设置为 `NULL` 。
+
+初始状态下，所有 next 指针都被设置为 `NULL` 。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2019/02/15/117_sample.png)
+
+```
+输入：root = [1,2,3,4,5,null,7]
+输出：[1,#,2,3,#,4,5,7,#]
+解释：给定二叉树如图 A 所示，你的函数应该填充它的每个 next 指针，以指向其下一个右侧节点，如图 B 所示。序列化输出按层序遍历顺序（由 next 指针连接），'#' 表示每层的末尾。
+```
+
+**示例 2：**
+
+```
+输入：root = []
+输出：[]
+```
+
+ 
+
+**提示：**
+
+- 树中的节点数在范围 `[0, 6000]` 内
+- `-100 <= Node.val <= 100`
+
+**进阶：**
+
+- 你只能使用常量级额外空间。
+- 使用递归解题也符合要求，本题中递归程序的隐式栈空间不计入额外空间复杂度。
+
+```c++
+/*
+// Definition for a Node.
+class Node {
+public:
+    int val;
+    Node* left;
+    Node* right;
+    Node* next;
+
+    Node() : val(0), left(NULL), right(NULL), next(NULL) {}
+
+    Node(int _val) : val(_val), left(NULL), right(NULL), next(NULL) {}
+
+    Node(int _val, Node* _left, Node* _right, Node* _next)
+        : val(_val), left(_left), right(_right), next(_next) {}
+};
+*/
+
+class Solution {
+public:
+    Node* connect(Node* root) {
+        // if (!root) return root;
+
+        // std::queue<Node*> q;
+        // q.push(root);
+        // while (!q.empty())
+        // {
+        //     // 使用层序遍历（广度优先搜索），每次都完整遍历当前层级里的所有节点
+        //     int levelNodeNums = q.size();
+        //     Node* preNode = nullptr;
+        //     while (levelNodeNums)
+        //     {
+        //         Node* current = q.front();
+        //         q.pop();
+        //         if (preNode)
+        //         {
+        //             preNode->next = current;
+        //         }
+        //         preNode = current;
+        //         levelNodeNums--;
+
+        //         // 将当前节点的子节点添加到队列末尾
+        //         if (current->left) q.push(current->left);
+        //         if (current->right) q.push(current->right);
+        //     }
+            
+        // }
+
+        // return root;
+
+        // 上述实现方式使用广度优先搜索，需要使用O(W)的额外空间（w是该树的最大宽度）
+        // 如果需要在常数级别的额外空间实现该算法，可以考虑使用已经建立的next指针
+        if (!root) return root;
+
+        Node* leftMost = root;
+
+        while (leftMost)
+        {
+            Node* current = leftMost;
+            Node* prev = nullptr;
+            Node* nextLeftMost = nullptr;
+
+            // 遍历当前层，建立下一层的链接
+            while (current)
+            {
+                // 处理左子节点
+                if (current->left)
+                {
+                    if (prev)
+                    {
+                        prev->next = current->left;
+                    }
+                    else
+                    {
+                        nextLeftMost = current->left;
+                    }
+                    prev = current->left;
+                }
+
+                // 处理右子节点
+                if (current->right)
+                {
+                    if (prev)
+                    {
+                        prev->next = current->right;
+                    }
+                    else
+                    {
+                        nextLeftMost = current->right;
+                    }
+                    prev = current->right;
+                }
+
+                current = current->next;        // 移动到当前层级的下一个节点
+            }
+
+            // 当前层遍历完毕，移动到下一层
+            leftMost = nextLeftMost;
+            
+        }
+
+        return root;
+
+
+    }
+};
+```
+
+
+
+
+
+
+
+
+
+## [114. 二叉树展开为链表](https://leetcode.cn/problems/flatten-binary-tree-to-linked-list/)
+
+
+
+给你二叉树的根结点 `root` ，请你将它展开为一个单链表：
+
+- 展开后的单链表应该同样使用 `TreeNode` ，其中 `right` 子指针指向链表中下一个结点，而左子指针始终为 `null` 。
+- 展开后的单链表应该与二叉树 [**先序遍历**](https://baike.baidu.com/item/先序遍历/6442839?fr=aladdin) 顺序相同。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/01/14/flaten.jpg)
+
+```
+输入：root = [1,2,5,3,4,null,6]
+输出：[1,null,2,null,3,null,4,null,5,null,6]
+```
+
+**示例 2：**
+
+```
+输入：root = []
+输出：[]
+```
+
+**示例 3：**
+
+```
+输入：root = [0]
+输出：[0]
+```
+
+ 
+
+**提示：**
+
+- 树中结点数在范围 `[0, 2000]` 内
+- `-100 <= Node.val <= 100`
+
+ 
+
+**进阶：**你可以使用原地算法（`O(1)` 额外空间）展开这棵树吗？
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    void flatten(TreeNode* root) {
+        // 对于当前节点，如果左子树不为空，那么我们需要将其插入到当前节点和右子树之间
+        // 找到当前节点左子树的最右节点（即左子树中最后一个被访问的节点，也就是左子树中值最大的节点）
+        // 但是这里不是BST，只是按照前序遍历的顺序，左子树的最右节点在访问时是左子树的最后一个节点
+        // 将当前节点的右子树接到左子树的最右节点上
+        // 将当前节点的左子树放到当前节点的右子树位置，将左子树置空
+        // 重复上述过程，直到节点为空
+        TreeNode* current = root;
+        while (current)
+        {
+            if (current->left)
+            {
+                // 找到最右节点
+                TreeNode* pre = current->left;
+                while (pre->right)
+                {
+                    pre = pre->right;
+                }
+                // 将当前节点的右子树拼接到左子树最右节点处
+                pre->right = current->right;
+                // 将左子树移动到右子树位置
+                current->right = current->left;
+                current->left = nullptr;
+            }
+            // 处理下一个节点
+            current = current->right;
+        }
+
+        // // 递归版本
+        // if (!root) return;
+        // // 先处理右子树，在处理左子树(类似后序遍历，)
+        // flatten(root->right);
+        // flatten(root->left);
+
+        // // 将前一个拼接到当前节点节点的右侧
+        // root->right = prev;
+        // root->left = nullptr;
+        // prev = root;
+    }
+
+private:
+    TreeNode* prev = nullptr;
+
+};
+```
+
+
+
+
+
+## [112. 路径总和](https://leetcode.cn/problems/path-sum/)
+
+给你二叉树的根节点 `root` 和一个表示目标和的整数 `targetSum` 。判断该树中是否存在 **根节点到叶子节点** 的路径，这条路径上所有节点值相加等于目标和 `targetSum` 。如果存在，返回 `true` ；否则，返回 `false` 。
+
+**叶子节点** 是指没有子节点的节点。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/01/18/pathsum1.jpg)
+
+```
+输入：root = [5,4,8,11,null,13,4,7,2,null,null,null,1], targetSum = 22
+输出：true
+解释：等于目标和的根节点到叶节点路径如上图所示。
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2021/01/18/pathsum2.jpg)
+
+```
+输入：root = [1,2,3], targetSum = 5
+输出：false
+解释：树中存在两条根节点到叶子节点的路径：
+(1 --> 2): 和为 3
+(1 --> 3): 和为 4
+不存在 sum = 5 的根节点到叶子节点的路径。
+```
+
+**示例 3：**
+
+```
+输入：root = [], targetSum = 0
+输出：false
+解释：由于树是空的，所以不存在根节点到叶子节点的路径。
+```
+
+ 
+
+**提示：**
+
+- 树中节点的数目在范围 `[0, 5000]` 内
+- `-1000 <= Node.val <= 1000`
+- `-1000 <= targetSum <= 1000`
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    bool hasPathSum(TreeNode* root, int targetSum) {
+        if (!root) return false;
+        int targetSumTemp = targetSum - root->val;
+        if (!root->left && !root->right && targetSumTemp == 0) return true; 
+
+        return hasPathSum(root->left, targetSumTemp) || hasPathSum(root->right, targetSumTemp);
+    }
+
+
+};
+```
+
+
+
+
+
+## [129. 求根节点到叶节点数字之和](https://leetcode.cn/problems/sum-root-to-leaf-numbers/)
+
+
+
+给你一个二叉树的根节点 `root` ，树中每个节点都存放有一个 `0` 到 `9` 之间的数字。
+
+每条从根节点到叶节点的路径都代表一个数字：
+
+- 例如，从根节点到叶节点的路径 `1 -> 2 -> 3` 表示数字 `123` 。
+
+计算从根节点到叶节点生成的 **所有数字之和** 。
+
+**叶节点** 是指没有子节点的节点。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/19/num1tree.jpg)
+
+```
+输入：root = [1,2,3]
+输出：25
+解释：
+从根到叶子节点路径 1->2 代表数字 12
+从根到叶子节点路径 1->3 代表数字 13
+因此，数字总和 = 12 + 13 = 25
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/19/num2tree.jpg)
+
+```
+输入：root = [4,9,0,5,1]
+输出：1026
+解释：
+从根到叶子节点路径 4->9->5 代表数字 495
+从根到叶子节点路径 4->9->1 代表数字 491
+从根到叶子节点路径 4->0 代表数字 40
+因此，数字总和 = 495 + 491 + 40 = 1026
+```
+
+ 
+
+**提示：**
+
+- 树中节点的数目在范围 `[1, 1000]` 内
+- `0 <= Node.val <= 9`
+- 树的深度不超过 `10`
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    int sumNumbers(TreeNode* root, int sum = 0) {
+        if (!root) return 0;
+        sum = sum * 10 + root->val;
+
+        if (!root->left && !root->right) return sum;
+
+        return sumNumbers(root->left, sum) + sumNumbers(root->right, sum);
+
+    }
+
+
+};
+```
+
