@@ -8782,3 +8782,271 @@ public:
 };
 ```
 
+
+
+
+
+## [530. 二叉搜索树的最小绝对差](https://leetcode.cn/problems/minimum-absolute-difference-in-bst/)
+
+
+
+给你一个二叉搜索树的根节点 `root` ，返回 **树中任意两不同节点值之间的最小差值** 。
+
+差值是一个正数，其数值等于两值之差的绝对值。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/05/bst1.jpg)
+
+```
+输入：root = [4,2,6,1,3]
+输出：1
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/05/bst2.jpg)
+
+```
+输入：root = [1,0,48,null,null,12,49]
+输出：1
+```
+
+ 
+
+**提示：**
+
+- 树中节点的数目范围是 `[2, 104]`
+- `0 <= Node.val <= 105`
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    int getMinimumDifference(TreeNode* root) {
+        int minDiff = INT_MAX;
+        TreeNode* prev = nullptr;
+        std::function<void(TreeNode*)> inorder = [&](TreeNode* node)->void
+        {
+            if (!node) return;
+            inorder(node->left);
+            if (prev)
+            {
+                int diff = node->val - prev->val;
+                minDiff = min(minDiff, diff);
+            }
+            prev = node;
+            inorder(node->right);
+        };
+        inorder(root);
+        return minDiff;
+    }
+
+};
+```
+
+
+
+
+
+## [230. 二叉搜索树中第 K 小的元素](https://leetcode.cn/problems/kth-smallest-element-in-a-bst/)
+
+给定一个二叉搜索树的根节点 `root` ，和一个整数 `k` ，请你设计一个算法查找其中第 `k` 小的元素（`k` 从 1 开始计数）。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/01/28/kthtree1.jpg)
+
+```
+输入：root = [3,1,4,null,2], k = 1
+输出：1
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2021/01/28/kthtree2.jpg)
+
+```
+输入：root = [5,3,6,2,4,null,null,1], k = 3
+输出：3
+```
+
+ 
+
+ 
+
+**提示：**
+
+- 树中的节点数为 `n` 。
+- `1 <= k <= n <= 104`
+- `0 <= Node.val <= 104`
+
+ 
+
+**进阶：**如果二叉搜索树经常被修改（插入/删除操作）并且你需要频繁地查找第 `k` 小的值，你将如何优化算法？
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    int kthSmallest(TreeNode* root, int k) {
+        // 递归版本
+        // int kthNum = 0;
+        // int times = 0;
+        // // 依据返回类型（true）提前终止
+        // std::function<bool(TreeNode*)> inorder = [&](TreeNode* node)->bool
+        // {
+        //     if (!node) return false;
+        //     if (inorder(node->left)) return true;
+        //     times++;
+        //     if (times == k)
+        //     {
+        //         kthNum = node->val;
+        //         return true;
+        //     }
+        //     return inorder(node->right);
+        // };
+        // inorder(root);
+        // return kthNum;
+
+        // 迭代版本，避免栈溢出
+        stack<TreeNode*> st;
+        TreeNode* curr = root;
+        int count = 0;
+        while (curr || !st.empty())
+        {
+            // 遍历左子树
+            while (curr)
+            {
+                st.push(curr);
+                curr = curr->left;
+            }
+            // 开始访问节点
+            curr = st.top();
+            st.pop();
+            count++;
+            if (count == k)
+            {
+                return curr->val;
+            }
+
+            // 遍历右子树
+            curr = curr->right;
+        }
+
+        return -1;
+
+    }
+};
+```
+
+
+
+
+
+
+
+## [98. 验证二叉搜索树](https://leetcode.cn/problems/validate-binary-search-tree/)
+
+
+
+给你一个二叉树的根节点 `root` ，判断其是否是一个有效的二叉搜索树。
+
+**有效** 二叉搜索树定义如下：
+
+- 节点的左子树只包含 **严格小于** 当前节点的数。
+- 节点的右子树只包含 **严格大于** 当前节点的数。
+- 所有左子树和右子树自身必须也是二叉搜索树。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/12/01/tree1.jpg)
+
+```
+输入：root = [2,1,3]
+输出：true
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2020/12/01/tree2.jpg)
+
+```
+输入：root = [5,1,4,null,null,3,6]
+输出：false
+解释：根节点的值是 5 ，但是右子节点的值是 4 。
+```
+
+ 
+
+**提示：**
+
+- 树中节点数目范围在`[1, 104]` 内
+- `-231 <= Node.val <= 231 - 1`
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    bool isValidBST(TreeNode* root) {
+        stack<TreeNode*> st;
+        TreeNode* curr = root;
+        TreeNode* prev = nullptr;
+        while (curr || !st.empty())
+        {
+            while (curr)
+            {
+                st.push(curr);
+                curr = curr->left;
+            }
+            curr = st.top();
+            st.pop();
+            if (prev)
+            {
+                if (curr->val <= prev->val) return false;
+            }
+            prev = curr;
+            curr = curr->right;
+
+        }
+        return true;
+    }
+};
+```
+
