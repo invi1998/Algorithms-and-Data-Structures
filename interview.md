@@ -9050,3 +9050,403 @@ public:
 };
 ```
 
+
+
+
+
+
+
+## [200. 岛屿数量](https://leetcode.cn/problems/number-of-islands/)
+
+
+
+给你一个由 `'1'`（陆地）和 `'0'`（水）组成的的二维网格，请你计算网格中岛屿的数量。
+
+岛屿总是被水包围，并且每座岛屿只能由水平方向和/或竖直方向上相邻的陆地连接形成。
+
+此外，你可以假设该网格的四条边均被水包围。
+
+ 
+
+**示例 1：**
+
+```
+输入：grid = [
+  ['1','1','1','1','0'],
+  ['1','1','0','1','0'],
+  ['1','1','0','0','0'],
+  ['0','0','0','0','0']
+]
+输出：1
+```
+
+**示例 2：**
+
+```
+输入：grid = [
+  ['1','1','0','0','0'],
+  ['1','1','0','0','0'],
+  ['0','0','1','0','0'],
+  ['0','0','0','1','1']
+]
+输出：3
+```
+
+ 
+
+**提示：**
+
+- `m == grid.length`
+- `n == grid[i].length`
+- `1 <= m, n <= 300`
+- `grid[i][j]` 的值为 `'0'` 或 `'1'`
+
+### 并查集版本
+
+```c++
+class UnionFind{
+
+private:
+    int* parent;    // parent[i]表示节点i的根是什么
+    int* rank;      // rank[i]表示根节点为i的树的高度
+    int count;      // 并查集里元素个数
+    int unionCount; // 记录合并的次数
+
+public:
+    UnionFind(int n)
+    {
+        count = n;
+        unionCount = 0;
+        parent = new int[n];
+        rank = new int[n];
+        
+        for (int i = 0; i < n; i++)
+        {
+            parent[i] = i;
+            rank[i] = 1;
+        }
+    }
+
+    ~UnionFind()
+    {
+        delete[] parent;
+        delete[] rank;
+    }
+
+    int find(int p)
+    {
+        if (p < 0 || p >= count) return -1;
+        if (p != parent[p])
+        {
+            // 路径压缩，通过递归将并查集树压缩到2层
+            parent[p] = find(parent[p]);
+        }
+        return parent[p];
+    }
+
+    bool isConnected(int p, int q)
+    {
+        return find(p) == find(q);
+    }
+
+    void unionElements(int p, int q)
+    {
+        int pRoot = find(p);
+        int qRoot = find(q);
+        if (pRoot == qRoot || pRoot == -1 || qRoot == -1) return;     // 已经链接在一起了
+
+        if (rank[pRoot] < rank[qRoot])
+        {
+            parent[pRoot] = qRoot;          // 将p的根设置为q的根
+        }
+        else if (rank[pRoot] > rank[qRoot])
+        {
+            parent[qRoot] = pRoot;
+        }
+        else
+        {
+            parent[pRoot] = qRoot;
+            rank[qRoot] += 1;
+        }
+        unionCount++;
+        
+    }
+
+    // 获取不同集合的数量
+    int getSetCount()
+    {
+        int setCount = 0;
+        for (int i = 0; i < count; i++)
+        {
+            if (parent[i] == i)
+            {
+                setCount++;
+            }
+        }
+        return setCount;
+    }
+
+};
+
+class Solution {
+public:
+    int numIslands(vector<vector<char>>& grid) {
+        if (grid.empty() || grid[0].empty()) return 0;
+
+        int m = grid.size();
+        int n = grid[0].size();
+        int total = m*n;
+        UnionFind uf(total);
+
+        int waterCount = 0;     // 记录水域的数量
+
+        for (int i = 0; i < m; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                // 看上方和左侧是否有相邻的陆地，如果有，继续判断这两块陆地的根是否相同
+                // 如果不同，则说明这两块陆地可以由该节点连接为一个陆地，此时就将
+                if (grid[i][j] == '0')
+                {
+                    waterCount++;
+                    continue;
+                }
+
+                int idx = i*n+j;
+                if (i > 0 && grid[i-1][j] == '1')
+                {
+                    int upIndx = (i-1)*n + j;
+                    uf.unionElements(idx, upIndx);
+                }
+
+                // 检查左侧
+                if (j > 0 && grid[i][j-1] == '1')
+                {
+                    int leftIdx = i*n + j - 1;
+                    uf.unionElements(idx, leftIdx);
+                }
+
+            }
+        }
+
+        // 岛屿数量 = 总的集合数量-水域数量（因为我们没有对水域进行合并，所以每个水域都是一个单独的集合）
+        unordered_set<int> rootSet;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == '1') {
+                    int index = i * n + j;
+                    rootSet.insert(uf.find(index));
+                }
+            }
+        }
+
+        return rootSet.size();
+
+    }
+
+};
+```
+
+
+
+### 深度优先搜索DFS递归版本和迭代版本BFS
+
+```c++
+    // 使用广度优先搜索BFS（迭代）
+    int numIslands(vector<vector<char>>& grid)
+    {
+        if (grid.empty()) return 0;
+        
+        int m = grid.size();
+        int n = grid[0].size();
+        int count = 0;
+
+        // 方向数组：上、右、下、左
+        vector<pair<int, int>> dirctions = {
+            {-1, 0}, {0, 1}, {1, 0}, {0, -1}
+        };
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == '1') {
+                    count++;
+
+                    // BFS遍历整个岛屿
+                    queue<pair<int, int>> q;
+                    q.push({i, j});
+                    grid[i][j] = '0';   // 标记为以访问
+
+                    while (!q.empty())
+                    {
+                        auto [x, y] = q.front();
+                        q.pop();
+
+                        // 搜索4个方向
+                        for (auto[dx, dy] : dirctions)
+                        {
+                            int nx = x + dx;
+                            int ny = y + dy;
+
+                            if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == '1')
+                            {
+                                // 遇到相邻的陆地
+                                grid[nx][ny] = '0';
+                                q.push({nx, ny});
+                            }
+
+                        }
+
+                    }
+
+                }
+            }
+        }
+
+        return count;
+    
+    }
+
+    // 使用深度优先搜索版本 DFS
+    int numIslands(vector<vector<char>>& grid)
+    {
+        if (grid.empty()) return 0;
+        
+        int m = grid.size();
+        int n = grid[0].size();
+        int count = 0;
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == '1')
+                {
+                    count++;        // 遇到陆地，岛屿数量++
+                    dfs(grid, i, j, m, n);      // 然后递归遍历整个图，将与该岛屿相连接的陆地都沉没，标记为被访问
+                }
+            }
+        }
+
+        return count;
+
+    }
+
+private:
+    void dfs(vector<vector<char>>& grid, int i, int j, int m, int n)
+    {
+        // 在超出边界或者遇到水域的时候就会结束当前递归，这样就能避免递归到其他大陆上
+        if (i < 0 || i >= m || j < 0 || j >= n || grid[i][j] == '0') return;
+        // 将当前陆地沉没（标记为已经访问）
+        grid[i][j] = '0';
+        // 递归4个方向
+        dfs(grid, i+1, j, m, n);        // 下
+        dfs(grid, i-1, j, m, n);        // 上
+        dfs(grid, i, j+1, m, n);        // 右
+        dfs(grid, i, j-1, m, n);        // 左
+    }
+```
+
+
+
+
+
+## [130. 被围绕的区域](https://leetcode.cn/problems/surrounded-regions/)
+
+
+
+给你一个 `m x n` 的矩阵 `board` ，由若干字符 `'X'` 和 `'O'` 组成，**捕获** 所有 **被围绕的区域**：
+
+- **连接：**一个单元格与水平或垂直方向上相邻的单元格连接。
+- **区域：连接所有** `'O'` 的单元格来形成一个区域。
+- **围绕：**如果您可以用 `'X'` 单元格 **连接这个区域**，并且区域中没有任何单元格位于 `board` 边缘，则该区域被 `'X'` 单元格围绕。
+
+通过 **原地** 将输入矩阵中的所有 `'O'` 替换为 `'X'` 来 **捕获被围绕的区域**。你不需要返回任何值。
+
+ 
+
+**示例 1：**
+
+**输入：**board = [['X','X','X','X'],['X','O','O','X'],['X','X','O','X'],['X','O','X','X']]
+
+**输出：**[['X','X','X','X'],['X','X','X','X'],['X','X','X','X'],['X','O','X','X']]
+
+**解释：**
+
+![img](https://pic.leetcode.cn/1718167191-XNjUTG-image.png)
+
+在上图中，底部的区域没有被捕获，因为它在 board 的边缘并且不能被围绕。
+
+**示例 2：**
+
+**输入：**board = [['X']]
+
+**输出：**[['X']]
+
+ 
+
+**提示：**
+
+- `m == board.length`
+- `n == board[i].length`
+- `1 <= m, n <= 200`
+- `board[i][j]` 为 `'X'` 或 `'O'`
+
+```c++
+class Solution {
+public:
+    void solve(vector<vector<char>>& board) {
+        if (board.empty() || board[0].empty()) return;
+        
+        int m = board.size();
+        int n = board[0].size();
+        int count = 0;
+
+        // 先将与边界上的'O'相邻的'O'元素都标记为A
+        for (int i = 0; i < m; i++)
+        {
+            dfs(board, i, 0, m, n);
+            dfs(board, i, n-1, m, n);
+        }
+        for (int j = 0; j < n; j++)
+        {
+            dfs(board, 0, j, m, n);
+            dfs(board, m - 1, j, m, n);
+        }
+
+        for (int i = 0; i < m; i ++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                if (board[i][j] == 'A')
+                {
+                    board[i][j] = 'O';
+                }
+                else if (board[i][j] == 'O')
+                {
+                    board[i][j] = 'X';
+                }
+
+            }
+        }
+
+
+
+    }
+
+private:
+    // 因为深度遍历的起点都是从边界上进来的，如果边界上进来的节点就不为'O'，那么就会立即退出深度遍历
+    // 所以相当于该深度遍历的效果就是只将与边界上的'O'相邻的'O'染色成'A'
+    // 那么染色完成后，只需要再次遍历，将全部格子都染成'X'，遇到‘A’恢复成‘O’就行
+    void dfs(vector<vector<char>>& board, int i, int j, int m, int n)
+    {
+        if (i < 0 || i >= m || j < 0 || j >= n || board[i][j] != 'O') return;
+
+        board[i][j] = 'A';
+
+        dfs(board, i+1, j, m, n);
+        dfs(board, i-1, j, m, n);
+        dfs(board, i, j+1, m, n);
+        dfs(board, i, j-1, m, n);
+    }
+
+};
+```
+
