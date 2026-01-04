@@ -9450,3 +9450,266 @@ private:
 };
 ```
 
+
+
+
+
+
+
+## [133. 克隆图](https://leetcode.cn/problems/clone-graph/)
+
+
+
+给你无向 **[连通](https://baike.baidu.com/item/连通图/6460995?fr=aladdin)** 图中一个节点的引用，请你返回该图的 [**深拷贝**](https://baike.baidu.com/item/深拷贝/22785317?fr=aladdin)（克隆）。
+
+图中的每个节点都包含它的值 `val`（`int`） 和其邻居的列表（`list[Node]`）。
+
+```
+class Node {
+    public int val;
+    public List<Node> neighbors;
+}
+```
+
+ 
+
+**测试用例格式：**
+
+简单起见，每个节点的值都和它的索引相同。例如，第一个节点值为 1（`val = 1`），第二个节点值为 2（`val = 2`），以此类推。该图在测试用例中使用邻接列表表示。
+
+**邻接列表** 是用于表示有限图的无序列表的集合。每个列表都描述了图中节点的邻居集。
+
+给定节点将始终是图中的第一个节点（值为 1）。你必须将 **给定节点的拷贝** 作为对克隆图的引用返回。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.cn/aliyun-lc-upload/uploads/2020/02/01/133_clone_graph_question.png)
+
+```
+输入：adjList = [[2,4],[1,3],[2,4],[1,3]]
+输出：[[2,4],[1,3],[2,4],[1,3]]
+解释：
+图中有 4 个节点。
+节点 1 的值是 1，它有两个邻居：节点 2 和 4 。
+节点 2 的值是 2，它有两个邻居：节点 1 和 3 。
+节点 3 的值是 3，它有两个邻居：节点 2 和 4 。
+节点 4 的值是 4，它有两个邻居：节点 1 和 3 。
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.cn/aliyun-lc-upload/uploads/2020/02/01/graph.png)
+
+```
+输入：adjList = [[]]
+输出：[[]]
+解释：输入包含一个空列表。该图仅仅只有一个值为 1 的节点，它没有任何邻居。
+```
+
+**示例 3：**
+
+```
+输入：adjList = []
+输出：[]
+解释：这个图是空的，它不含任何节点。
+```
+
+ 
+
+**提示：**
+
+- 这张图中的节点数在 `[0, 100]` 之间。
+- `1 <= Node.val <= 100`
+- 每个节点值 `Node.val` 都是唯一的，
+- 图中没有重复的边，也没有自环。
+- 图是连通图，你可以从给定节点访问到所有节点
+
+```c++
+/*
+// Definition for a Node.
+class Node {
+public:
+    int val;
+    vector<Node*> neighbors;
+    Node() {
+        val = 0;
+        neighbors = vector<Node*>();
+    }
+    Node(int _val) {
+        val = _val;
+        neighbors = vector<Node*>();
+    }
+    Node(int _val, vector<Node*> _neighbors) {
+        val = _val;
+        neighbors = _neighbors;
+    }
+};
+*/
+
+class Solution {
+public:
+    Node* cloneGraph(Node* node) {
+        visited.clear();
+        Node* result = dfs(node);
+        return result;
+    }
+
+private:
+    // 遍历图中给定节点的临边
+    Node* dfs(Node* node)
+    {
+        if (!node) return nullptr;
+        Node* current = new Node(node->val);
+        visited[node] = current;
+        for (vector<Node*>::iterator it = node->neighbors.begin(); it != node->neighbors.end(); ++it)
+        {
+            if (!visited.contains(*it))
+            {
+                current->neighbors.push_back(dfs(*it));
+            }
+            else
+            {
+                current->neighbors.push_back(visited[*it]);
+            }
+        }
+        return current;
+    }
+
+    unordered_map<Node*, Node*> visited;
+
+};
+```
+
+
+
+
+
+## [399. 除法求值](https://leetcode.cn/problems/evaluate-division/)
+
+
+
+给你一个变量对数组 `equations` 和一个实数值数组 `values` 作为已知条件，其中 `equations[i] = [Ai, Bi]` 和 `values[i]` 共同表示等式 `Ai / Bi = values[i]` 。每个 `Ai` 或 `Bi` 是一个表示单个变量的字符串。
+
+另有一些以数组 `queries` 表示的问题，其中 `queries[j] = [Cj, Dj]` 表示第 `j` 个问题，请你根据已知条件找出 `Cj / Dj = ?` 的结果作为答案。
+
+返回 **所有问题的答案** 。如果存在某个无法确定的答案，则用 `-1.0` 替代这个答案。如果问题中出现了给定的已知条件中没有出现的字符串，也需要用 `-1.0` 替代这个答案。
+
+**注意：**输入总是有效的。你可以假设除法运算中不会出现除数为 0 的情况，且不存在任何矛盾的结果。
+
+**注意：**未在等式列表中出现的变量是未定义的，因此无法确定它们的答案。
+
+ 
+
+**示例 1：**
+
+```
+输入：equations = [["a","b"],["b","c"]], values = [2.0,3.0], queries = [["a","c"],["b","a"],["a","e"],["a","a"],["x","x"]]
+输出：[6.00000,0.50000,-1.00000,1.00000,-1.00000]
+解释：
+条件：a / b = 2.0, b / c = 3.0
+问题：a / c = ?, b / a = ?, a / e = ?, a / a = ?, x / x = ?
+结果：[6.0, 0.5, -1.0, 1.0, -1.0 ]
+注意：x 是未定义的 => -1.0
+```
+
+**示例 2：**
+
+```
+输入：equations = [["a","b"],["b","c"],["bc","cd"]], values = [1.5,2.5,5.0], queries = [["a","c"],["c","b"],["bc","cd"],["cd","bc"]]
+输出：[3.75000,0.40000,5.00000,0.20000]
+```
+
+**示例 3：**
+
+```
+输入：equations = [["a","b"]], values = [0.5], queries = [["a","b"],["b","a"],["a","c"],["x","y"]]
+输出：[0.50000,2.00000,-1.00000,-1.00000]
+```
+
+ 
+
+**提示：**
+
+- `1 <= equations.length <= 20`
+- `equations[i].length == 2`
+- `1 <= Ai.length, Bi.length <= 5`
+- `values.length == equations.length`
+- `0.0 < values[i] <= 20.0`
+- `1 <= queries.length <= 20`
+- `queries[i].length == 2`
+- `1 <= Cj.length, Dj.length <= 5`
+- `Ai, Bi, Cj, Dj` 由小写英文字母与数字组成
+
+```c++
+class Solution {
+public:
+    vector<double> calcEquation(vector<vector<string>>& equations, vector<double>& values, vector<vector<string>>& queries) {
+        
+        // 抽象成图的思路：
+        // 将每个变量看作图中的一个节点。
+        // 对于每一个方程式 A / B = k，我们可以构建两条边：
+        // 从节点A到节点B的边，权重为k（表示A除以B等于k）。
+        // 从节点B到节点A的边，权重为1.0/k（表示B除以A等于1.0/k）。
+        // 这样，对于任意两个变量X和Y，如果我们要求解X/Y，实际上就是在图中寻找一条从X到Y的路径，并将路径上的权重相乘。
+
+        // 广度优先遍历求出了无权图的最短路径
+        // 虽然我们这个算法里，点与点之间（路径）有权值，但是该值并不参与路径长短的判断，所以，很简单的道理，我们要求的就是用最短的节点到达目标节点就行，所以依旧可以看成是无权图
+
+        // 先生成图
+        unordered_map<string, vector<pair<string, double>>> graph;
+        for (int i = 0; i < equations.size(); i++)
+        {
+            string a = equations[i][0];
+            string b = equations[i][1];
+            double div = values[i];
+            graph[a].push_back({b, div});
+            graph[b].push_back({a, (1.0/div)});
+        }
+
+        vector<double> results;
+        
+        for (auto& que : queries)
+        {
+            string start = que[0];
+            string target = que[1];
+            if (!graph.contains(start) || !graph.contains(target))
+            {
+                results.push_back(-1.0);
+                continue;
+            }
+            unordered_set<string> visited;
+            double result = dfs(start, target, graph, visited);
+            results.push_back(result);
+        }
+
+        return results;
+        
+
+    }
+
+private:
+    // 深度优先遍历
+    double dfs(string node, string target, unordered_map<string, vector<pair<string, double>>>& graph, unordered_set<string>& visited)
+    {
+        if (node == target) return 1.0;
+        visited.insert(node);
+        for (auto& neighbor : graph[node])
+        {
+            string next = neighbor.first;
+            double weight = neighbor.second;
+            if (visited.count(next)) continue;
+            double result = dfs(next, target, graph, visited);
+            if (result != -1.0)
+            {
+                return weight * result;
+            }
+        }
+        return -1.0;
+    }
+
+
+};
+```
+
