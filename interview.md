@@ -9811,3 +9811,973 @@ private:
 };
 ```
 
+
+
+
+
+## [210. 课程表 II](https://leetcode.cn/problems/course-schedule-ii/)
+
+
+
+现在你总共有 `numCourses` 门课需要选，记为 `0` 到 `numCourses - 1`。给你一个数组 `prerequisites` ，其中 `prerequisites[i] = [ai, bi]` ，表示在选修课程 `ai` 前 **必须** 先选修 `bi` 。
+
+- 例如，想要学习课程 `0` ，你需要先完成课程 `1` ，我们用一个匹配来表示：`[0,1]` 。
+
+返回你为了学完所有课程所安排的学习顺序。可能会有多个正确的顺序，你只要返回 **任意一种** 就可以了。如果不可能完成所有课程，返回 **一个空数组** 。
+
+ 
+
+**示例 1：**
+
+```
+输入：numCourses = 2, prerequisites = [[1,0]]
+输出：[0,1]
+解释：总共有 2 门课程。要学习课程 1，你需要先完成课程 0。因此，正确的课程顺序为 [0,1] 。
+```
+
+**示例 2：**
+
+```
+输入：numCourses = 4, prerequisites = [[1,0],[2,0],[3,1],[3,2]]
+输出：[0,2,1,3]
+解释：总共有 4 门课程。要学习课程 3，你应该先完成课程 1 和课程 2。并且课程 1 和课程 2 都应该排在课程 0 之后。
+因此，一个正确的课程顺序是 [0,1,2,3] 。另一个正确的排序是 [0,2,1,3] 。
+```
+
+**示例 3：**
+
+```
+输入：numCourses = 1, prerequisites = []
+输出：[0]
+```
+
+ 
+
+**提示：**
+
+- `1 <= numCourses <= 2000`
+- `0 <= prerequisites.length <= numCourses * (numCourses - 1)`
+- `prerequisites[i].length == 2`
+- `0 <= ai, bi < numCourses`
+- `ai != bi`
+- 所有`[ai, bi]` **互不相同**
+
+```c++
+class Solution {
+public:
+    vector<int> findOrder(int numCourses, vector<vector<int>>& prerequisites) {
+        vector<vector<int>> graph(numCourses);
+        for (const vector<int>& pre : prerequisites)
+        {
+            graph[pre[1]].push_back(pre[0]);
+        }
+
+        // // 状态：0=未访问，1=访问中，2=已完成
+        vector<int> state(numCourses, 0);
+        vector<int> result;
+        for (int i = 0; i < numCourses; i++)
+        {
+            if (state[i] == 0)
+            {
+                if (!orderDfs(graph, state, result, i))
+                {
+                    return {};
+                }
+            }
+        }
+        reverse(result.begin(), result.end());
+        return result;
+    }
+
+private:
+    bool orderDfs(vector<vector<int>>& graph, vector<int>& state, vector<int>& result, int course)
+    {
+        if (state[course] == 1) return false;      // 如果出现环，返回空数组表示无法排序
+        if (state[course] == 2) return true;     // 说明遇到了已经处理完了的节点，该节点已经被证实并有了正确可行的选修顺序，直接返回节点的选修顺序
+        state[course] = 1;
+        for (int pre : graph[course])
+        {
+            if (!orderDfs(graph, state, result, pre))
+            {
+                return false;
+            }
+        }
+        state[course] = 2;
+        result.push_back(course);
+        return true;
+
+    }
+
+
+};
+```
+
+
+
+
+
+
+
+## [909. 蛇梯棋](https://leetcode.cn/problems/snakes-and-ladders/)
+
+
+
+给你一个大小为 `n x n` 的整数矩阵 `board` ，方格按从 `1` 到 `n2` 编号，编号遵循 [转行交替方式](https://baike.baidu.com/item/牛耕式转行书写法/17195786) ，**从左下角开始** （即，从 `board[n - 1][0]` 开始）的每一行改变方向。
+
+你一开始位于棋盘上的方格 `1`。每一回合，玩家需要从当前方格 `curr` 开始出发，按下述要求前进：
+
+- 选定目标方格 `next` ，目标方格的编号在范围 `[curr + 1, min(curr + 6, n2)]` 。
+  - 该选择模拟了掷 **六面体骰子** 的情景，无论棋盘大小如何，玩家最多只能有 6 个目的地。
+- 传送玩家：如果目标方格 `next` 处存在蛇或梯子，那么玩家会传送到蛇或梯子的目的地。否则，玩家传送到目标方格 `next` 。 
+- 当玩家到达编号 `n2` 的方格时，游戏结束。
+
+如果 `board[r][c] != -1` ，位于 `r` 行 `c` 列的棋盘格中可能存在 “蛇” 或 “梯子”。那个蛇或梯子的目的地将会是 `board[r][c]`。编号为 `1` 和 `n2` 的方格不是任何蛇或梯子的起点。
+
+注意，玩家在每次掷骰的前进过程中最多只能爬过蛇或梯子一次：就算目的地是另一条蛇或梯子的起点，玩家也 **不能** 继续移动。
+
+- 举个例子，假设棋盘是 `[[-1,4],[-1,3]]` ，第一次移动，玩家的目标方格是 `2` 。那么这个玩家将会顺着梯子到达方格 `3` ，但 **不能** 顺着方格 `3` 上的梯子前往方格 `4` 。（简单来说，类似飞行棋，玩家掷出骰子点数后移动对应格数，遇到单向的路径（即梯子或蛇）可以直接跳到路径的终点，但如果多个路径首尾相连，也不能连续跳多个路径）
+
+返回达到编号为 `n2` 的方格所需的最少掷骰次数，如果不可能，则返回 `-1`。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2018/09/23/snakes.png)
+
+```
+输入：board = [[-1,-1,-1,-1,-1,-1],[-1,-1,-1,-1,-1,-1],[-1,-1,-1,-1,-1,-1],[-1,35,-1,-1,13,-1],[-1,-1,-1,-1,-1,-1],[-1,15,-1,-1,-1,-1]]
+输出：4
+解释：
+首先，从方格 1 [第 5 行，第 0 列] 开始。 
+先决定移动到方格 2 ，并必须爬过梯子移动到到方格 15 。
+然后决定移动到方格 17 [第 3 行，第 4 列]，必须爬过蛇到方格 13 。
+接着决定移动到方格 14 ，且必须通过梯子移动到方格 35 。 
+最后决定移动到方格 36 , 游戏结束。 
+可以证明需要至少 4 次移动才能到达最后一个方格，所以答案是 4 。 
+```
+
+**示例 2：**
+
+```
+输入：board = [[-1,-1],[-1,3]]
+输出：1
+```
+
+ 
+
+**提示：**
+
+- `n == board.length == board[i].length`
+- `2 <= n <= 20`
+- `board[i][j]` 的值是 `-1` 或在范围 `[1, n2]` 内
+- 编号为 `1` 和 `n2` 的方格上没有蛇或梯子
+
+```c++
+class Solution {
+public:
+    int snakesAndLadders(vector<vector<int>>& board) {
+        // 广度优先遍历求出了无权图的最短路径
+        // 构建图
+        int n = board.size();
+        vector<int> graph(n*n + 1, -1);     // 因为是从1开始
+        // 从左下角开始蛇形遍历并构建图
+        bool leftToRight = true;
+        int idx = 1;
+        for (int r = n - 1; r >= 0; r--)
+        {
+            if (leftToRight)
+            {
+                for (int c = 0; c < n; c++)
+                {
+                    graph[idx++] = board[r][c];
+                }
+            }
+            else
+            {
+                for (int c = n - 1; c >= 0; c--)
+                {
+                    graph[idx++] = board[r][c];
+                }
+            }
+            leftToRight = !leftToRight;
+        }
+        
+        vector<bool> visited(n*n+1, false);
+        queue<pair<int, int>> q;    // 位置，步数
+        q.push({1, 0});
+        visited[1] = true;
+
+        // BFS最短路径
+        while (!q.empty())
+        {
+            auto [pos, steps] = q.front();
+            q.pop();
+
+            // 如果达到终点
+            if (pos == n*n)
+            {
+                return steps;
+            }
+            
+            // 投掷色子1-6
+            for (int dice = 1; dice <= 6; dice++)
+            {
+                int nextPos = pos + dice;
+                if (nextPos > n*n) break;
+
+                // 如果当前位置有蛇或者梯子，传送到目标位置
+                if (graph[nextPos] != -1)
+                {
+                    nextPos = graph[nextPos];
+                }
+
+                // 如果这个位置没有被访问过
+                if (!visited[nextPos])
+                {
+                    visited[nextPos] = true;
+                    q.push({nextPos, steps + 1});
+                }
+
+            }
+
+        }
+
+        return -1;
+
+    }
+
+
+};
+
+
+// // 先构建图（构建图的时候已经投掷了色子），很慢，因为把所有情况都枚举出来了
+// class Solution {
+// public:
+//     int snakesAndLadders(vector<vector<int>>& board) {
+//         int m = board.size();
+//         int n = board[0].size();
+//         int total = m * n;
+        
+//         // 构建图：graph[i] 表示从位置 i 可以到达的所有位置
+//         vector<vector<int>> graph(total + 1);
+        
+//         // 预先计算每个位置对应的棋盘坐标
+//         vector<pair<int, int>> posToCoord(total + 1);
+//         for (int cell = 1; cell <= total; cell++) {
+//             posToCoord[cell] = getCoord(cell, m, n);
+//         }
+        
+//         // 构建图：对于每个位置，考虑掷骰子 1-6 步
+//         for (int cell = 1; cell <= total; cell++) {
+//             auto [r, c] = posToCoord[cell];
+            
+//             for (int dice = 1; dice <= 6; dice++) {
+//                 int next = cell + dice;
+//                 if (next > total) break;
+                
+//                 auto [nextR, nextC] = posToCoord[next];
+                
+//                 // 如果目标位置有蛇或梯子，则传送到目标位置
+//                 if (board[nextR][nextC] != -1) {
+//                     graph[cell].push_back(board[nextR][nextC]);
+//                 } else {
+//                     graph[cell].push_back(next);
+//                 }
+//             }
+//         }
+        
+//         // BFS 寻找最短路径
+//         vector<int> dist(total + 1, -1);  // 记录到达每个位置的最小步数
+//         queue<int> q;
+//         q.push(1);
+//         dist[1] = 0;
+        
+//         while (!q.empty()) {
+//             int curr = q.front();
+//             q.pop();
+            
+//             // 如果到达终点，返回步数
+//             if (curr == total) {
+//                 return dist[curr];
+//             }
+            
+//             // 遍历所有可能的下一步
+//             for (int neighbor : graph[curr]) {
+//                 if (dist[neighbor] == -1) {  // 未访问过
+//                     dist[neighbor] = dist[curr] + 1;
+//                     q.push(neighbor);
+//                 }
+//             }
+//         }
+        
+//         return -1;  // 无法到达终点
+//     }
+
+// private:
+//     pair<int, int> getCoord(int k, int m, int n) {
+//         // 将索引k转换为二维数组位置(r, c)
+//         int bottom_row = (k - 1) / n;
+//         int r = m - 1 - bottom_row;
+//         int c = 0;
+        
+//         if (bottom_row % 2 == 0) {
+//             c = (k - 1) % n;
+//         } else {
+//             c = n - 1 - ((k - 1) % n);
+//         }
+        
+//         return {r, c};
+//     }
+// };
+```
+
+
+
+
+
+## [433. 最小基因变化](https://leetcode.cn/problems/minimum-genetic-mutation/)
+
+
+
+基因序列可以表示为一条由 8 个字符组成的字符串，其中每个字符都是 `'A'`、`'C'`、`'G'` 和 `'T'` 之一。
+
+假设我们需要调查从基因序列 `start` 变为 `end` 所发生的基因变化。一次基因变化就意味着这个基因序列中的一个字符发生了变化。
+
+- 例如，`"AACCGGTT" --> "AACCGGTA"` 就是一次基因变化。
+
+另有一个基因库 `bank` 记录了所有有效的基因变化，只有基因库中的基因才是有效的基因序列。（变化后的基因必须位于基因库 `bank` 中）
+
+给你两个基因序列 `start` 和 `end` ，以及一个基因库 `bank` ，请你找出并返回能够使 `start` 变化为 `end` 所需的最少变化次数。如果无法完成此基因变化，返回 `-1` 。
+
+注意：起始基因序列 `start` 默认是有效的，但是它并不一定会出现在基因库中。
+
+ 
+
+**示例 1：**
+
+```
+输入：start = "AACCGGTT", end = "AACCGGTA", bank = ["AACCGGTA"]
+输出：1
+```
+
+**示例 2：**
+
+```
+输入：start = "AACCGGTT", end = "AAACGGTA", bank = ["AACCGGTA","AACCGCTA","AAACGGTA"]
+输出：2
+```
+
+**示例 3：**
+
+```
+输入：start = "AAAAACCC", end = "AACCCCCC", bank = ["AAAACCCC","AAACCCCC","AACCCCCC"]
+输出：3
+```
+
+ 
+
+**提示：**
+
+- `start.length == 8`
+- `end.length == 8`
+- `0 <= bank.length <= 10`
+- `bank[i].length == 8`
+- `start`、`end` 和 `bank[i]` 仅由字符 `['A', 'C', 'G', 'T']` 组成
+
+```c++
+class Solution {
+public:
+    int minMutation(string startGene, string endGene, vector<string>& bank) {
+        unordered_set<string> bankset;
+
+        for (const string& s : bank)
+        {
+            bankset.emplace(s);
+        }
+        if (!bankset.contains(endGene)) return -1;
+        if (startGene == endGene) return 0;
+
+        char keys[4] = {'A', 'C', 'G', 'T'}; 
+        unordered_set<string> visited;
+        queue<string> q;
+        q.emplace(startGene);
+        visited.emplace(startGene);
+        int step = 1;
+        while (!q.empty())
+        {
+            int n = q.size();
+            for (int i = 0; i < n; i++)
+            {
+                string current = q.front();
+                q.pop();
+                for (int j = 0; j < 8; j++)
+                {
+                    for (int k = 0; k < 4; k++)
+                    {
+                        if (keys[k] != current[j])
+                        {
+                            string next = current;
+                            next[j] = keys[k];
+                            if (!visited.contains(next) && bankset.contains(next))
+                            {
+                                if (next == endGene)
+                                {
+                                    return step;
+                                }
+                                q.emplace(next);
+                                visited.emplace(next);
+                            }
+                        }
+                    }
+                }
+            }
+            step++;
+        }
+
+        return -1;
+
+    }
+};
+```
+
+
+
+## [127. 单词接龙](https://leetcode.cn/problems/word-ladder/)
+
+
+
+字典 `wordList` 中从单词 `beginWord` 到 `endWord` 的 **转换序列** 是一个按下述规格形成的序列 `beginWord -> s1 -> s2 -> ... -> sk`：
+
+- 每一对相邻的单词只差一个字母。
+-  对于 `1 <= i <= k` 时，每个 `si` 都在 `wordList` 中。注意， `beginWord` 不需要在 `wordList` 中。
+- `sk == endWord`
+
+给你两个单词 `beginWord` 和 `endWord` 和一个字典 `wordList` ，返回 *从 `beginWord` 到 `endWord` 的 **最短转换序列** 中的 **单词数目*** 。如果不存在这样的转换序列，返回 `0` 。
+
+**示例 1：**
+
+```
+输入：beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log","cog"]
+输出：5
+解释：一个最短转换序列是 "hit" -> "hot" -> "dot" -> "dog" -> "cog", 返回它的长度 5。
+```
+
+**示例 2：**
+
+```
+输入：beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log"]
+输出：0
+解释：endWord "cog" 不在字典中，所以无法进行转换。
+```
+
+ 
+
+**提示：**
+
+- `1 <= beginWord.length <= 10`
+- `endWord.length == beginWord.length`
+- `1 <= wordList.length <= 5000`
+- `wordList[i].length == beginWord.length`
+- `beginWord`、`endWord` 和 `wordList[i]` 由小写英文字母组成
+- `beginWord != endWord`
+- `wordList` 中的所有字符串 **互不相同**
+
+```c++
+class Solution {
+public:
+    int ladderLength(string beginWord, string endWord, vector<string>& wordList) {
+        if (beginWord == endWord) return 0;
+        unordered_set<string> wordset;
+        for (const string& s: wordList)
+        {
+            wordset.emplace(s);
+        }
+        if (!wordset.contains(endWord)) return 0;
+
+        unordered_set<string> visited;
+        queue<string> q;
+        q.emplace(beginWord);
+        visited.emplace(beginWord);
+        int step = 1;
+        int m = beginWord.size();
+        while (!q.empty())
+        {
+            int n = q.size();
+            for (int i = 0; i < n; i++)
+            {
+                string current = q.front();
+                q.pop();
+                for (int j = 0; j < m; j++)
+                {
+                    for (int k = 0; k < 26; k++)
+                    {
+                        char c = 'a' + k;
+                        if (c != current[j])
+                        {
+                            string next = current;
+                            next[j] = c;
+                            if (!visited.contains(next) && wordset.contains(next))
+                            {
+                                if (next == endWord)
+                                {
+                                    return step + 1;
+                                }
+                                q.emplace(next);
+                                visited.emplace(next);
+                            }
+                        }
+                    }
+                }
+            }
+            step++;
+        }
+        return 0;
+    }
+};
+
+
+```
+
+
+
+
+
+## [208. 实现 Trie (前缀树)](https://leetcode.cn/problems/implement-trie-prefix-tree/)
+
+
+
+**[Trie](https://baike.baidu.com/item/字典树/9825209?fr=aladdin)**（发音类似 "try"）或者说 **前缀树** 是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。这一数据结构有相当多的应用情景，例如自动补全和拼写检查。
+
+请你实现 Trie 类：
+
+- `Trie()` 初始化前缀树对象。
+- `void insert(String word)` 向前缀树中插入字符串 `word` 。
+- `boolean search(String word)` 如果字符串 `word` 在前缀树中，返回 `true`（即，在检索之前已经插入）；否则，返回 `false` 。
+- `boolean startsWith(String prefix)` 如果之前已经插入的字符串 `word` 的前缀之一为 `prefix` ，返回 `true` ；否则，返回 `false` 。
+
+ 
+
+**示例：**
+
+```
+输入
+["Trie", "insert", "search", "search", "startsWith", "insert", "search"]
+[[], ["apple"], ["apple"], ["app"], ["app"], ["app"], ["app"]]
+输出
+[null, null, true, false, true, null, true]
+
+解释
+Trie trie = new Trie();
+trie.insert("apple");
+trie.search("apple");   // 返回 True
+trie.search("app");     // 返回 False
+trie.startsWith("app"); // 返回 True
+trie.insert("app");
+trie.search("app");     // 返回 True
+```
+
+ 
+
+**提示：**
+
+- `1 <= word.length, prefix.length <= 2000`
+- `word` 和 `prefix` 仅由小写英文字母组成
+- `insert`、`search` 和 `startsWith` 调用次数 **总计** 不超过 `3 * 104` 次
+
+```c++
+class TrieNode
+{
+public:
+    unordered_map<char, TrieNode*> children;
+    bool isEnd;
+
+    TrieNode() : isEnd(false) {}
+
+};
+
+class Trie {
+public:
+    Trie() {
+        root = new TrieNode();
+    }
+
+    ~Trie()
+    {
+        deleteTrie(root);
+    }
+
+    void deleteTrie(TrieNode* node)
+    {
+        if (!node) return;
+        for (auto& pair : node->children)
+        {
+            deleteTrie(pair.second);
+        }
+        delete node;
+    }
+    
+    void insert(string word) {
+        TrieNode* node = root;
+        for (char c : word)
+        {
+            if (!node->children.contains(c))
+            {
+                node->children[c] = new TrieNode();
+            }
+            node = node->children[c];
+        }
+        node->isEnd = true;
+    }
+    
+    bool search(string word) {
+        TrieNode* node = root;
+        for (char c : word)
+        {
+            if (!node->children.contains(c))
+            {
+                return false;
+            }
+            node = node->children[c];
+        }
+        return node->isEnd;
+    }
+    
+    bool startsWith(string prefix) {
+        TrieNode* node = root;
+        for (char c : prefix)
+        {
+            if (!node->children.contains(c))
+            {
+                return false;
+            }
+            node = node->children[c];
+        }
+        return true;
+    }
+
+private:
+    TrieNode* root;
+
+
+};
+
+/**
+ * Your Trie object will be instantiated and called as such:
+ * Trie* obj = new Trie();
+ * obj->insert(word);
+ * bool param_2 = obj->search(word);
+ * bool param_3 = obj->startsWith(prefix);
+ */
+```
+
+
+
+
+
+## [211. 添加与搜索单词 - 数据结构设计](https://leetcode.cn/problems/design-add-and-search-words-data-structure/)
+
+
+
+请你设计一个数据结构，支持 添加新单词 和 查找字符串是否与任何先前添加的字符串匹配 。
+
+实现词典类 `WordDictionary` ：
+
+- `WordDictionary()` 初始化词典对象
+- `void addWord(word)` 将 `word` 添加到数据结构中，之后可以对它进行匹配
+- `bool search(word)` 如果数据结构中存在字符串与 `word` 匹配，则返回 `true` ；否则，返回 `false` 。`word` 中可能包含一些 `'.'` ，每个 `.` 都可以表示任何一个字母。
+
+ 
+
+**示例：**
+
+```
+输入：
+["WordDictionary","addWord","addWord","addWord","search","search","search","search"]
+[[],["bad"],["dad"],["mad"],["pad"],["bad"],[".ad"],["b.."]]
+输出：
+[null,null,null,null,false,true,true,true]
+
+解释：
+WordDictionary wordDictionary = new WordDictionary();
+wordDictionary.addWord("bad");
+wordDictionary.addWord("dad");
+wordDictionary.addWord("mad");
+wordDictionary.search("pad"); // 返回 False
+wordDictionary.search("bad"); // 返回 True
+wordDictionary.search(".ad"); // 返回 True
+wordDictionary.search("b.."); // 返回 True
+```
+
+ 
+
+**提示：**
+
+- `1 <= word.length <= 25`
+- `addWord` 中的 `word` 由小写英文字母组成
+- `search` 中的 `word` 由 '.' 或小写英文字母组成
+- 最多调用 `104` 次 `addWord` 和 `search`
+
+```c++
+class TrieNode
+{
+public:
+    std::unordered_map<char, std::shared_ptr<TrieNode>> children;
+    bool isEndOfWord;
+
+    TrieNode() : isEndOfWord(false) {}
+};
+
+class WordDictionary {
+public:
+    WordDictionary() : root(std::make_shared<TrieNode>()) {
+        
+    }
+    
+    void addWord(string word) {
+        std::shared_ptr<TrieNode> current = root;
+        for (char ch : word)
+        {
+            if (current->children.find(ch) == current->children.end())
+            {
+                current->children[ch] = std::make_shared<TrieNode>();
+            }
+            current = current->children[ch];
+        }
+        current->isEndOfWord = true;
+    }
+    
+    bool search(string word) {
+        // return searchHelper(word, root, 0);
+        return bfsSearch(word);
+    }
+
+private:
+    std::shared_ptr<TrieNode> root;
+
+    // 递归回溯解法，慢
+    bool searchHelper(const string& word, std::shared_ptr<TrieNode> node, int index)
+    {
+        // 如果到达单词末尾，检查是否是完整单词
+        if (index == word.length())
+        {
+            return node->isEndOfWord;
+        }
+
+        char ch = word[index];
+
+        // 处理通配符.
+        if (ch == '.')
+        {
+            // 遍历所有子节点，只要有一个成功就返回
+            for (const auto& pair : node->children)
+            {
+                if (searchHelper(word, pair.second, index+1))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // 处理普通字符
+        else
+        {
+            if (node->children.find(ch) == node->children.end())
+            {
+                return false;
+            }
+            return searchHelper(word, node->children[ch], index+1);
+        }
+
+    }
+
+    // BFS搜索
+    bool bfsSearch(const string& word)
+    {
+        queue<pair<shared_ptr<TrieNode>, int>> q;
+        q.push({root, 0});
+        while (!q.empty())
+        {
+            auto [node, idx] = q.front();
+            q.pop();
+            if (idx == word.size())
+            {
+                if (node->isEndOfWord) return true;
+                continue;
+            }
+            char ch = word[idx];
+            if (ch == '.')
+            {
+                for (auto& [nextChar, nextNode] : node->children)
+                {
+                    q.push({nextNode, idx + 1});
+                }
+            }
+            else
+            {
+                if (node->children.contains(ch))
+                {
+                    q.push({node->children[ch], idx+1});
+                }
+            }
+        }
+
+        return false;
+    }
+
+};
+
+/**
+ * Your WordDictionary object will be instantiated and called as such:
+ * WordDictionary* obj = new WordDictionary();
+ * obj->addWord(word);
+ * bool param_2 = obj->search(word);
+ */
+```
+
+
+
+
+
+
+
+## [212. 单词搜索 II](https://leetcode.cn/problems/word-search-ii/)
+
+
+
+给定一个 `m x n` 二维字符网格 `board` 和一个单词（字符串）列表 `words`， *返回所有二维网格上的单词* 。
+
+单词必须按照字母顺序，通过 **相邻的单元格** 内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母在一个单词中不允许被重复使用。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/11/07/search1.jpg)
+
+```
+输入：board = [["o","a","a","n"],["e","t","a","e"],["i","h","k","r"],["i","f","l","v"]], words = ["oath","pea","eat","rain"]
+输出：["eat","oath"]
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2020/11/07/search2.jpg)
+
+```
+输入：board = [["a","b"],["c","d"]], words = ["abcb"]
+输出：[]
+```
+
+ 
+
+**提示：**
+
+- `m == board.length`
+- `n == board[i].length`
+- `1 <= m, n <= 12`
+- `board[i][j]` 是一个小写英文字母
+- `1 <= words.length <= 3 * 104`
+- `1 <= words[i].length <= 10`
+- `words[i]` 由小写英文字母组成
+- `words` 中的所有字符串互不相同
+
+```c++
+class TrieNode
+{
+public:
+    unordered_map<char, TrieNode*> children;
+    string word;
+    TrieNode()
+    {
+        word = "";
+    }
+};
+
+class Solution {
+public:
+    vector<string> findWords(vector<vector<char>>& board, vector<string>& words) {
+        TrieNode* root = new TrieNode();
+        for (const string& word : words)
+        {
+            BuildTrie(word, root);
+        }
+        set<string> res;
+
+        for (int i = 0; i < board.size(); i++)
+        {
+            for (int j = 0; j < board[0].size(); j++)
+            {
+                dfs(board, i, j, res, root);
+            }
+        }
+
+        vector<string> result;
+        for (const string& word : res)
+        {
+            result.emplace_back(word);
+        }
+        return result;
+    }
+
+private:
+    void BuildTrie(const string& word, TrieNode* root)
+    {
+        TrieNode* current = root;
+        for (char ch : word)
+        {
+            if (!current->children.contains(ch))
+            {
+                current->children[ch] = new TrieNode();
+            }
+            current = current->children[ch];
+        }
+        current->word = word;
+    }
+
+    // 二维数组移动方向（下，上，右， 左）
+    int dirs[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+    void dfs(vector<vector<char>>& board, int i, int j, set<string>& res, TrieNode* current)
+    {
+        if (i >= board.size() || i < 0 || j < 0 || j >= board[0].size())
+        {
+            return;
+        }
+
+        char ch = board[i][j];
+        if (ch == '#' || !current->children.contains(ch))
+        {
+            return;
+        }
+
+        TrieNode* nextNode = current->children[ch];
+        if (!nextNode->word.empty())
+        {
+            res.insert(nextNode->word);
+            nextNode->word = "";
+        }
+
+        board[i][j] = '#';  // 标记为被访问过了
+
+        for (int k = 0; k < 4; k++)
+        {
+            int nx = i + dirs[k][0];
+            int ny = j + dirs[k][1];
+            if (nx >= 0 && nx < board.size() && ny >= 0 && ny < board[0].size())
+            {
+                if (board[nx][ny] != '#')
+                {
+                    dfs(board, nx, ny, res, nextNode);
+                }
+            }
+        }
+
+        board[i][j] = ch;   // 恢复字符网格
+
+    }
+
+};
+```
+
