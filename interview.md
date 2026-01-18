@@ -11019,3 +11019,255 @@ private:
 };
 ```
 
+
+
+
+
+
+
+## [39. 组合总和](https://leetcode.cn/problems/combination-sum/)
+
+
+
+给你一个 **无重复元素** 的整数数组 `candidates` 和一个目标整数 `target` ，找出 `candidates` 中可以使数字和为目标数 `target` 的 所有 **不同组合** ，并以列表形式返回。你可以按 **任意顺序** 返回这些组合。
+
+`candidates` 中的 **同一个** 数字可以 **无限制重复被选取** 。如果至少一个数字的被选数量不同，则两种组合是不同的。 
+
+对于给定的输入，保证和为 `target` 的不同组合数少于 `150` 个。
+
+ 
+
+**示例 1：**
+
+```
+输入：candidates = [2,3,6,7], target = 7
+输出：[[2,2,3],[7]]
+解释：
+2 和 3 可以形成一组候选，2 + 2 + 3 = 7 。注意 2 可以使用多次。
+7 也是一个候选， 7 = 7 。
+仅有这两种组合。
+```
+
+**示例 2：**
+
+```
+输入: candidates = [2,3,5], target = 8
+输出: [[2,2,2,2],[2,3,3],[3,5]]
+```
+
+**示例 3：**
+
+```
+输入: candidates = [2], target = 1
+输出: []
+```
+
+ 
+
+**提示：**
+
+- `1 <= candidates.length <= 30`
+- `2 <= candidates[i] <= 40`
+- `candidates` 的所有元素 **互不相同**
+- `1 <= target <= 40`
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        vector<vector<int>> result;
+        // 对candidates排序
+        sort(candidates.begin(), candidates.end());
+        vector<int> state;  // 状态（子集）
+        helper(target, 0, candidates, state, result);
+        return result;
+
+    }
+
+private:
+    void helper(int target, int start, vector<int>& candidates, vector<int>& state, vector<vector<int>>& res)
+    {
+        // 当目标数为0时，记录解
+        if (target == 0)
+        {
+            res.emplace_back(state);
+            return;
+        }
+
+        // 遍历所有选择
+        // 减枝2：从start开始，避免生成重复子集
+        for (int idx = start; idx < candidates.size(); idx++)
+        {
+            // 减枝1：如果子集和超出target，则直接跳过该选择，提前结束循环
+            // 因为事先已经对数组排序，如果当前元素都不满足，后面的元素一定也超出了target，就没必要继续continue循环了，直接break
+            if (target - candidates[idx] < 0)
+            {
+                break;
+            }
+            // 参试做出选择，将当前数添加到状态子集里，更新target和start
+            state.push_back(candidates[idx]);
+            helper(target-candidates[idx], idx, candidates, state, res);
+            // 回退：撤销此前的旋转，恢复到之前的状态，然后进入下轮遍历
+            state.pop_back();
+        }
+
+    }
+
+
+
+};
+```
+
+
+
+
+
+
+
+
+
+## [52. N 皇后 II](https://leetcode.cn/problems/n-queens-ii/)
+
+
+
+**n 皇后问题** 研究的是如何将 `n` 个皇后放置在 `n × n` 的棋盘上，并且使皇后彼此之间不能相互攻击。
+
+给你一个整数 `n` ，返回 **n 皇后问题** 不同的解决方案的数量。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/11/13/queens.jpg)
+
+```
+输入：n = 4
+输出：2
+解释：如上图所示，4 皇后问题存在两个不同的解法。
+```
+
+**示例 2：**
+
+```
+输入：n = 1
+输出：1
+```
+
+ 
+
+**提示：**
+
+- `1 <= n <= 9`
+
+```c++
+class Solution {
+public:
+    int totalNQueens(int n) {
+        // 使用3个布尔数组来标记列，主对角线和副对角线是否被占用
+        vector<bool> cols(n, false);        // 列是否被占用
+        vector<bool> diag1(2*n-1, false);   // 主对角线是否被占用（r-c相同）
+        vector<bool> diag2(2*n-1, false);   // 副对角线是否被占用（r+c相同）
+        int count = 0;
+        backtrack(0, n, cols, diag1, diag2, count);
+        return count;
+
+    }
+
+private:
+    void backtrack(int row, int n, vector<bool>& cols, vector<bool>& diag1, vector<bool>& diag2, int& count)
+    {
+        if (row == n)
+        {
+            count++;
+            return;
+        }
+
+        for (int col = 0; col < n; col++)
+        {
+            int d1 = row - col + n -1;      // 主对角线索引
+            int d2 = row + col;             // 副对角线索引
+            if (!cols[col] && !diag1[d1] && !diag2[d2])
+            {
+                // 只要列，对角线上没有皇后占用，就放置皇后
+                cols[col] = diag1[d1] = diag2[d2] = true;
+                backtrack(row+1, n, cols, diag1, diag2, count);
+                // 撤销占用
+                cols[col] = diag1[d1] = diag2[d2] = false;
+            }
+        }
+
+    }
+};
+```
+
+
+
+
+
+## [22. 括号生成](https://leetcode.cn/problems/generate-parentheses/)
+
+
+
+数字 `n` 代表生成括号的对数，请你设计一个函数，用于能够生成所有可能的并且 **有效的** 括号组合。
+
+ 
+
+**示例 1：**
+
+```
+输入：n = 3
+输出：["((()))","(()())","(())()","()(())","()()()"]
+```
+
+**示例 2：**
+
+```
+输入：n = 1
+输出：["()"]
+```
+
+ 
+
+**提示：**
+
+- `1 <= n <= 8`
+
+```c++
+class Solution {
+public:
+    vector<string> generateParenthesis(int n) {
+        string cur;
+        vector<string> result;
+        backtrack(result, cur, 0, 0, n);
+        return result;
+    }
+
+private:
+    void backtrack(vector<string>& res, string& cur, int open, int close, int n)
+    {
+        if (cur.size() == 2*n)
+        {
+            res.emplace_back(cur);
+            return;
+        }
+
+        if (open < n)
+        {
+            cur.push_back('(');
+            backtrack(res, cur, open+1, close, n);
+            cur.pop_back();
+        }
+        if (close < open)
+        {
+            cur.push_back(')');
+            backtrack(res, cur, open, close+1, n);
+            cur.pop_back();
+        }
+
+
+    }
+
+
+};
+```
+
