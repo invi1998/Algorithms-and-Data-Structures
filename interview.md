@@ -10781,3 +10781,241 @@ private:
 };
 ```
 
+
+
+
+
+
+
+
+
+## [17. 电话号码的字母组合](https://leetcode.cn/problems/letter-combinations-of-a-phone-number/)
+
+
+
+给定一个仅包含数字 `2-9` 的字符串，返回所有它能表示的字母组合。答案可以按 **任意顺序** 返回。
+
+给出数字到字母的映射如下（与电话按键相同）。注意 1 不对应任何字母。
+
+![img](https://pic.leetcode.cn/1752723054-mfIHZs-image.png)
+
+ 
+
+**示例 1：**
+
+```
+输入：digits = "23"
+输出：["ad","ae","af","bd","be","bf","cd","ce","cf"]
+```
+
+**示例 2：**
+
+```
+输入：digits = "2"
+输出：["a","b","c"]
+```
+
+ 
+
+**提示：**
+
+- `1 <= digits.length <= 4`
+- `digits[i]` 是范围 `['2', '9']` 的一个数字。
+
+```c++
+class Solution {
+public:
+    vector<string> letterCombinations(string digits) {
+        vector<string> result;
+
+        if (digits.empty()) {
+            return result; // 提前处理空输入
+        }
+        
+        string combination;
+        backtrack(0, digits, combination, result);
+        return result;
+
+    }
+
+private:
+    const vector<string> digitToLetters = {
+        "", "",
+        "abc", "def",      // 2, 3
+        "ghi", "jkl", "mno", // 4, 5, 6
+        "pqrs", "tuv", "wxyz" // 7, 8, 9
+    };
+
+    void backtrack(int idx, const string& digits, string& combination, vector<string>& res)
+    {
+        if (idx == digits.size())
+        {
+            res.push_back(combination);
+        }
+        else
+        {
+            int index = digits[idx] - '0';
+            for (char ch : digitToLetters[index])
+            {
+                combination.push_back(ch);
+                backtrack(idx+1, digits, combination, res);
+                combination.pop_back();
+            }
+        }
+    }
+
+};
+```
+
+
+
+
+
+
+
+## [77. 组合](https://leetcode.cn/problems/combinations/)
+
+
+
+给定两个整数 `n` 和 `k`，返回范围 `[1, n]` 中所有可能的 `k` 个数的组合。
+
+你可以按 **任何顺序** 返回答案。
+
+ 
+
+**示例 1：**
+
+```
+输入：n = 4, k = 2
+输出：
+[
+  [2,4],
+  [3,4],
+  [2,3],
+  [1,2],
+  [1,3],
+  [1,4],
+]
+```
+
+**示例 2：**
+
+```
+输入：n = 1, k = 1
+输出：[[1]]
+```
+
+ 
+
+**提示：**
+
+- `1 <= n <= 20`
+- `1 <= k <= n`
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> combine(int n, int k) {
+        vector<vector<int>> result;
+        vector<int> nums;
+        for (int i = 0; i < n; i++)
+        {
+            nums.push_back(i+1);
+        }
+        vector<int> output;
+        backTrack(0, k, nums, output, result);
+        return result;
+    }
+
+private:
+    void backTrack(int idx, int k, vector<int>& nums, vector<int>& output, vector<vector<int>>& res)
+    {
+        if (output.size() == k)
+        {
+            res.push_back(output);
+            return;
+        }
+
+        for (int i = idx; i < nums.size(); i++)
+        {
+            output.push_back(nums[i]);
+            backTrack(i+1, k, nums, output, res);
+            output.pop_back();
+        }
+    }
+
+
+};
+```
+
+
+
+## [46. 全排列](https://leetcode.cn/problems/permutations/)
+
+
+
+给定一个不含重复数字的数组 `nums` ，返回其 *所有可能的全排列* 。你可以 **按任意顺序** 返回答案。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3]
+输出：[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
+```
+
+**示例 2：**
+
+```
+输入：nums = [0,1]
+输出：[[0,1],[1,0]]
+```
+
+**示例 3：**
+
+```
+输入：nums = [1]
+输出：[[1]]
+```
+
+ 
+
+**提示：**
+
+- `1 <= nums.length <= 6`
+- `-10 <= nums[i] <= 10`
+- `nums` 中的所有整数 **互不相同**
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> permute(vector<int>& nums) {
+        vector<vector<int>> res;
+        helper(0, nums, res);
+        return res;
+    }
+
+private:
+    void helper(int start, vector<int>& nums, vector<vector<int>>& res)
+    {
+        int len = nums.size();
+        if (start == len)
+        {
+            res.emplace_back(nums);
+            return;
+        }
+
+        for (int idx = start; idx < len; idx++)
+        {
+            swap(nums[idx], nums[start]);
+            helper(start+1, nums, res);
+            swap(nums[idx], nums[start]);
+        }
+
+    }
+
+
+};
+```
+
