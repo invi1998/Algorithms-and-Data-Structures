@@ -11271,3 +11271,256 @@ private:
 };
 ```
 
+
+
+
+
+
+
+## [148. 排序链表](https://leetcode.cn/problems/sort-list/)
+
+
+
+给你链表的头结点 `head` ，请将其按 **升序** 排列并返回 **排序后的链表** 。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/09/14/sort_list_1.jpg)
+
+```
+输入：head = [4,2,1,3]
+输出：[1,2,3,4]
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2020/09/14/sort_list_2.jpg)
+
+```
+输入：head = [-1,5,3,4,0]
+输出：[-1,0,3,4,5]
+```
+
+**示例 3：**
+
+```
+输入：head = []
+输出：[]
+```
+
+ 
+
+**提示：**
+
+- 链表中节点的数目在范围 `[0, 5 * 104]` 内
+- `-105 <= Node.val <= 105`
+
+ 
+
+**进阶：**你可以在 `O(n log n)` 时间复杂度和常数级空间复杂度下，对链表进行排序吗？
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* sortList(ListNode* head) {
+        if (!head) return head;
+
+        // 先获取链表长度
+        int n = 0;
+        ListNode* current = head;
+        while (current)
+        {
+            n++;
+            current = current->next;
+        }
+
+        // // 迭代版本，自底向上归并
+        // ListNode* dummy = new ListNode();
+        // dummy->next = head;
+        // mergeSortBU(dummy, n);
+        // return dummy->next;
+
+        // 递归版本，自顶向下归并
+        return mergeSort(head, n);
+    }
+
+private:
+    // 自顶向下的归并排序
+    ListNode* mergeSort(ListNode* head, int n)
+    {
+        // 递归终止，链表长度为0或者1
+        if (n <= 1) return head;
+
+        // 计算左半部分的长度（对于偶数长度，左右相等，对于奇数长度，左半部分少一个节点）
+        int leftLen = n >> 1;       // 相当于n/2 (算术左移是乘，右移是除)
+
+        // 找到左半部分的尾部节点，将链表一分为二
+        ListNode* leftTail = head;
+        // 移动leftLen-1步到左半部分的尾部节点
+        for (int i = 1; i < leftLen; i++)
+        {
+            leftTail = leftTail->next;
+        }
+
+        // 右半部分的头节点
+        ListNode* rightHead = leftTail->next;
+        // 切断左右链表的链接
+        leftTail->next = nullptr;
+        
+        // 递归调用排序左右两部分
+        ListNode* sortedLeft = mergeSort(head, leftLen);
+        ListNode* sortedRight = mergeSort(rightHead, n - leftLen);
+
+        // 合并两个已经排序的链表
+        // 如果有一个链表为空，直接返回另一个
+        if (sortedLeft == nullptr) return sortedRight;
+        if (sortedRight == nullptr) return sortedLeft;
+
+        // 初始化结果链表的头和尾
+        ListNode* resultHead = nullptr;
+        ListNode* resultTail = nullptr;
+
+        // 选择较小的头节点作为链表的头
+        if (sortedLeft->val <= sortedRight->val)
+        {
+            resultHead = sortedLeft;
+            sortedLeft = sortedLeft->next;
+        }
+        else
+        {
+            resultHead = sortedRight;
+            sortedRight = sortedRight->next;
+        }
+        resultTail = resultHead;
+
+        // 合并两个链表
+        while(sortedLeft != nullptr && sortedRight != nullptr)
+        {
+            if (sortedLeft->val <= sortedRight->val)
+            {
+                resultTail->next = sortedLeft;
+                sortedLeft = sortedLeft->next;
+            }
+            else
+            {
+                resultTail->next = sortedRight;
+                sortedRight = sortedRight->next;
+            }
+            resultTail = resultTail->next;
+        }
+
+        // 将剩余部分链接到最终结果链表里
+        if (sortedLeft)
+        {
+            resultTail->next = sortedLeft;
+        }
+        else if (sortedRight)
+        {
+            resultTail->next = sortedRight;
+        }
+
+        return resultHead;
+
+    }
+
+    // 自底向上的归并排序
+    void mergeSortBU(ListNode* dummy, int n)
+    {
+        for (int sz = 1; sz < n; sz*= 2)
+        {
+            ListNode* prev = dummy;
+            ListNode* current = dummy->next;
+            while (current)
+            {
+                // 获取第一个子链表
+                ListNode* left = current;
+                ListNode* leftTail = split(left, sz-1);
+                if (!leftTail) break;
+                // 获取第二个子链表
+                ListNode* right = leftTail->next;
+                leftTail->next = nullptr;       // 切断第一个子链表
+                ListNode* rightTail = split(right, sz-1);
+                ListNode* next = nullptr;
+                if (rightTail)
+                {
+                    next = rightTail->next;
+                    rightTail->next = nullptr;      // 切断第二个子链表
+                }
+
+                // 合并两个子链表
+                ListNode* merged = merge(left, right);
+
+                // 将合并后的链表链接到已排序的部分
+                prev->next = merged;
+
+                // 移动prev到合并后链表的末尾
+                while (prev->next)
+                {
+                    prev = prev->next;
+                }
+
+                // 然后将current指针指向下一个分段
+                current = next;
+            }
+        }
+    }
+
+    // 将链表从当前位置切割，返回切割后的尾部节点
+    ListNode* split(ListNode* head, int steps)
+    {
+        if (!head) return nullptr;
+        ListNode* curr = head;
+        for (int i = 0; i < steps && curr->next; i++)
+        {
+            curr = curr->next;
+        }
+        return curr;
+    }
+
+    // 合并两个有序链表
+    ListNode* merge(ListNode* l1, ListNode* l2)
+    {
+        ListNode* dummy = new ListNode();
+        ListNode* curr = dummy;
+        while (l1 && l2)
+        {
+            if (l1->val <= l2->val)
+            {
+                curr->next = l1;
+                l1 = l1->next;
+            }
+            else
+            {
+                curr->next = l2;
+                l2 = l2->next;
+            }
+            curr = curr->next;
+        }
+
+        // 处理剩余节点
+        if (l1) curr->next = l1;
+        if (l2) curr->next = l2;
+        ListNode* result = dummy->next;
+        delete dummy;
+        return result;
+
+        
+    }
+
+
+
+};
+```
+
