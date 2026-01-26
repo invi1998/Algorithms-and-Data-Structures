@@ -11524,3 +11524,500 @@ private:
 };
 ```
 
+
+
+
+
+
+
+## [427. 建立四叉树](https://leetcode.cn/problems/construct-quad-tree/)
+
+
+
+给你一个 `n * n` 矩阵 `grid` ，矩阵由若干 `0` 和 `1` 组成。请你用四叉树表示该矩阵 `grid` 。
+
+你需要返回能表示矩阵 `grid` 的 四叉树 的根结点。
+
+四叉树数据结构中，每个内部节点只有四个子节点。此外，每个节点都有两个属性：
+
+- `val`：储存叶子结点所代表的区域的值。1 对应 **True**，0 对应 **False**。注意，当 `isLeaf` 为 **False** 时，你可以把 **True** 或者 **False** 赋值给节点，两种值都会被判题机制 **接受** 。
+- `isLeaf`: 当这个节点是一个叶子结点时为 **True**，如果它有 4 个子节点则为 **False** 。
+
+```
+class Node {
+    public boolean val;
+    public boolean isLeaf;
+    public Node topLeft;
+    public Node topRight;
+    public Node bottomLeft;
+    public Node bottomRight;
+}
+```
+
+我们可以按以下步骤为二维区域构建四叉树：
+
+1. 如果当前网格的值相同（即，全为 `0` 或者全为 `1`），将 `isLeaf` 设为 True ，将 `val` 设为网格相应的值，并将四个子节点都设为 Null 然后停止。
+2. 如果当前网格的值不同，将 `isLeaf` 设为 False， 将 `val` 设为任意值，然后如下图所示，将当前网格划分为四个子网格。
+3. 使用适当的子网格递归每个子节点。
+
+![img](https://assets.leetcode.com/uploads/2020/02/11/new_top.png)
+
+如果你想了解更多关于四叉树的内容，可以参考 [百科](https://baike.baidu.com/item/四叉树) 。
+
+**四叉树格式：**
+
+你不需要阅读本节来解决这个问题。只有当你想了解输出格式时才会这样做。输出为使用层序遍历后四叉树的序列化形式，其中 `null` 表示路径终止符，其下面不存在节点。
+
+它与二叉树的序列化非常相似。唯一的区别是节点以列表形式表示 `[isLeaf, val]` 。
+
+如果 `isLeaf` 或者 `val` 的值为 True ，则表示它在列表 `[isLeaf, val]` 中的值为 **1** ；如果 `isLeaf` 或者 `val` 的值为 False ，则表示值为 **0** 。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/02/11/grid1.png)
+
+```
+输入：grid = [[0,1],[1,0]]
+输出：[[0,1],[1,0],[1,1],[1,1],[1,0]]
+解释：此示例的解释如下：
+请注意，在下面四叉树的图示中，0 表示 false，1 表示 True 。
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2020/02/12/e2mat.png)
+
+```
+输入：grid = [[1,1,1,1,0,0,0,0],[1,1,1,1,0,0,0,0],[1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1],[1,1,1,1,0,0,0,0],[1,1,1,1,0,0,0,0],[1,1,1,1,0,0,0,0],[1,1,1,1,0,0,0,0]]
+输出：[[0,1],[1,1],[0,1],[1,1],[1,0],null,null,null,null,[1,0],[1,0],[1,1],[1,1]]
+解释：网格中的所有值都不相同。我们将网格划分为四个子网格。
+topLeft，bottomLeft 和 bottomRight 均具有相同的值。
+topRight 具有不同的值，因此我们将其再分为 4 个子网格，这样每个子网格都具有相同的值。
+解释如下图所示：
+```
+
+ 
+
+**提示：**
+
+1. `n == grid.length == grid[i].length`
+2. `n == 2x` 其中 `0 <= x <= 6`
+
+```c++
+/*
+// Definition for a QuadTree node.
+class Node {
+public:
+    bool val;
+    bool isLeaf;
+    Node* topLeft;
+    Node* topRight;
+    Node* bottomLeft;
+    Node* bottomRight;
+    
+    Node() {
+        val = false;
+        isLeaf = false;
+        topLeft = NULL;
+        topRight = NULL;
+        bottomLeft = NULL;
+        bottomRight = NULL;
+    }
+    
+    Node(bool _val, bool _isLeaf) {
+        val = _val;
+        isLeaf = _isLeaf;
+        topLeft = NULL;
+        topRight = NULL;
+        bottomLeft = NULL;
+        bottomRight = NULL;
+    }
+    
+    Node(bool _val, bool _isLeaf, Node* _topLeft, Node* _topRight, Node* _bottomLeft, Node* _bottomRight) {
+        val = _val;
+        isLeaf = _isLeaf;
+        topLeft = _topLeft;
+        topRight = _topRight;
+        bottomLeft = _bottomLeft;
+        bottomRight = _bottomRight;
+    }
+};
+*/
+
+class Solution {
+public:
+    Node* construct(vector<vector<int>>& grid) {
+        int n = grid.size();
+        if (n == 0) return nullptr;
+
+        // 计算前缀和：prefixSum[i][j]表示从(0,0)到(i-1,j-1)的矩形区域内所有元素的和（多开一行一列，避免边界判断）。
+        // 计算前缀和，用于快速判断区域是否是全1或者全0
+        vector<vector<int>> prefixSum(n + 1, vector<int>(n + 1, 0));
+        for (int i = 1; i <= n; i++)
+        {
+            for (int j = 1; j <= n; j++)
+            {
+                prefixSum[i][j] = grid[i-1][j-1] +
+                                    prefixSum[i-1][j] +
+                                    prefixSum[i][j-1] -
+                                    prefixSum[i-1][j-1];
+            }
+        }
+
+        return helper(prefixSum, 0, n-1, 0, n-1);
+    }
+
+private:
+    Node* helper(vector<vector<int>>& prefixSum, int rowStart, int rowEnd, int colStart, int colEnd)
+    {
+        // 检查当前区域是否是叶子节点
+        int regionSum = getRegionSum(prefixSum, rowStart, colStart, rowEnd, colEnd);
+        int area = (rowEnd - rowStart + 1) * (colEnd - colStart + 1);
+
+        // 如果区域全为0或者1，则是叶子节点
+        if (regionSum == 0 ||regionSum == area)
+        {
+            return new Node(regionSum == area, true);
+        }
+
+        // 到这里，基本就说明当前节点不是一个叶子节点，就需要进行4分递归处理
+        Node* resultNode = new Node(true, false);
+
+        int midRow = (rowStart + rowEnd) / 2;
+        int midCol = (colStart + colEnd) / 2;
+
+        // 左上
+        resultNode->topLeft = helper(prefixSum, rowStart, midRow, colStart, midCol);
+
+        // 右上
+        resultNode->topRight = helper(prefixSum, rowStart, midRow, midCol + 1, colEnd);
+
+        // 左下
+        resultNode->bottomLeft = helper(prefixSum, midRow+1, rowEnd, colStart, midCol);
+
+        // 右下
+        resultNode->bottomRight = helper(prefixSum, midRow+1, rowEnd, midCol+1, colEnd);
+
+        return resultNode;
+
+    }
+
+    // 通过前缀和计算区域和
+    int getRegionSum(vector<vector<int>>& prefixSum, int r1, int c1, int r2, int c2)
+    {
+        return prefixSum[r2+1][c2+1] -
+            prefixSum[r1][c2+1] -
+            prefixSum[r2+1][c1] + 
+            prefixSum[r1][c1];
+    }
+
+
+};
+```
+
+
+
+
+
+
+
+## [23. 合并 K 个升序链表](https://leetcode.cn/problems/merge-k-sorted-lists/)
+
+
+
+给你一个链表数组，每个链表都已经按升序排列。
+
+请你将所有链表合并到一个升序链表中，返回合并后的链表。
+
+ 
+
+**示例 1：**
+
+```
+输入：lists = [[1,4,5],[1,3,4],[2,6]]
+输出：[1,1,2,3,4,4,5,6]
+解释：链表数组如下：
+[
+  1->4->5,
+  1->3->4,
+  2->6
+]
+将它们合并到一个有序链表中得到。
+1->1->2->3->4->4->5->6
+```
+
+**示例 2：**
+
+```
+输入：lists = []
+输出：[]
+```
+
+**示例 3：**
+
+```
+输入：lists = [[]]
+输出：[]
+```
+
+ 
+
+**提示：**
+
+- `k == lists.length`
+- `0 <= k <= 10^4`
+- `0 <= lists[i].length <= 500`
+- `-10^4 <= lists[i][j] <= 10^4`
+- `lists[i]` 按 **升序** 排列
+- `lists[i].length` 的总和不超过 `10^4`
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+
+// 使用最小堆实现一个优先队列
+class MinHeap
+{
+private:
+    vector<ListNode*> data;
+    int count;
+
+    void shiftUp(int k)
+    {
+        // 将索引为K的数据向上移动，以维持堆的定义
+        while(k > 1 && data[k/2]->val > data[k]->val)
+        {
+            // 最小堆定义，任意节点的子节点必须大于等于父节点
+            // 所以，遇到父节点大于子节点的时候，就需要交换两个数据
+            swap(data[k/2], data[k]);
+            k /= 2;
+        }
+    }
+
+    void shiftDown(int k)
+    {
+        // 将索引为k的数据向下移动，以维护堆的定义
+        // 在while循环里，循环的必要条件是，K这个索引的节点，它必须要有孩子，我们才继续进行
+        // 如何判断它有孩子呢？我们知道对于数组建堆，起始索引为1的情况下，k节点的左孩子为2k,右孩子为2k+1
+        while (2*k <= count)
+        {
+            int j = 2*k;        // 在此轮循环中，data[k]和data[j]交换位置
+            if (j+1 <= count && data[j+1]->val < data[j]->val)
+            {
+                // 如果k节点有右孩子，并且右孩子比左孩子小，那么就将j更新为右孩子（其实说白了，就是取较小孩子的索引，然后和父节点进行比较，然后看情况进行交换）
+                j = j+1;
+            }
+            // 然后查看父节点和孩子的值谁更小
+            if (data[k]->val <= data[j]->val)
+            {
+                // 如果父节点本身就比孩子节点小，就不需要进行交换
+                break;
+            }
+            swap(data[k], data[j]);
+            // 然后将交换后的索引赋值给k，继续向下移动
+            k = j;
+        }
+    }
+
+public:
+    MinHeap(int capacity)
+    {
+        count = 0;
+        // 因为我们使用数组建立堆结构，而且是从下标1开始存储，所以这里需要额外多一个的大小
+        data.reserve(capacity+1);
+    }
+
+    int size()
+    {
+        return count;
+    }
+
+    bool isEmpty()
+    {
+        return count == 0;
+    }
+
+    void insert(ListNode* node)
+    {
+        data[count+1] = node;
+        count++;
+        // 因为我们新加入的这个元素有可能破坏了堆的定义，所以需要使用shiftUp维护最小堆定义
+        shiftUp(count);
+    }
+
+    // 弹出最小堆里的最小值
+    ListNode* popMin()
+    {
+        if (count > 0)
+        {
+            ListNode* ret = data[1];
+            // 然后将堆中最后一个元素放到堆的根节点
+            swap(data[1], data[count]);
+            count--;
+
+            // 取出堆中最小的值后，会破坏堆结构，所以需要shiftDown维护堆定义
+            shiftDown(1);
+
+            return ret;
+        }
+
+        return nullptr;
+    }
+
+};
+
+
+class Solution {
+public:
+    ListNode* mergeKLists(vector<ListNode*>& lists) {
+        int n = lists.size();
+        // 移除空链表
+        int validCount = 0;
+        for (int i = 0; i < n; i++) {
+            if (lists[i] != nullptr) {
+                lists[validCount] = lists[i];
+                validCount++;
+            }
+        }
+
+        n = validCount;
+        if (n == 0) return nullptr;
+        if (n == 1) return lists[0];
+
+        // // 建立最小堆
+        // MinHeap* heapMin = new MinHeap(n);
+        // // 然后遍历数组，插入堆数据
+        // for (ListNode* node : lists)
+        // {
+        //     if (node)
+        //     {
+        //         heapMin->insert(node);
+        //     }
+        // }
+
+        // if (heapMin->isEmpty())
+        // {
+        //     return nullptr;
+        // }
+
+        // // 然后依次取出最小堆里的最小值，建立结果链表
+        // ListNode* dummy = new ListNode();
+        // ListNode* current = dummy;
+
+        // while (!heapMin->isEmpty())
+        // {
+        //     // 遍历最小堆，直到堆中数据为空
+        //     ListNode* minNode = heapMin->popMin();
+        //     // 然后查看当前推出的节点是否有后续节点，如果有，继续将该后续节点入堆
+        //     if (minNode->next)
+        //     {
+        //         ListNode* node = minNode->next;
+        //         heapMin->insert(node);
+        //     }
+        //     // 断开minNode节点的后续节点
+        //     minNode->next = nullptr;
+        //     current->next = minNode;
+        //     current = current->next;
+        // }
+
+
+        // 原地堆排序
+        // 时间复杂度：O(N log k)，其中N是所有链表节点总数，k是链表数量
+        // 空间复杂度：O(1)（原地操作，除了结果链表）
+
+        // 对于这个堆排序，我们首先需要进行一次heapify 数组建堆
+        // 这个heapify就是从非叶子节点开始，注意，这里因为我们这个堆数组是从0开始索引
+        // 所以第一个非叶子节点就是（n-1）/2，以及循环终止的位置是0
+        for (int i = (n-1)/2; i >= 0; i--)
+        {
+            // 从最后一个叶子节点进行shiftDown
+            shiftDown(lists, n, i);
+        }
+
+        // 构建结果链表
+        
+        // 然后依次取出最小堆里的最小值，建立结果链表
+        ListNode* dummy = new ListNode();
+        ListNode* current = dummy;
+
+        while (n > 0)
+        {
+            // 取出堆顶的最小元素
+            ListNode* minNode = lists[0];
+            current->next = minNode;
+            current = current->next;
+
+            // 如果最小节点有下一个节点，将其加入堆
+            if (minNode->next != nullptr)
+            {
+                lists[0] = minNode->next;
+                shiftDown(lists, n, 0);
+            }
+            else
+            {
+                // 如果没有下一个节点，将堆的最后一个元素移动到堆顶
+                lists[0] = lists[n-1];
+                n--;
+                if (n > 0)
+                {
+                    shiftDown(lists, n, 0);
+                }
+            }
+        }
+        
+        ListNode* result = dummy->next;
+        delete dummy;
+        dummy = nullptr;
+        return result;
+
+    }
+
+private:
+    void shiftDown(vector<ListNode*>& heap, int n, int k)
+    {
+        // 因为是原地堆排序，而对于原始数组，都是从下标0开始的，所以这里堆结构的索引会有点变化
+        while (2*k+1 < n)
+        {
+            int j = 2*k + 1;        // 左孩子
+            if (j+1 < n && heap[j+1]->val < heap[j]->val)
+            {
+                // 右孩子，而且右孩子更小
+                j += 1;
+            }
+            if (heap[k]->val <= heap[j]->val)
+            {
+                break;
+            }
+            swap(heap[k], heap[j]);
+            k = j;
+        }
+    }
+
+    void shiftUp(vector<ListNode*>& heap, int k)
+    {
+        // 将堆中的第K个元素上移以保持堆定义
+        // 因为是从0开始索引，所以
+        // parent(i) = (i-1)/2
+        // left child (i) = 2*i + 1;
+        // right child (i) = 2*i + 2;
+        while (k>0 && heap[(k-1)/2]->val > heap[k]->val)
+        {
+            swap(heap[(k-1)/2], heap[k]);
+            k = (k-1)/2;
+        }
+    }
+
+
+};
+```
+
