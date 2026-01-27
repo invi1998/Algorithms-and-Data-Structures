@@ -12854,3 +12854,102 @@ public:
 };
 ```
 
+
+
+
+
+## [215. 数组中的第K个最大元素](https://leetcode.cn/problems/kth-largest-element-in-an-array/)
+
+
+
+给定整数数组 `nums` 和整数 `k`，请返回数组中第 `**k**` 个最大的元素。
+
+请注意，你需要找的是数组排序后的第 `k` 个最大的元素，而不是第 `k` 个不同的元素。
+
+你必须设计并实现时间复杂度为 `O(n)` 的算法解决此问题。
+
+ 
+
+**示例 1:**
+
+```
+输入: [3,2,1,5,6,4], k = 2
+输出: 5
+```
+
+**示例 2:**
+
+```
+输入: [3,2,3,1,2,4,5,5,6], k = 4
+输出: 4
+```
+
+ 
+
+**提示：**
+
+- `1 <= k <= nums.length <= 105`
+- `-104 <= nums[i] <= 104`
+
+```c++
+class Solution {
+public:
+    int findKthLargest(vector<int>& nums, int k) {
+        int n = nums.size();
+        // 使用heapify数组原地建堆
+        // 从最后一个非叶子节点开始执行shiftDown操作，完成最大堆的建立
+        for (int i = (n-1)/2; i >= 0; i--)
+        {
+            shiftDown(nums, i, n);
+        }
+
+        // 自此，我们的nums就变成了一个最大堆
+        int res = nums[0];
+        for (int i = 0; i < k; i++)
+        {
+            // 取出优先队列（最大堆）里的最大值
+            res = nums[0];
+            // 然后将最大值放到尾部，将堆大小减去1
+            swap(nums[0], nums[n-1]);
+            n--;
+            // 然后继续对新交换过来的这个数进行shiftDown操作，以维持堆定义
+            shiftDown(nums, 0, n);
+        }
+
+        return res;
+
+    }
+
+private:
+    void shiftDown(vector<int>& nums, int k, int n)
+    {
+        // 因为是数组原地建堆，所以二叉堆的根节点索引就是0
+        // 那么，对于任意k索引，他的父节点索引就是 parent(k) = (k-1)/2;
+        // 他的左孩子的索引就是 leftChild(k) = 2 * k + 1;
+        // 他的右孩子索引就是 rightChild(k) = 2 * k + 2;
+
+        while ((2 * k + 1) < n)
+        {
+            int j = 2 * k + 1;
+            if ((j + 1) < n && nums[j+1] > nums[j])
+            {
+                // 如果右孩子存在并且右孩子还大于左孩子
+                j = j+1;
+            }
+            if (nums[k] < nums[j])
+            {
+                // 如果父亲节点小于子节点
+                swap(nums[k], nums[j]);
+                k = j;
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+
+
+};
+```
+
