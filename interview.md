@@ -12080,6 +12080,9 @@ public:
         int pre = 0;
         for (const int& val : nums)
         {
+            // 定义状态：dp[i]表示以第i个元素结尾的最大子数组和。
+		   //状态转移：dp[i] = max(dp[i-1] + nums[i], nums[i])，即要么延续前面的子数组，要么从当前元素重新开始。
+		   // 优化：因为dp[i]只与dp[i-1]有关，所以可以用一个变量pre来记录前一个状态，从而将空间复杂度降为O(1)。
             pre = max(pre+val, val);
             ret = max(pre, ret);
         }
@@ -12143,5 +12146,711 @@ public:
 
 // };
 
+```
+
+
+
+
+
+## [918. 环形子数组的最大和](https://leetcode.cn/problems/maximum-sum-circular-subarray/)
+
+
+
+给定一个长度为 `n` 的**环形整数数组** `nums` ，返回 *`nums` 的非空 **子数组** 的最大可能和* 。
+
+**环形数组** 意味着数组的末端将会与开头相连呈环状。形式上， `nums[i]` 的下一个元素是 `nums[(i + 1) % n]` ， `nums[i]` 的前一个元素是 `nums[(i - 1 + n) % n]` 。
+
+**子数组** 最多只能包含固定缓冲区 `nums` 中的每个元素一次。形式上，对于子数组 `nums[i], nums[i + 1], ..., nums[j]` ，不存在 `i <= k1, k2 <= j` 其中 `k1 % n == k2 % n` 。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [1,-2,3,-2]
+输出：3
+解释：从子数组 [3] 得到最大和 3
+```
+
+**示例 2：**
+
+```
+输入：nums = [5,-3,5]
+输出：10
+解释：从子数组 [5,5] 得到最大和 5 + 5 = 10
+```
+
+**示例 3：**
+
+```
+输入：nums = [3,-2,2,-3]
+输出：3
+解释：从子数组 [3] 和 [3,-2,2] 都可以得到最大和 3
+```
+
+ 
+
+**提示：**
+
+- `n == nums.length`
+- `1 <= n <= 3 * 104`
+- `-3 * 104 <= nums[i] <= 3 * 104`
+
+```c++
+class Solution {
+public:
+    int maxSubarraySumCircular(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> leftMax(n);
+        // 对坐标为 0 处的元素单独处理，避免考虑子数组为空的情况
+        leftMax[0] = nums[0];
+        int leftSum = nums[0];
+        int pre = nums[0];
+        int res = nums[0];
+
+        for (int i = 1; i < n; i++)
+        {
+            leftSum += nums[i];
+            pre = max(nums[i], pre + nums[i]);
+            res = max(res, pre);
+            leftMax[i] = max(leftMax[i-1], leftSum);
+        }
+
+        int rightSum = 0;
+        for (int i = n-1; i > 0; i--)
+        {
+            rightSum += nums[i];
+            res = max(res, rightSum + leftMax[i-1]);
+        }
+
+        return res;
+    }
+};
+```
+
+
+
+
+
+
+
+
+
+## [35. 搜索插入位置](https://leetcode.cn/problems/search-insert-position/)
+
+
+
+给定一个排序数组和一个目标值，在数组中找到目标值，并返回其索引。如果目标值不存在于数组中，返回它将会被按顺序插入的位置。
+
+请必须使用时间复杂度为 `O(log n)` 的算法。
+
+ 
+
+**示例 1:**
+
+```
+输入: nums = [1,3,5,6], target = 5
+输出: 2
+```
+
+**示例 2:**
+
+```
+输入: nums = [1,3,5,6], target = 2
+输出: 1
+```
+
+**示例 3:**
+
+```
+输入: nums = [1,3,5,6], target = 7
+输出: 4
+```
+
+ 
+
+**提示:**
+
+- `1 <= nums.length <= 104`
+- `-104 <= nums[i] <= 104`
+- `nums` 为 **无重复元素** 的 **升序** 排列数组
+- `-104 <= target <= 104`
+
+```c++
+class Solution {
+public:
+    int searchInsert(vector<int>& nums, int target) {
+        int n = nums.size();
+        if (n == 0) return 0;
+        if (n == 1) return nums[0] >= target ? 0 : 1;
+        int left = 0;
+        int right = n -1;
+        while (left <= right)
+        {
+            int mid = left + (right - left) / 2;
+            if (nums[mid] == target)
+            {
+                return mid;
+            }
+            else if (target < nums[mid])
+            {
+                // 在左侧区域
+                right = mid - 1;
+            }
+            else
+            {
+                // 在右侧区域
+                left = mid + 1;
+            }
+        }
+
+        return left;
+    }
+};
+```
+
+
+
+
+
+## [74. 搜索二维矩阵](https://leetcode.cn/problems/search-a-2d-matrix/)
+
+
+
+给你一个满足下述两条属性的 `m x n` 整数矩阵：
+
+- 每行中的整数从左到右按非严格递增顺序排列。
+- 每行的第一个整数大于前一行的最后一个整数。
+
+给你一个整数 `target` ，如果 `target` 在矩阵中，返回 `true` ；否则，返回 `false` 。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/10/05/mat.jpg)
+
+```
+输入：matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3
+输出：true
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.cn/aliyun-lc-upload/uploads/2020/11/25/mat2.jpg)
+
+```
+输入：matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 13
+输出：false
+```
+
+ 
+
+**提示：**
+
+- `m == matrix.length`
+- `n == matrix[i].length`
+- `1 <= m, n <= 100`
+- `-104 <= matrix[i][j], target <= 104`
+
+```c++
+class Solution {
+public:
+    bool searchMatrix(vector<vector<int>>& matrix, int target) {
+        int m = matrix.size();
+        int n = matrix[0].size();
+        // 获取一维索引（i * n + j）
+        // 将一维索引转为行列索引 i = k / n; j = k % n; // 整除得到行，取余得到列
+        int len = m * n;
+        int left = 0;
+        int right = len - 1;
+        while (left <= right)
+        {
+            int mid = left + (right - left) / 2;
+            int i = mid / n;
+            int j = mid % n;
+            if (matrix[i][j] == target)
+            {
+                return true;
+            }
+            else if (matrix[i][j] > target)
+            {
+                right = mid - 1;
+            }
+            else
+            {
+                left = mid + 1;
+            }
+        }
+
+        return false;
+    }
+};
+```
+
+
+
+
+
+
+
+## [162. 寻找峰值](https://leetcode.cn/problems/find-peak-element/)
+
+
+
+峰值元素是指其值严格大于左右相邻值的元素。
+
+给你一个整数数组 `nums`，找到峰值元素并返回其索引。数组可能包含多个峰值，在这种情况下，返回 **任何一个峰值** 所在位置即可。
+
+你可以假设 `nums[-1] = nums[n] = -∞` 。
+
+你必须实现时间复杂度为 `O(log n)` 的算法来解决此问题。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3,1]
+输出：2
+解释：3 是峰值元素，你的函数应该返回其索引 2。
+```
+
+**示例 2：**
+
+```
+输入：nums = [1,2,1,3,5,6,4]
+输出：1 或 5 
+解释：你的函数可以返回索引 1，其峰值元素为 2；
+     或者返回索引 5， 其峰值元素为 6。
+```
+
+ 
+
+**提示：**
+
+- `1 <= nums.length <= 1000`
+- `-231 <= nums[i] <= 231 - 1`
+- 对于所有有效的 `i` 都有 `nums[i] != nums[i + 1]`
+
+```c++
+class Solution {
+public:
+    int findPeakElement(vector<int>& nums) {
+        int n = nums.size();
+        int left = 0;
+        int right = n - 1;
+        while (left < right)
+        {
+            int mid = left + (right - left)/2;
+            if (nums[mid] > nums[mid+1])
+            {
+                right = mid;
+            }
+            else
+            {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+};
+```
+
+
+
+
+
+
+
+
+
+## [33. 搜索旋转排序数组](https://leetcode.cn/problems/search-in-rotated-sorted-array/)
+
+
+
+整数数组 `nums` 按升序排列，数组中的值 **互不相同** 。
+
+在传递给函数之前，`nums` 在预先未知的某个下标 `k`（`0 <= k < nums.length`）上进行了 **向左旋转**，使数组变为 `[nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]]`（下标 **从 0 开始** 计数）。例如， `[0,1,2,4,5,6,7]` 下标 `3` 上向左旋转后可能变为 `[4,5,6,7,0,1,2]` 。
+
+给你 **旋转后** 的数组 `nums` 和一个整数 `target` ，如果 `nums` 中存在这个目标值 `target` ，则返回它的下标，否则返回 `-1` 。
+
+你必须设计一个时间复杂度为 `O(log n)` 的算法解决此问题。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [4,5,6,7,0,1,2], target = 0
+输出：4
+```
+
+**示例 2：**
+
+```
+输入：nums = [4,5,6,7,0,1,2], target = 3
+输出：-1
+```
+
+**示例 3：**
+
+```
+输入：nums = [1], target = 0
+输出：-1
+```
+
+ 
+
+**提示：**
+
+- `1 <= nums.length <= 5000`
+- `-104 <= nums[i] <= 104`
+- `nums` 中的每个值都 **独一无二**
+- 题目数据保证 `nums` 在预先未知的某个下标上进行了旋转
+- `-104 <= target <= 104`
+
+```c++
+class Solution {
+public:
+    int search(vector<int>& nums, int target) {
+        int n = nums.size();
+        if (n == 1) return nums[0] == target ? 0 : -1;
+
+        int left = 0;
+        int right = n-1;
+
+        while (left <= right)
+        {
+            int mid = (left + right)/2;
+            if (nums[mid] == target) return mid;
+
+            if (nums[0] <= nums[mid])
+            {
+                // 说明mid在左侧升序区域内
+                if (nums[0] <= target && target < nums[mid])
+                {
+                    // 说明target在左侧升序区域的左侧
+                    right = mid-1;
+                }
+                else
+                {
+                    left = mid + 1;
+                }
+            }
+            else
+            {
+                // 说明mid在右侧的升序区域内
+                if (nums[mid] < target && nums[n-1] >= target)
+                {
+                    // 说明在mid-n-1之间
+                    left = mid + 1;
+                }
+                else
+                {
+                    right = mid - 1;
+                }
+            }
+        }
+
+        return -1;
+
+
+    }
+};
+```
+
+
+
+
+
+## [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode.cn/problems/find-first-and-last-position-of-element-in-sorted-array/)
+
+给你一个按照非递减顺序排列的整数数组 `nums`，和一个目标值 `target`。请你找出给定目标值在数组中的开始位置和结束位置。
+
+如果数组中不存在目标值 `target`，返回 `[-1, -1]`。
+
+你必须设计并实现时间复杂度为 `O(log n)` 的算法解决此问题。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [5,7,7,8,8,10], target = 8
+输出：[3,4]
+```
+
+**示例 2：**
+
+```
+输入：nums = [5,7,7,8,8,10], target = 6
+输出：[-1,-1]
+```
+
+**示例 3：**
+
+```
+输入：nums = [], target = 0
+输出：[-1,-1]
+```
+
+ 
+
+**提示：**
+
+- `0 <= nums.length <= 105`
+- `-109 <= nums[i] <= 109`
+- `nums` 是一个非递减数组
+- `-109 <= target <= 109`
+
+```c++
+class Solution {
+public:
+    vector<int> searchRange(vector<int>& nums, int target) {
+        int n = nums.size();
+        if (n == 0) return {-1, -1};
+        if (n == 1) return nums[0] == target ? vector<int>{0, 0} : vector<int>{-1, -1};
+
+        int left = 0;
+        int right = n - 1;
+
+        int l = -1;
+        int r = -1;
+
+        while (left <= right)
+        {
+            int mid = left + (right - left)/2;
+            if (target == nums[mid])
+            {
+                l = r = mid;
+
+                // 向两端扩展
+                while (left < l)
+                {
+                    int m = left + (l - left)/2;
+                    if (nums[m] == target)
+                    {
+                        l = m;
+                    }
+                    else
+                    {
+                        // 说明起始点在m-l之间
+                        left = m + 1;
+                    }
+
+                }
+
+                while (right > r)
+                {
+                    int m = r + (right - r + 1)/2;
+                    if (nums[m] == target)
+                    {
+                        r = m;
+                    }
+                    else
+                    {
+                        // 说明结束点在r-m之间
+                        right = m - 1;
+                    }
+                }
+
+                break;
+
+            }
+            else if (target < nums[mid])
+            {
+                // 说明在mid左侧
+                right = mid - 1;
+            }
+            else
+            {
+                left = mid + 1;
+            }
+        }
+
+        return vector<int>{l, r};
+
+
+    }
+};
+```
+
+
+
+
+
+## [153. 寻找旋转排序数组中的最小值](https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array/)
+
+已知一个长度为 `n` 的数组，预先按照升序排列，经由 `1` 到 `n` 次 **旋转** 后，得到输入数组。例如，原数组 `nums = [0,1,2,4,5,6,7]` 在变化后可能得到：
+
+- 若旋转 `4` 次，则可以得到 `[4,5,6,7,0,1,2]`
+- 若旋转 `7` 次，则可以得到 `[0,1,2,4,5,6,7]`
+
+注意，数组 `[a[0], a[1], a[2], ..., a[n-1]]` **旋转一次** 的结果为数组 `[a[n-1], a[0], a[1], a[2], ..., a[n-2]]` 。
+
+给你一个元素值 **互不相同** 的数组 `nums` ，它原来是一个升序排列的数组，并按上述情形进行了多次旋转。请你找出并返回数组中的 **最小元素** 。
+
+你必须设计一个时间复杂度为 `O(log n)` 的算法解决此问题。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [3,4,5,1,2]
+输出：1
+解释：原数组为 [1,2,3,4,5] ，旋转 3 次得到输入数组。
+```
+
+**示例 2：**
+
+```
+输入：nums = [4,5,6,7,0,1,2]
+输出：0
+解释：原数组为 [0,1,2,4,5,6,7] ，旋转 4 次得到输入数组。
+```
+
+**示例 3：**
+
+```
+输入：nums = [11,13,15,17]
+输出：11
+解释：原数组为 [11,13,15,17] ，旋转 4 次得到输入数组。
+```
+
+ 
+
+**提示：**
+
+- `n == nums.length`
+- `1 <= n <= 5000`
+- `-5000 <= nums[i] <= 5000`
+- `nums` 中的所有整数 **互不相同**
+- `nums` 原来是一个升序排序的数组，并进行了 `1` 至 `n` 次旋转
+
+```c++
+class Solution {
+public:
+    int findMin(vector<int>& nums) {
+        int left = 0;
+        int right = nums.size() - 1;
+        while (left < right)
+        {
+            int mid = left + (right - left) / 2;
+            if (nums[mid] < nums[right])
+            {
+                right = mid;
+            }
+            else
+            {
+                left = mid + 1;
+            }
+        }
+
+        return nums[left];
+    }
+};
+```
+
+
+
+
+
+
+
+## [4. 寻找两个正序数组的中位数](https://leetcode.cn/problems/median-of-two-sorted-arrays/)
+
+
+
+给定两个大小分别为 `m` 和 `n` 的正序（从小到大）数组 `nums1` 和 `nums2`。请你找出并返回这两个正序数组的 **中位数** 。
+
+算法的时间复杂度应该为 `O(log (m+n))` 。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums1 = [1,3], nums2 = [2]
+输出：2.00000
+解释：合并数组 = [1,2,3] ，中位数 2
+```
+
+**示例 2：**
+
+```
+输入：nums1 = [1,2], nums2 = [3,4]
+输出：2.50000
+解释：合并数组 = [1,2,3,4] ，中位数 (2 + 3) / 2 = 2.5
+```
+
+ 
+
+ 
+
+**提示：**
+
+- `nums1.length == m`
+- `nums2.length == n`
+- `0 <= m <= 1000`
+- `0 <= n <= 1000`
+- `1 <= m + n <= 2000`
+- `-106 <= nums1[i], nums2[i] <= 106`
+
+```c++
+class Solution {
+public:
+    double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
+        // 确保nums1是较短的数组
+        if (nums1.size() > nums2.size())
+        {
+            return findMedianSortedArrays(nums2, nums1);    // 将参数调换一下，重新进来计算
+        }
+
+        int m = nums1.size();
+        int n = nums2.size();
+
+        int halfLen = (m + n + 1) / 2;
+        int left = 0;
+        int right = m;
+
+        while (left <= right)
+        {
+            int i = (left + right) / 2;
+            int j = halfLen - i;
+
+            // 处理边界情况
+            int nums1Left = (i == 0) ? INT_MIN : nums1[i-1];
+            int nums1Right = (i == m) ? INT_MAX : nums1[i];
+            int nums2Left = (j == 0) ? INT_MIN : nums2[j-1];
+            int nums2Right = (j == n) ? INT_MAX : nums2[j];
+
+            if (nums1Left <= nums2Right && nums2Left <= nums1Right)
+            {
+                // 找到合适的分隔
+                if ((m + n) % 2 == 1)
+                {
+                    return max(nums1Left, nums2Left);
+                }
+                else
+                {
+                    return (max(nums1Left, nums2Left) + min(nums1Right, nums2Right)) / 2.0;
+                }
+            }
+            else if (nums1Left > nums2Right)
+            {
+                right = i - 1;
+            }
+            else
+            {
+                left = i + 1;
+            }
+        }
+
+        return 0.0;
+
+    }
+};
 ```
 
