@@ -1,5 +1,7 @@
 
 
+# 数组/字符串
+
 ## [88. 合并两个有序数组](https://leetcode.cn/problems/merge-sorted-array/)
 
 给你两个按 **非递减顺序** 排列的整数数组 `nums1` 和 `nums2`，另有两个整数 `m` 和 `n` ，分别表示 `nums1` 和 `nums2` 中的元素数目。
@@ -2152,6 +2154,8 @@ public:
 
 
 
+# 双指针
+
 ## [125. 验证回文串](https://leetcode.cn/problems/valid-palindrome/)
 
 如果在将所有大写字符转换为小写字符、并移除所有非字母数字字符之后，短语正着读和反着读都一样。则可以认为该短语是一个 **回文串** 。
@@ -2577,7 +2581,11 @@ public:
 
 
 
-## [209. 长度最小的子数组 (滑动窗口)](https://leetcode.cn/problems/minimum-size-subarray-sum/)
+# 滑动窗口
+
+
+
+## [209. 长度最小的子数组 ](https://leetcode.cn/problems/minimum-size-subarray-sum/)
 
 给定一个含有 `n` 个正整数的数组和一个正整数 `target` **。**
 
@@ -2997,6 +3005,12 @@ public:
     }
 };
 ```
+
+
+
+
+
+# 矩阵
 
 
 
@@ -3698,6 +3712,10 @@ public:
 ```
 
 
+
+
+
+# 哈希表
 
 
 
@@ -4660,6 +4678,8 @@ public:
 
 
 
+# 区间
+
 
 
 ## [228. 汇总区间](https://leetcode.cn/problems/summary-ranges/)
@@ -5053,6 +5073,10 @@ public:
 ```
 
 
+
+
+
+# 栈
 
 
 
@@ -5591,6 +5615,8 @@ public:
 
 
 
+
+# 链表
 
 
 
@@ -6645,6 +6671,8 @@ public:
 
 
 
+
+
 ## [86. 分隔链表](https://leetcode.cn/problems/partition-list/)
 
 给你一个链表的头节点 `head` 和一个特定值 `x` ，请你对链表进行分隔，使得所有 **小于** `x` 的节点都出现在 **大于或等于** `x` 的节点之前。
@@ -6898,6 +6926,10 @@ private:
 ```
 
 
+
+
+
+# 二叉树
 
 
 
@@ -8440,6 +8472,10 @@ public:
 
 
 
+# 二叉树层序遍历
+
+
+
 ## [199. 二叉树的右视图](https://leetcode.cn/problems/binary-tree-right-side-view/)
 
 给定一个二叉树的 **根节点** `root`，想象自己站在它的右侧，按照从顶部到底部的顺序，返回从右侧所能看到的节点值。
@@ -8786,6 +8822,10 @@ public:
 
 
 
+# 二叉搜索树
+
+
+
 ## [530. 二叉搜索树的最小绝对差](https://leetcode.cn/problems/minimum-absolute-difference-in-bst/)
 
 
@@ -9053,6 +9093,8 @@ public:
 
 
 
+
+# 图
 
 
 
@@ -9916,6 +9958,8 @@ private:
 
 
 
+# 图的广度优先搜索
+
 
 
 ## [909. 蛇梯棋](https://leetcode.cn/problems/snakes-and-ladders/)
@@ -10340,6 +10384,10 @@ public:
 ```
 
 
+
+
+
+# 字典树
 
 
 
@@ -10783,9 +10831,7 @@ private:
 
 
 
-
-
-
+# 回溯
 
 
 
@@ -11272,6 +11318,210 @@ private:
 ```
 
 
+
+
+
+
+
+## [79. 单词搜索](https://leetcode.cn/problems/word-search/)
+
+
+
+给定一个 `m x n` 二维字符网格 `board` 和一个字符串单词 `word` 。如果 `word` 存在于网格中，返回 `true` ；否则，返回 `false` 。
+
+单词必须按照字母顺序，通过相邻的单元格内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母不允许被重复使用。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/11/04/word2.jpg)
+
+```
+输入：board = [['A','B','C','E'],['S','F','C','S'],['A','D','E','E']], word = "ABCCED"
+输出：true
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2020/11/04/word-1.jpg)
+
+```
+输入：board = [['A','B','C','E'],['S','F','C','S'],['A','D','E','E']], word = "SEE"
+输出：true
+```
+
+**示例 3：**
+
+![img](https://assets.leetcode.com/uploads/2020/10/15/word3.jpg)
+
+```
+输入：board = [['A','B','C','E'],['S','F','C','S'],['A','D','E','E']], word = "ABCB"
+输出：false
+```
+
+ 
+
+**提示：**
+
+- `m == board.length`
+- `n = board[i].length`
+- `1 <= m, n <= 6`
+- `1 <= word.length <= 15`
+- `board` 和 `word` 仅由大小写英文字母组成
+
+ 
+
+**进阶：**你可以使用搜索剪枝的技术来优化解决方案，使其在 `board` 更大的情况下可以更快解决问题？
+
+```c++
+class Solution {
+public:
+    bool exist(vector<vector<char>>& board, string word) {
+        m = board.size(), n = board[0].size();
+
+        // 剪枝1：长度检查
+        if (word.length() > m * n) return false;
+        
+        // 剪枝2：频率统计
+        vector<int> boardCount(128, 0);
+        for (auto& row : board) {
+            for (char c : row) {
+                boardCount[c]++;
+            }
+        }
+        
+        vector<int> wordCount(128, 0);
+        for (char c : word) {
+            if (++wordCount[c] > boardCount[c]) {
+                return false;       // 关键剪枝：棋盘中没有足够的该字符
+            }
+        }
+        
+        // 从所有可能的起点开始
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                // 必须从word的第一个字符开始，避免不必要的检索（因为第一个都不匹配，后续所有的检索都是没意义的）
+                if (board[i][j] == word[0] && dfs(board, word, i, j, 0)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+private:
+    int m, n;
+    vector<vector<int>> dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    
+    bool dfs(vector<vector<char>>& board, string& word, int i, int j, int idx) {
+        if (idx == word.length()) return true;
+        if (i < 0 || i >= m || j < 0 || j >= n || board[i][j] != word[idx]) {
+            return false;
+        }
+        
+        // 保存并标记
+        char temp = board[i][j];
+        board[i][j] = '#';
+        
+        // 向4个方向搜索
+        for (auto& dir : dirs) {
+            int ni = i + dir[0];
+            int nj = j + dir[1];
+            if (dfs(board, word, ni, nj, idx + 1)) {
+                return true;
+            }
+        }
+        
+        board[i][j] = temp;
+        return false;
+    }
+};
+```
+
+
+
+# 分治
+
+
+
+## [108. 将有序数组转换为二叉搜索树](https://leetcode.cn/problems/convert-sorted-array-to-binary-search-tree/)
+
+
+
+给你一个整数数组 `nums` ，其中元素已经按 **升序** 排列，请你将其转换为一棵 平衡 二叉搜索树。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/18/btree1.jpg)
+
+```
+输入：nums = [-10,-3,0,5,9]
+输出：[0,-3,9,-10,null,5]
+解释：[0,-10,5,null,-3,null,9] 也将被视为正确答案：
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/18/btree.jpg)
+
+```
+输入：nums = [1,3]
+输出：[3,1]
+解释：[1,null,3] 和 [3,1] 都是高度平衡二叉搜索树。
+```
+
+ 
+
+**提示：**
+
+- `1 <= nums.length <= 104`
+- `-104 <= nums[i] <= 104`
+- `nums` 按 **严格递增** 顺序排列
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* sortedArrayToBST(vector<int>& nums) {
+        int n = nums.size();
+        if(n == 0) return nullptr;
+        return BST(0, n - 1, n, nums);
+
+    }
+
+private:
+    TreeNode* BST(int left, int right, int n, vector<int>& nums)
+    {
+        int mid = left + ((right - left)/2);
+        TreeNode* midNode = new TreeNode(nums[mid]);
+        if (left <= mid-1)
+        {
+            midNode->left = BST(left, mid-1, n, nums);
+        }
+        if (mid+1 <= right)
+        {
+            midNode->right = BST(mid+1, right, n, nums);
+        }
+        return midNode;
+    }
+
+
+};
+```
 
 
 
@@ -12025,6 +12275,10 @@ private:
 
 
 
+# Kadane算法
+
+
+
 ## [53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/)
 
 给你一个整数数组 `nums` ，请你找出一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
@@ -12232,7 +12486,7 @@ public:
 
 
 
-
+# 二分查找
 
 
 
@@ -12858,6 +13112,10 @@ public:
 
 
 
+# 堆（优先队列）
+
+
+
 ## [215. 数组中的第K个最大元素](https://leetcode.cn/problems/kth-largest-element-in-an-array/)
 
 
@@ -13220,5 +13478,404 @@ private:
  * obj->addNum(num);
  * double param_2 = obj->findMedian();
  */
+```
+
+
+
+
+
+# 位运算
+
+## [67. 二进制求和](https://leetcode.cn/problems/add-binary/)
+
+给你两个二进制字符串 `a` 和 `b` ，以二进制字符串的形式返回它们的和。
+
+ 
+
+**示例 1：**
+
+```
+输入:a = "11", b = "1"
+输出："100"
+```
+
+**示例 2：**
+
+```
+输入：a = "1010", b = "1011"
+输出："10101"
+```
+
+ 
+
+**提示：**
+
+- `1 <= a.length, b.length <= 104`
+- `a` 和 `b` 仅由字符 `'0'` 或 `'1'` 组成
+- 字符串如果不是 `"0"` ，就不含前导零
+
+```c++
+class Solution {
+public:
+    string addBinary(string a, string b) {
+        string res = "";
+        int carry = 0;
+        int i = a.length() - 1;
+        int j = b.length() - 1;
+        while (i >= 0 || j >= 0 || carry > 0)
+        {
+            // 当字符串a还没遍历完，或者b还没遍历完，或者还存在进位的情况
+            carry += i >= 0 ? a[i--] - '0' : 0;
+            carry += j >= 0 ? b[j--] - '0' : 0;
+            res = char(carry % 2 + '0') + res;
+            carry /= 2;
+        }
+
+        return res;
+    }
+};
+```
+
+
+
+## [190. 颠倒二进制位](https://leetcode.cn/problems/reverse-bits/)
+
+
+
+颠倒给定的 32 位有符号整数的二进制位。
+
+ 
+
+**示例 1：**
+
+**输入：**n = 43261596
+
+**输出：**964176192
+
+**解释：**
+
+| 整数      | 二进制                           |
+| --------- | -------------------------------- |
+| 43261596  | 00000010100101000001111010011100 |
+| 964176192 | 00111001011110000010100101000000 |
+
+**示例 2：**
+
+**输入：**n = 2147483644
+
+**输出：**1073741822
+
+**解释：**
+
+| 整数       | 二进制                           |
+| ---------- | -------------------------------- |
+| 2147483644 | 01111111111111111111111111111100 |
+| 1073741822 | 00111111111111111111111111111110 |
+
+ 
+
+**提示：**
+
+- `0 <= n <= 231 - 2`
+- `n` 为偶数
+
+ 
+
+**进阶**: 如果多次调用这个函数，你将如何优化你的算法？
+
+```c++
+// class Solution {
+// public:
+//     int reverseBits(int n) {
+//         uint32_t result = 0;
+//         for (int i = 0; i < 32; ++i)
+//         {
+//             // n >> i & 1 提取原数字的第 i 位（从低位开始计数，i=0表示最低位）
+//             // n >> i：将数字 n 右移 i 位,这会将我们想要的位移到最低位（最右边）
+//             // & 1：与运算，提取最低位
+//             // result << 1
+//             // 将 result 左移1位，为新的位腾出空间
+//             // 左移后，result原来的所有位都向高位移动一位
+//             // 最低位变为0
+//             // 作用：为新的位创建空间
+//             result = (result << 1) | (n >> i & 1);
+//         }
+//         return result;
+//     }
+// };
+
+// 分治法
+class Solution {
+public:
+    uint32_t reverseBits(uint32_t n) {
+        n = (n >> 16) | (n << 16);  // 交换前16位和后16位
+        n = ((n & 0xFF00FF00) >> 8) | ((n & 0x00FF00FF) << 8);  // 交换每8位中的前后字节
+        n = ((n & 0xF0F0F0F0) >> 4) | ((n & 0x0F0F0F0F) << 4);  // 交换每4位
+        n = ((n & 0xCCCCCCCC) >> 2) | ((n & 0x33333333) << 2);  // 交换每2位
+        n = ((n & 0xAAAAAAAA) >> 1) | ((n & 0x55555555) << 1);  // 交换每1位
+        return n;
+    }
+};
+
+```
+
+
+
+
+
+## [191. 位1的个数](https://leetcode.cn/problems/number-of-1-bits/)
+
+
+
+给定一个正整数 `n`，编写一个函数，获取一个正整数的二进制形式并返回其二进制表达式中 设置位 的个数（也被称为[汉明重量](https://baike.baidu.com/item/汉明重量)）。
+
+ 
+
+**示例 1：**
+
+```
+输入：n = 11
+输出：3
+解释：输入的二进制串 1011 中，共有 3 个设置位。
+```
+
+**示例 2：**
+
+```
+输入：n = 128
+输出：1
+解释：输入的二进制串 10000000 中，共有 1 个设置位。
+```
+
+**示例 3：**
+
+```
+输入：n = 2147483645
+输出：30
+解释：输入的二进制串 1111111111111111111111111111101 中，共有 30 个设置位。
+```
+
+ 
+
+**提示：**
+
+- `1 <= n <= 231 - 1`
+
+ 
+
+**进阶**：
+
+- 如果多次调用这个函数，你将如何优化你的算法？
+
+```c++
+class Solution {
+public:
+    int hammingWeight(int n) {
+        // int res = 0;
+        // for (int i = 0; i < 32; ++i)
+        // {
+        //     res += (n >> i & 1);
+        // }
+        // return res;
+
+        // 使用bitset
+        // std::bitset<32> bits(n);
+        // return bits.count();
+
+        // 方法2：GCC/Clang内置函数
+        return __builtin_popcount(n);
+        
+        // 方法3：C++20标准函数
+        // return std::popcount(static_cast<unsigned>(n));
+    }
+};
+```
+
+
+
+
+
+## [136. 只出现一次的数字](https://leetcode.cn/problems/single-number/)
+
+
+
+给你一个 **非空** 整数数组 `nums` ，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现了一次的元素。
+
+你必须设计并实现线性时间复杂度的算法来解决此问题，且该算法只使用常量额外空间。
+
+ 
+
+**示例 1 ：**
+
+**输入：**nums = [2,2,1]
+
+**输出：**1
+
+**示例 2 ：**
+
+**输入：**nums = [4,1,2,1,2]
+
+**输出：**4
+
+**示例 3 ：**
+
+**输入：**nums = [1]
+
+**输出：**1
+
+ 
+
+**提示：**
+
+- `1 <= nums.length <= 3 * 104`
+- `-3 * 104 <= nums[i] <= 3 * 104`
+- 除了某个元素只出现一次以外，其余每个元素均出现两次。
+
+```c++
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        int result = 0;  // 从0开始，因为0 ^ x = x
+        for (int num : nums) {
+            result ^= num;
+        }
+        return result;
+    }
+};
+```
+
+
+
+
+
+## [137. 只出现一次的数字 II](https://leetcode.cn/problems/single-number-ii/)
+
+
+
+给你一个整数数组 `nums` ，除某个元素仅出现 **一次** 外，其余每个元素都恰出现 **三次 。**请你找出并返回那个只出现了一次的元素。
+
+你必须设计并实现线性时间复杂度的算法且使用常数级空间来解决此问题。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [2,2,3,2]
+输出：3
+```
+
+**示例 2：**
+
+```
+输入：nums = [0,1,0,1,0,1,99]
+输出：99
+```
+
+ 
+
+**提示：**
+
+- `1 <= nums.length <= 3 * 104`
+- `-231 <= nums[i] <= 231 - 1`
+- `nums` 中，除某个元素仅出现 **一次** 外，其余每个元素都恰出现 **三次**
+
+```c++
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        int result = 0;
+        // 需要统计每个位上1出现的次数
+        // 出现3次的位，1的个数是3的倍数
+        // 出现1次的位，1的个数 mod 3 = 1
+        for (int i = 0; i < 32; ++i)
+        {
+            int sum = 0;
+            for (int num : nums)
+            {
+                sum += (num >> i) & 1;      // 统计第i位1的个数
+            }
+            if (sum % 3 == 1)
+            {
+                // 如果取模得1，说明就是那个只出现一次的数字
+                result |= (1 << i);         // 将第i位设置为1
+            }
+        }
+
+        return result;
+    }
+};
+```
+
+
+
+
+
+## [201. 数字范围按位与](https://leetcode.cn/problems/bitwise-and-of-numbers-range/)
+
+
+
+给你两个整数 `left` 和 `right` ，表示区间 `[left, right]` ，返回此区间内所有数字 **按位与** 的结果（包含 `left` 、`right` 端点）。
+
+ 
+
+**示例 1：**
+
+```
+输入：left = 5, right = 7
+输出：4
+```
+
+**示例 2：**
+
+```
+输入：left = 0, right = 0
+输出：0
+```
+
+**示例 3：**
+
+```
+输入：left = 1, right = 2147483647
+输出：0
+```
+
+ 
+
+**提示：**
+
+- `0 <= left <= right <= 231 - 1`
+
+```c++
+class Solution {
+public:
+    int rangeBitwiseAnd(int left, int right) {
+        // 寻找公共前缀
+        int shift = 0;
+        // 找到left和right的公共前缀
+        while (left < right)
+        {
+            left >>= 1;     // 右移一位
+            right >>= 1;    // 右移一位
+            shift++;        // 记录移位次数
+        }
+
+        // 将公共前缀左移回来
+        return left << shift;
+
+        // left = 9  (1001)
+        // right = 12 (1100)
+
+        // 步骤：
+        // 1. left < right, 右移:
+        // left = 100, right = 110, shift = 1
+        // 2. left < right, 右移:
+        // left = 10, right = 11, shift = 2
+        // 3. left < right, 右移:
+        // left = 1, right = 1, shift = 3
+        // 4. left == right, 结束
+        // 5. 返回 left << 3 = 1000 (8)
+    }
+};
 ```
 
