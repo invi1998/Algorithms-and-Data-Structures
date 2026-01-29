@@ -12953,3 +12953,272 @@ private:
 };
 ```
 
+
+
+## [502. IPO](https://leetcode.cn/problems/ipo/)
+
+
+
+假设 力扣（LeetCode）即将开始 **IPO** 。为了以更高的价格将股票卖给风险投资公司，力扣 希望在 IPO 之前开展一些项目以增加其资本。 由于资源有限，它只能在 IPO 之前完成最多 `k` 个不同的项目。帮助 力扣 设计完成最多 `k` 个不同项目后得到最大总资本的方式。
+
+给你 `n` 个项目。对于每个项目 `i` ，它都有一个纯利润 `profits[i]` ，和启动该项目需要的最小资本 `capital[i]` 。
+
+最初，你的资本为 `w` 。当你完成一个项目时，你将获得纯利润，且利润将被添加到你的总资本中。
+
+总而言之，从给定项目中选择 **最多** `k` 个不同项目的列表，以 **最大化最终资本** ，并输出最终可获得的最多资本。
+
+答案保证在 32 位有符号整数范围内。
+
+ 
+
+**示例 1：**
+
+```
+输入：k = 2, w = 0, profits = [1,2,3], capital = [0,1,1]
+输出：4
+解释：
+由于你的初始资本为 0，你仅可以从 0 号项目开始。
+在完成后，你将获得 1 的利润，你的总资本将变为 1。
+此时你可以选择开始 1 号或 2 号项目。
+由于你最多可以选择两个项目，所以你需要完成 2 号项目以获得最大的资本。
+因此，输出最后最大化的资本，为 0 + 1 + 3 = 4。
+```
+
+**示例 2：**
+
+```
+输入：k = 3, w = 0, profits = [1,2,3], capital = [0,1,2]
+输出：6
+```
+
+ 
+
+**提示：**
+
+- `1 <= k <= 105`
+- `0 <= w <= 109`
+- `n == profits.length`
+- `n == capital.length`
+- `1 <= n <= 105`
+- `0 <= profits[i] <= 104`
+- `0 <= capital[i] <= 109`
+
+```c++
+class Solution {
+public:
+    int findMaximizedCapital(int k, int w, vector<int>& profits, vector<int>& capital) {
+        if (k == 0) return w;
+
+        int n = profits.size();
+        k = min(k, n);
+
+        // 将项目按照启动资金排序
+        vector<pair<int, int>> projects;
+        for (int i = 0; i < n; i++)
+        {
+            projects.push_back({capital[i], profits[i]});
+        }
+        sort(projects.begin(), projects.end());
+
+        // 大顶堆，存储可以购买的项目的利润
+        priority_queue<int> pq;
+
+        int idx = 0;
+        for (int i = 0; i < k; i++)
+        {
+            // 将当前所有能买得起的项目推入堆中
+            while (idx < n && projects[idx].first <= w)
+            {
+                pq.push(projects[idx].second);
+                idx++;
+            }
+
+            // 当没有可购买的项目，退出
+            if (pq.empty()) break;
+
+            // 选择利润最大的项目
+            w += pq.top();
+            pq.pop();
+
+        }
+        
+        return w;
+
+    }
+};
+```
+
+
+
+
+
+## [373. 查找和最小的 K 对数字](https://leetcode.cn/problems/find-k-pairs-with-smallest-sums/)
+
+
+
+给定两个以 **非递减顺序排列** 的整数数组 `nums1` 和 `nums2` , 以及一个整数 `k` 。
+
+定义一对值 `(u,v)`，其中第一个元素来自 `nums1`，第二个元素来自 `nums2` 。
+
+请找到和最小的 `k` 个数对 `(u1,v1)`, ` (u2,v2)` ...  `(uk,vk)` 。
+
+ 
+
+**示例 1:**
+
+```
+输入: nums1 = [1,7,11], nums2 = [2,4,6], k = 3
+输出: [[1,2],[1,4],[1,6]]
+解释: 返回序列中的前 3 对数：
+     [1,2],[1,4],[1,6],[7,2],[7,4],[11,2],[7,6],[11,4],[11,6]
+```
+
+**示例 2:**
+
+```
+输入: nums1 = [1,1,2], nums2 = [1,2,3], k = 2
+输出: [[1,1],[1,1]]
+解释: 返回序列中的前 2 对数：
+     [1,1],[1,1],[1,2],[2,1],[1,2],[2,2],[1,3],[1,3],[2,3]
+```
+
+ 
+
+**提示:**
+
+- `1 <= nums1.length, nums2.length <= 105`
+- `-109 <= nums1[i], nums2[i] <= 109`
+- `nums1` 和 `nums2` 均为 **升序排列**
+- `1 <= k <= 104`
+- `k <= nums1.length * nums2.length`
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> kSmallestPairs(vector<int>& nums1, vector<int>& nums2, int k) {
+        vector<vector<int>> result;
+        // 添加容量预分配，避免频繁重新分配
+        result.reserve(k);
+        int idx1 = 0;
+        int idx2 = 0;
+        int n1 = nums1.size();
+        int n2 = nums2.size();
+
+        // 定义比较器仿函数
+        auto ComparePair = [&nums1, &nums2](const pair<int, int>& p1, const pair<int, int>& p2)
+        {
+            // 最小堆比较器
+            return nums1[p1.first] + nums2[p1.second] > nums1[p2.first] + nums2[p2.second];
+        };
+
+        priority_queue<pair<int, int>, std::vector<pair<int, int>>, decltype(ComparePair)> pq(ComparePair);
+
+        // 注意：这里先只推入nums1和num2里第一个元素的组合
+        for (int i = 0; i < min(k, n1); i++)
+        {
+            pq.push({i, 0});
+        }
+
+        while(k-- > 0 && !pq.empty())
+        {
+            // 然后在实际进行比较的时候，再更新num2的组合
+            auto [i1, i2] = pq.top();
+            pq.pop();
+            result.emplace_back(initializer_list<int>{nums1[i1], nums2[i2]});
+            // 如果不想使用初始化列表构造，也可以直接显式构造
+            // result.emplace_back(vector<int>{nums1[i1], nums2[i2]});
+            if (i2 + 1 < n2)
+            {
+                // 然后每次在得到一个最小数对后，继续推入一个num2的组合
+                // 这里不需要将此前推入的num1的组合的最小和值拿出来和当前的num2的组合和值进行比较
+                // 因为我们最小堆里推入的第一个最小值是[0, 0]索引，它必然是最小的，所以后续只需要不断地往优先队列里推入nums2的组合，他会自行更新
+                pq.push({i1, i2 + 1});
+            }
+        }
+
+        return result;
+    }
+};
+```
+
+
+
+## [295. 数据流的中位数](https://leetcode.cn/problems/find-median-from-data-stream/)
+
+**中位数**是有序整数列表中的中间值。如果列表的大小是偶数，则没有中间值，中位数是两个中间值的平均值。
+
+- 例如 `arr = [2,3,4]` 的中位数是 `3` 。
+- 例如 `arr = [2,3]` 的中位数是 `(2 + 3) / 2 = 2.5` 。
+
+实现 MedianFinder 类:
+
+- `MedianFinder()` 初始化 `MedianFinder` 对象。
+- `void addNum(int num)` 将数据流中的整数 `num` 添加到数据结构中。
+- `double findMedian()` 返回到目前为止所有元素的中位数。与实际答案相差 `10-5` 以内的答案将被接受。
+
+**示例 1：**
+
+```
+输入
+["MedianFinder", "addNum", "addNum", "findMedian", "addNum", "findMedian"]
+[[], [1], [2], [], [3], []]
+输出
+[null, null, null, 1.5, null, 2.0]
+
+解释
+MedianFinder medianFinder = new MedianFinder();
+medianFinder.addNum(1);    // arr = [1]
+medianFinder.addNum(2);    // arr = [1, 2]
+medianFinder.findMedian(); // 返回 1.5 ((1 + 2) / 2)
+medianFinder.addNum(3);    // arr[1, 2, 3]
+medianFinder.findMedian(); // return 2.0
+```
+
+**提示:**
+
+- `-105 <= num <= 105`
+- 在调用 `findMedian` 之前，数据结构中至少有一个元素
+- 最多 `5 * 104` 次调用 `addNum` 和 `findMedian`
+
+```c++
+class MedianFinder {
+public:
+    MedianFinder() {}
+    
+    void addNum(int num) {
+        if (maxPq.empty() || num <= maxPq.top()) {
+            maxPq.push(num);
+        } else {
+            minPq.push(num);
+        }
+        
+        // 平衡两个堆
+        if (maxPq.size() > minPq.size() + 1) {
+            minPq.push(maxPq.top());
+            maxPq.pop();
+        } else if (minPq.size() > maxPq.size()) {
+            maxPq.push(minPq.top());
+            minPq.pop();
+        }
+    }
+    
+    double findMedian() {
+        if (maxPq.size() > minPq.size()) {
+            return static_cast<double>(maxPq.top());
+        } else {
+            return (static_cast<double>(maxPq.top()) + static_cast<double>(minPq.top())) / 2.0;
+        }
+    }
+
+private:
+    priority_queue<int> maxPq;
+    priority_queue<int, vector<int>, greater<int>> minPq;
+};
+/**
+ * Your MedianFinder object will be instantiated and called as such:
+ * MedianFinder* obj = new MedianFinder();
+ * obj->addNum(num);
+ * double param_2 = obj->findMedian();
+ */
+```
+
