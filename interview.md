@@ -13879,3 +13879,518 @@ public:
 };
 ```
 
+
+
+
+
+# 数学
+
+
+
+## [9. 回文数](https://leetcode.cn/problems/palindrome-number/)
+
+
+
+给你一个整数 `x` ，如果 `x` 是一个回文整数，返回 `true` ；否则，返回 `false` 。
+
+回文数是指正序（从左向右）和倒序（从右向左）读都是一样的整数。
+
+- 例如，`121` 是回文，而 `123` 不是。
+
+ 
+
+**示例 1：**
+
+```
+输入：x = 121
+输出：true
+```
+
+**示例 2：**
+
+```
+输入：x = -121
+输出：false
+解释：从左向右读, 为 -121 。 从右向左读, 为 121- 。因此它不是一个回文数。
+```
+
+**示例 3：**
+
+```
+输入：x = 10
+输出：false
+解释：从右向左读, 为 01 。因此它不是一个回文数。
+```
+
+ 
+
+**提示：**
+
+- `-231 <= x <= 231 - 1`
+
+ 
+
+**进阶：**你能不将整数转为字符串来解决这个问题吗？
+
+```c++
+class Solution {
+public:
+    bool isPalindrome(int x) {
+        // 负数，以及最后一位是0的非零数肯定不是回文数
+        // 快速排除常见情况
+        if (x < 0) return false;
+        if (x < 10) return true;  // 0-9都是回文数
+        if (x % 10 == 0) return false;  // 最后一位是0肯定不是
+
+        int reversedNumber = 0;
+
+        // 只翻转一半的数字
+        while (x > reversedNumber)
+        {
+            reversedNumber = reversedNumber * 10 + x % 10;
+            x /= 10;
+        }
+
+        // 处理奇数位和偶数位的情况
+        return x == reversedNumber || x == reversedNumber / 10;
+
+        // 例如，对于数字1221：
+        // 初始：x=1221，rev=0
+        // 第一次循环：x=122，rev=1
+        // 第二次循环：x=12，rev=12
+        // 此时x<=rev，退出循环。因为x==rev，所以返回true。
+
+        // 对于数字12321：
+        // 初始：x=12321，rev=0
+        // 第一次循环：x=1232，rev=1
+        // 第二次循环：x=123，rev=12
+        // 第三次循环：x=12，rev=123
+        // 此时x<=rev，退出循环。x=12，rev/10=12，相等，返回true。
+
+
+    }
+};
+```
+
+
+
+
+
+## [66. 加一](https://leetcode.cn/problems/plus-one/)
+
+
+
+给定一个表示 **大整数** 的整数数组 `digits`，其中 `digits[i]` 是整数的第 `i` 位数字。这些数字按从左到右，从最高位到最低位排列。这个大整数不包含任何前导 `0`。
+
+将大整数加 1，并返回结果的数字数组。
+
+ 
+
+**示例 1：**
+
+```
+输入：digits = [1,2,3]
+输出：[1,2,4]
+解释：输入数组表示数字 123。
+加 1 后得到 123 + 1 = 124。
+因此，结果应该是 [1,2,4]。
+```
+
+**示例 2：**
+
+```
+输入：digits = [4,3,2,1]
+输出：[4,3,2,2]
+解释：输入数组表示数字 4321。
+加 1 后得到 4321 + 1 = 4322。
+因此，结果应该是 [4,3,2,2]。
+```
+
+**示例 3：**
+
+```
+输入：digits = [9]
+输出：[1,0]
+解释：输入数组表示数字 9。
+加 1 得到了 9 + 1 = 10。
+因此，结果应该是 [1,0]。
+```
+
+ 
+
+**提示：**
+
+- `1 <= digits.length <= 100`
+- `0 <= digits[i] <= 9`
+- `digits` 不包含任何前导 `0`。
+
+```c++
+class Solution {
+public:
+    vector<int> plusOne(vector<int>& digits) {
+        int n = digits.size();
+
+        // 从最后一位开始处理
+        for (int i = n - 1; i >= 0; i--)
+        {
+            if (digits[i] < 9)
+            {
+                digits[i]++;    // 直接加1，不需要进位
+                return digits;
+            }
+            digits[i] = 0;      // 当前位设置为0，进位到下一位
+        }
+
+        // 如果所有位都是9，
+        digits.insert(digits.begin(), 1);
+        return digits;
+
+    }
+};
+```
+
+
+
+
+
+## [172. 阶乘后的零](https://leetcode.cn/problems/factorial-trailing-zeroes/)
+
+
+
+给定一个整数 `n` ，返回 `n!` 结果中尾随零的数量。
+
+提示 `n! = n * (n - 1) * (n - 2) * ... * 3 * 2 * 1`
+
+ 
+
+**示例 1：**
+
+```
+输入：n = 3
+输出：0
+解释：3! = 6 ，不含尾随 0
+```
+
+**示例 2：**
+
+```
+输入：n = 5
+输出：1
+解释：5! = 120 ，有一个尾随 0
+```
+
+**示例 3：**
+
+```
+输入：n = 0
+输出：0
+```
+
+ 
+
+**提示：**
+
+- `0 <= n <= 104`
+
+ 
+
+**进阶：**你可以设计并实现对数时间复杂度的算法来解决此问题吗？
+
+```c++
+class Solution {
+public:
+    int trailingZeroes(int n) {
+        // 阶乘末尾的零实际上是由因子2和5相乘得到的。由于阶乘中因子2的数量总是多于因子5，所以问题转化为：
+        // 计算 n! 中因子5的个数
+        int count = 0;
+        while (n > 0)
+        {
+            n /= 5;
+            count+=n;
+        }
+
+        return count;
+
+        // n=100时：
+        // count = 0
+        // n=100 → n/5=20 → count=20, n=20
+        // n=20 → n/5=4 → count=24, n=4
+        // n=4 → n/5=0 → count=24, n=0
+        // 结束，结果为24
+    }
+};
+```
+
+
+
+
+
+## [69. x 的平方根 ](https://leetcode.cn/problems/sqrtx/)
+
+
+
+给你一个非负整数 `x` ，计算并返回 `x` 的 **算术平方根** 。
+
+由于返回类型是整数，结果只保留 **整数部分** ，小数部分将被 **舍去 。**
+
+**注意：**不允许使用任何内置指数函数和算符，例如 `pow(x, 0.5)` 或者 `x ** 0.5` 。
+
+ 
+
+**示例 1：**
+
+```
+输入：x = 4
+输出：2
+```
+
+**示例 2：**
+
+```
+输入：x = 8
+输出：2
+解释：8 的算术平方根是 2.82842..., 由于返回类型是整数，小数部分将被舍去。
+```
+
+ 
+
+**提示：**
+
+- `0 <= x <= 231 - 1`
+
+```c++
+class Solution {
+public:
+    int mySqrt(int x) {
+        // 牛顿迭代法原理：
+        // 求 √x 等价于求方程 f(r) = r² - x = 0 的根
+        // 牛顿迭代公式：r_{n+1} = r_n - f(r_n)/f'(r_n) = (r_n + x/r_n) / 2
+        // 收敛速度非常快，通常只需几次迭代
+        if (x < 2) return x;
+        long r = x; // 初始猜测值
+        // 牛顿迭代公式 r = (r + x/r) / 2
+        while (r * r > x)
+        {
+            r = (r + x / r) / 2;
+        }
+        return r;
+
+
+        // 二分查找法进行收敛
+        // if (x < 2) return x;    // 处理0和1的情况
+
+        // long left = 1;
+        // long right = x;
+        // long mid, squared;      // 中位数和平方
+
+        // while (left <= right)
+        // {
+        //     mid = left + (right - left)/2;
+        //     squared = mid * mid;
+
+        //     if (squared == x)
+        //     {
+        //         return mid;
+        //     }
+        //     else if (squared < x)
+        //     {
+        //         left = mid + 1;
+        //     }
+        //     else
+        //     {
+        //         right = mid - 1;
+        //     }
+        // }
+
+        // // 当循环结束时，right < left，所以right是平方根的整数部分
+        // return right;
+
+
+    }
+};
+```
+
+
+
+
+
+## [50. Pow(x, n)](https://leetcode.cn/problems/powx-n/)
+
+
+
+实现 [pow(*x*, *n*)](https://www.cplusplus.com/reference/valarray/pow/) ，即计算 `x` 的整数 `n` 次幂函数（即，`xn` ）。
+
+ 
+
+**示例 1：**
+
+```
+输入：x = 2.00000, n = 10
+输出：1024.00000
+```
+
+**示例 2：**
+
+```
+输入：x = 2.10000, n = 3
+输出：9.26100
+```
+
+**示例 3：**
+
+```
+输入：x = 2.00000, n = -2
+输出：0.25000
+解释：2-2 = 1/22 = 1/4 = 0.25
+```
+
+ 
+
+**提示：**
+
+- `-100.0 < x < 100.0`
+- `-231 <= n <= 231-1`
+- `n` 是一个整数
+- 要么 `x` 不为零，要么 `n > 0` 。
+- `-104 <= xn <= 104`
+
+```c++
+class Solution {
+public:
+    double myPow(double x, int n) {
+        long long N = n;        // 防止n = 2^31转为正数的时候溢出
+        if (N < 0)
+        {
+            x = 1 / x;
+            N = -N;
+        }
+
+        return fastPow(x, N);
+
+    }
+
+private:
+    double fastPow(double x, long long n)
+    {
+        if (n == 0) return 1.0;
+
+        double half = fastPow(x, n/2);
+
+        if (n % 2 == 0)
+        {
+            // 偶数 x^n = (x^{n/2})^2
+            return half * half;
+        }
+        else
+        {
+            // 奇数 x^n = x * (x^{n/2})^2
+            return x * half * half;
+        }
+
+    }
+
+
+};
+```
+
+
+
+
+
+## [149. 直线上最多的点数](https://leetcode.cn/problems/max-points-on-a-line/)
+
+
+
+给你一个数组 `points` ，其中 `points[i] = [xi, yi]` 表示 **X-Y** 平面上的一个点。求最多有多少个点在同一条直线上。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/25/plane1.jpg)
+
+```
+输入：points = [[1,1],[2,2],[3,3]]
+输出：3
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/25/plane2.jpg)
+
+```
+输入：points = [[1,1],[3,2],[5,3],[4,1],[2,3],[1,4]]
+输出：4
+```
+
+ 
+
+**提示：**
+
+- `1 <= points.length <= 300`
+- `points[i].length == 2`
+- `-104 <= xi, yi <= 104`
+- `points` 中的所有点 **互不相同**
+
+```c++
+class Solution {
+public:
+    int maxPoints(vector<vector<int>>& points) {
+        int n = points.size();
+        if (n <= 2) return n;
+
+        int result = 0;
+
+        for (int i = 0; i < n - 1; i++)
+        {
+            map<pair<int, int>, int> deltaCountMap;   // 斜率和点数的键值对
+            int duplicate = 0;      // 与点i重复的点
+            int maxCount = 0;
+            for (int j = i + 1; j < n; j++)
+            {
+                // 计算points[i]和points[j]的斜率
+
+                int deltaX = points[j][0] - points[i][0];
+                int deltaY = points[j][1] - points[i][1];
+
+                // 计算最大公约数
+                int g = gcd(deltaX, deltaY);
+
+                // 然后求出斜率的最简分数表示形式
+                deltaX /= g;
+                deltaY /= g;
+
+                if (deltaY < 0)
+                {
+                    deltaX = -deltaX;
+                    deltaY = -deltaY;
+                }
+                else if (deltaY == 0)
+                {
+                    deltaX = abs(deltaX);
+                }
+                
+                // 更新哈希表，记录数量
+                deltaCountMap[{deltaX, deltaY}] += 1;
+                maxCount = max(maxCount, deltaCountMap[{deltaX, deltaY}]);
+            }
+
+            result = max(result, maxCount);
+        }
+
+        result += 1;
+        return result;
+
+    }
+
+private:
+    // 求两数的最大公约数
+    int gcd(int a, int b)
+    {
+        return b == 0 ? a : gcd(b, a % b);
+    }
+
+
+};
+```
+
