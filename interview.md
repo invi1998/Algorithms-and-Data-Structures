@@ -14394,3 +14394,694 @@ private:
 };
 ```
 
+
+
+
+
+# 一维动态规划
+
+
+
+## [70. 爬楼梯](https://leetcode.cn/problems/climbing-stairs/)
+
+
+
+假设你正在爬楼梯。需要 `n` 阶你才能到达楼顶。
+
+每次你可以爬 `1` 或 `2` 个台阶。你有多少种不同的方法可以爬到楼顶呢？
+
+ 
+
+**示例 1：**
+
+```
+输入：n = 2
+输出：2
+解释：有两种方法可以爬到楼顶。
+1. 1 阶 + 1 阶
+2. 2 阶
+```
+
+**示例 2：**
+
+```
+输入：n = 3
+输出：3
+解释：有三种方法可以爬到楼顶。
+1. 1 阶 + 1 阶 + 1 阶
+2. 1 阶 + 2 阶
+3. 2 阶 + 1 阶
+```
+
+ 
+
+**提示：**
+
+- `1 <= n <= 45`
+
+```c++
+class Solution {
+public:
+    int climbStairs(int n) {
+
+        // // 1: 基础递归解法，暴力搜索(O(2^n)，巨慢无比)
+        // if (n <= 1) return 1;
+        // return climbStairs(n-1) + climbStairs(n-2);
+        
+
+        // // 2: 记忆化搜索（自顶向下）
+        // if (n <= 1) return 1;
+        // vector<int> memo(n+1, -1);
+        // memo[0] = 1;       // 0阶阶梯有1种方法，那就是不走
+        // memo[1] = 1;        // 1阶楼梯有1种方法
+        // return climbStairsMemo(n, memo);
+
+
+        // 3：动态规划（自底向上）
+        // if (n <= 1) return 1;
+
+        // // dp[i] 表示爬到第i阶楼梯的方法数
+        // vector<int> dp(n+1);
+        // dp[0] = 1;
+        // dp[1] = 1;
+
+        // // 状态转移
+        // for (int i = 2; i <= n; i++)
+        // {
+        //     dp[i] = dp[i-1] + dp[i-2];
+        // }
+
+        // return dp[n];
+
+        // 动态规划，空间优化版本
+        return climbStairsDPOptimized(n);
+
+    }
+
+private:
+    // 记忆化搜索解法
+    int climbStairsMemo(int n, vector<int>& memo)
+    {
+        // 如果已经计算过了，直接返回
+        if (memo[n] != -1) return memo[n];
+
+        // 计算结果并存储
+        memo[n] = climbStairsMemo(n-1, memo) + climbStairsMemo(n-2, memo);
+        return memo[n];
+    }
+
+    // 空间优化的动态规划
+    int climbStairsDPOptimized(int n)
+    {
+        if (n <= 1) return 1;
+
+        int prev1 = 1;  // 对应dp[i-1];
+        int prev2 = 1;  // 对应dp[i-2];
+
+        int current;
+        for (int i = 2; i <= n; i++)
+        {
+            current = prev1 + prev2;
+            prev2 = prev1;
+            prev1 = current;
+        }
+
+        return current;
+
+    }
+
+
+
+};
+```
+
+
+
+
+
+## [198. 打家劫舍](https://leetcode.cn/problems/house-robber/)
+
+
+
+你是一个专业的小偷，计划偷窃沿街的房屋。每间房内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统，**如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警**。
+
+给定一个代表每个房屋存放金额的非负整数数组，计算你 **不触动警报装置的情况下** ，一夜之内能够偷窃到的最高金额。
+
+ 
+
+**示例 1：**
+
+```
+输入：[1,2,3,1]
+输出：4
+解释：偷窃 1 号房屋 (金额 = 1) ，然后偷窃 3 号房屋 (金额 = 3)。
+     偷窃到的最高金额 = 1 + 3 = 4 。
+```
+
+**示例 2：**
+
+```
+输入：[2,7,9,3,1]
+输出：12
+解释：偷窃 1 号房屋 (金额 = 2), 偷窃 3 号房屋 (金额 = 9)，接着偷窃 5 号房屋 (金额 = 1)。
+     偷窃到的最高金额 = 2 + 9 + 1 = 12 。
+```
+
+ 
+
+**提示：**
+
+- `1 <= nums.length <= 100`
+- `0 <= nums[i] <= 400`
+
+```c++
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        int n = nums.size();
+
+        if (n == 0) return 0;
+        if (n == 1) return nums[0];
+        if (n == 2) return max(nums[0], nums[1]);
+
+        // vector<int> dp(n, 0);     // 偷到第n个房子时的最大金额
+        // dp[0] = nums[0];
+        // dp[1] = max(nums[0], nums[1]);
+
+        // for (int i = 2; i < n; i++)
+        // {
+        //     // 选择1：不偷第i个房屋，收益为dp[i-1]
+        //     // 选择2：偷第i个房屋，收益为dp[i-2] + nums[i]
+        //     dp[i] = max(dp[i-1], dp[i-2] + nums[i]);
+        // }
+
+        // return dp[n-1];
+
+        // dp空间优化版本
+        int prev2 = nums[0];
+        int prev1 = max(nums[0], nums[1]);
+
+        int current = prev1;
+        for (int i = 2; i < n; i++)
+        {
+            current = max(prev1, prev2 + nums[i]);
+            prev2 = prev1;
+            prev1 = current;
+        }
+
+        return current;
+
+    }
+};
+```
+
+
+
+## [213. 打家劫舍 II（环形房屋）](https://leetcode.cn/problems/house-robber-ii/)
+
+
+
+你是一个专业的小偷，计划偷窃沿街的房屋，每间房内都藏有一定的现金。这个地方所有的房屋都 **围成一圈** ，这意味着第一个房屋和最后一个房屋是紧挨着的。同时，相邻的房屋装有相互连通的防盗系统，**如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警** 。
+
+给定一个代表每个房屋存放金额的非负整数数组，计算你 **在不触动警报装置的情况下** ，今晚能够偷窃到的最高金额。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [2,3,2]
+输出：3
+解释：你不能先偷窃 1 号房屋（金额 = 2），然后偷窃 3 号房屋（金额 = 2）, 因为他们是相邻的。
+```
+
+**示例 2：**
+
+```
+输入：nums = [1,2,3,1]
+输出：4
+解释：你可以先偷窃 1 号房屋（金额 = 1），然后偷窃 3 号房屋（金额 = 3）。
+     偷窃到的最高金额 = 1 + 3 = 4 。
+```
+
+**示例 3：**
+
+```
+输入：nums = [1,2,3]
+输出：3
+```
+
+ 
+
+**提示：**
+
+- `1 <= nums.length <= 100`
+- `0 <= nums[i] <= 1000`
+
+```c++
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        int n = nums.size();
+        if (n == 0) return 0;
+        if (n == 1) return nums[0];
+
+        // 情况1：偷第一间，不偷最后一间
+        // 情况2：不偷第一间，偷最后一间
+        // 取两种情况的最大值
+
+        // 偷第一间到倒数第二间
+        int case1 = robRange(nums, 0, n - 2);
+        // 偷第二间到最后一间
+        int case2 = robRange(nums, 1, n - 1);
+
+        return max(case1, case2);
+        
+    }
+
+private:
+    // 计算指定范围内的最大偷取数
+    int robRange(vector<int>& nums, int start, int end)
+    {
+        if (start == end) return nums[start];
+
+        int prev2 = nums[start];
+        int prev1 = max(nums[start], nums[start+1]);
+        int current = prev1;
+
+        for (int i = start + 2; i <= end; i++)
+        {
+            current = max(prev1, prev2 + nums[i]);
+            prev2 = prev1;
+            prev1 = current;
+        }
+        return current;
+
+    }
+
+
+};
+```
+
+
+
+## [337. 打家劫舍 III（二叉树房屋）](https://leetcode.cn/problems/house-robber-iii/)
+
+
+
+小偷又发现了一个新的可行窃的地区。这个地区只有一个入口，我们称之为 `root` 。
+
+除了 `root` 之外，每栋房子有且只有一个“父“房子与之相连。一番侦察之后，聪明的小偷意识到“这个地方的所有房屋的排列类似于一棵二叉树”。 如果 **两个直接相连的房子在同一天晚上被打劫** ，房屋将自动报警。
+
+给定二叉树的 `root` 。返回 ***在不触动警报的情况下** ，小偷能够盗取的最高金额* 。
+
+ 
+
+**示例 1:**
+
+![img](https://assets.leetcode.com/uploads/2021/03/10/rob1-tree.jpg)
+
+```
+输入: root = [3,2,3,null,3,null,1]
+输出: 7 
+解释: 小偷一晚能够盗取的最高金额 3 + 3 + 1 = 7
+```
+
+**示例 2:**
+
+![img](https://assets.leetcode.com/uploads/2021/03/10/rob2-tree.jpg)
+
+```
+输入: root = [3,4,5,1,3,null,1]
+输出: 9
+解释: 小偷一晚能够盗取的最高金额 4 + 5 = 9
+```
+
+ 
+
+**提示：**
+
+
+
+- 树的节点数在 `[1, 104]` 范围内
+- `0 <= Node.val <= 104`
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    int rob(TreeNode* root) {
+        pair<int, int> result = dfs(root);
+        return max(result.first, result.second);
+    }
+
+private:
+    // 返回一个pair
+    // first：偷当前点的最大收益
+    // second：不偷当前点的最大收益
+    pair<int, int> dfs(TreeNode* node)
+    {
+        if (!node) return {0, 0};
+        
+        pair<int, int> left = dfs(node->left);
+        pair<int, int> right = dfs(node->right);
+
+        // 偷当前节点，就不能投他的直接子节点
+        int robCurrent = node->val + left.second + right.second;
+
+        // 不偷当前节点，就能偷子节点
+        // 左子树的最大偷取情况 + 右子树的最大偷取情况
+        int notRobCurrent = max(left.first, left.second) + max(right.first, right.second);
+
+        // 返回偷取当前节点和不偷当前节点的pair
+        return {robCurrent, notRobCurrent};
+
+    }
+
+
+};
+```
+
+
+
+## [276. 栅栏涂色](https://leetcode.cn/problems/paint-fence/)
+
+
+
+有 `k` 种颜色的涂料和一个包含 `n` 个栅栏柱的栅栏，请你按下述规则为栅栏设计涂色方案：
+
+- 每个栅栏柱可以用其中 **一种** 颜色进行上色。
+- 相邻的栅栏柱 **最多连续两个** 颜色相同。
+
+给你两个整数 `k` 和 `n` ，返回所有有效的涂色 **方案数** 。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/28/paintfenceex1.png)
+
+```
+输入：n = 3, k = 2
+输出：6
+解释：所有的可能涂色方案如上图所示。注意，全涂红或者全涂绿的方案属于无效方案，因为相邻的栅栏柱 最多连续两个 颜色相同。
+```
+
+**示例 2：**
+
+```
+输入：n = 1, k = 1
+输出：1
+```
+
+**示例 3：**
+
+```
+输入：n = 7, k = 2
+输出：42
+```
+
+ 
+
+**提示：**
+
+- `1 <= n <= 50`
+- `1 <= k <= 105`
+- 题目数据保证：对于输入的 `n` 和 `k` ，其答案在范围 `[0, 231 - 1]` 内
+
+```c++
+class Solution {
+public:
+    int numWays(int n, int k) {
+        if (n == 0) return 0;
+        if (n == 1) return k;
+        if (k == 0) return 0;
+        if (k == 1) return (n <= 2) ? 1 : 0;
+
+        // 状态定义：
+        // dp[i][0]：第 i 个栅栏与第 i-1 个栅栏颜色不同的方案数
+        // dp[i][1]：第 i 个栅栏与第 i-1 个栅栏颜色相同的方案数
+
+        // 状态转移方程：
+        // 第 i 个栅栏与第 i-1 个不同：dp[i][0] = (dp[i-1][0] + dp[i-1][1]) * (k-1)
+        // 前一个栅栏无论与再前一个是否相同，当前栅栏都有 (k-1) 种选择（不能与前一栅栏相同）
+        // 第 i 个栅栏与第 i-1 个相同：dp[i][1] = dp[i-1][0]
+        // 要保证没有三个连续相同的颜色，所以前一个栅栏必须与前前一个不同
+
+        // vector<vector<int>> dp(n+1, vector<int>(2, 0));
+
+        // // 初始化
+        // dp[1][0] = k;       // 第一个栅栏，没有前一个，视为"不同"
+        // dp[1][1] = 0;       // 第一个栅栏不能与前一个相同（因为前一个不存在，所以为0）
+
+        // for (int i = 2; i <= n; i++)
+        // {
+        //     // 当前栅栏与前一个栏不同(前一个的染色方案就是染与不染的和，然后用前一个的方案数*（k-1），就是扣除一个颜色的方案数，因为要不同嘛，所以就扣除那个相同的颜色的乘积就是当前栅栏的染色方案数)
+        //     dp[i][0] = (dp[i-1][0] + dp[i-1][1]) * (k-1);
+        //     // 当前栅栏与前一个相同(因为染色相同，所以前一个染几种，这个也只能染几种)
+        //     dp[i][1] = dp[i-1][0];
+        // }
+
+        // return dp[n][0] + dp[n][1];
+
+        // 空间优化版本
+        int diff = k;       // 与前一个不同，第一个没有前一个
+        int same = 0;       // 与前一个相同，第一个没有前一个
+
+        for (int i = 2; i <= n; i++)
+        {
+            int newdiff = (diff + same) * (k-1);
+            int newsamge = diff;        // 与上一个相同，就要求前一个是与前一个不同
+
+            diff = newdiff;
+            same = newsamge;
+
+        }
+
+        return diff + same;
+
+
+    }
+};
+```
+
+
+
+
+
+## [256. 粉刷房子](https://leetcode.cn/problems/paint-house/)
+
+
+
+假如有一排房子，共 `n` 个，每个房子可以被粉刷成红色、蓝色或者绿色这三种颜色中的一种，你需要粉刷所有的房子并且使其相邻的两个房子颜色不能相同。
+
+当然，因为市场上不同颜色油漆的价格不同，所以房子粉刷成不同颜色的花费成本也是不同的。每个房子粉刷成不同颜色的花费是以一个 `n x 3` 的正整数矩阵 `costs` 来表示的。
+
+例如，`costs[0][0]` 表示第 0 号房子粉刷成红色的成本花费；`costs[1][2]` 表示第 1 号房子粉刷成绿色的花费，以此类推。
+
+请计算出粉刷完所有房子最少的花费成本。
+
+ 
+
+**示例 1：**
+
+```
+输入: costs = [[17,2,17],[16,16,5],[14,3,19]]
+输出: 10
+解释: 将 0 号房子粉刷成蓝色，1 号房子粉刷成绿色，2 号房子粉刷成蓝色。
+     最少花费: 2 + 5 + 3 = 10。
+```
+
+**示例 2：**
+
+```
+输入: costs = [[7,6,2]]
+输出: 2
+```
+
+ 
+
+**提示:**
+
+- `costs.length == n`
+- `costs[i].length == 3`
+- `1 <= n <= 100`
+- `1 <= costs[i][j] <= 20`
+
+```c++
+class Solution {
+public:
+    int minCost(vector<vector<int>>& costs) {
+        if (costs.empty()) return 0;
+        int n = costs.size();
+
+        // // dp[i][j] 表示粉刷前i个房子，且第i个房子用颜色j的最小成本
+        // vector<vector<int>> dp(n, vector<int>(3, 0));
+
+        // // 初始化第一个房子
+        // dp[0][0] = costs[0][0];     // 红色
+        // dp[0][1] = costs[0][1];     // 蓝色
+        // dp[0][2] = costs[0][2];     // 绿色
+
+        // // 状态转移
+        // for (int i = 1; i < n; i++)
+        // {
+        //     // 第i个红色房子，前一个不能是红色
+        //     dp[i][0] = min(dp[i-1][1], dp[i-1][2]) + costs[i][0];
+
+        //     // 第i个蓝色房子，前一个就不能是蓝色
+        //     dp[i][1] = min(dp[i-1][0], dp[i-1][2]) + costs[i][1];
+
+        //     // 第i个房子涂绿色：前一个房子不能是绿色
+        //     dp[i][2] = min(dp[i-1][0], dp[i-1][1]) + costs[i][2];
+        // }
+
+        // // 返回最后一个房子的最小开销
+        // return min({dp[n-1][0], dp[n-1][1], dp[n-1][2]});
+
+        // 空间优化版本的动态规划
+        int prev0 = costs[0][0];  // 前一个房子涂红色的最小成本
+        int prev1 = costs[0][1];  // 前一个房子涂蓝色的最小成本
+        int prev2 = costs[0][2];  // 前一个房子涂绿色的最小成本
+
+        for (int i = 1; i < n; i++)
+        {
+            // 计算当前房子图各种颜色的最小成本
+            int cur0 = min(prev1, prev2) + costs[i][0];     // 涂红色成本
+            int cur1 = min(prev0, prev2) + costs[i][1];     // 涂蓝色成本
+            int cur2 = min(prev0, prev1) + costs[i][2];     // 涂绿色成本
+
+            prev0 = cur0;
+            prev1 = cur1;
+            prev2 = cur2;
+
+        }
+
+        return min({prev0, prev1, prev2});
+
+    }
+};
+```
+
+
+
+## [265. 粉刷房子 II](https://leetcode.cn/problems/paint-house-ii/)
+
+
+
+假如有一排房子共有 `n` 幢，每个房子可以被粉刷成 `k` 种颜色中的一种。房子粉刷成不同颜色的花费成本也是不同的。你需要粉刷所有的房子并且使其相邻的两个房子颜色不能相同。
+
+每个房子粉刷成不同颜色的花费以一个 `n x k` 的矩阵表示。
+
+- 例如，`costs[0][0]` 表示第 `0` 幢房子粉刷成 `0` 号颜色的成本；`costs[1][2]` 表示第 `1` 幢房子粉刷成 `2` 号颜色的成本，以此类推。
+
+返回 *粉刷完所有房子的最低成本* 。
+
+ 
+
+**示例 1：**
+
+```
+输入: costs = [[1,5,3],[2,9,4]]
+输出: 5
+解释: 
+将房子 0 刷成 0 号颜色，房子 1 刷成 2 号颜色。花费: 1 + 4 = 5; 
+或者将 房子 0 刷成 2 号颜色，房子 1 刷成 0 号颜色。花费: 3 + 2 = 5. 
+```
+
+**示例 \**2:\****
+
+```
+输入: costs = [[1,3],[2,4]]
+输出: 5
+```
+
+ 
+
+**提示：**
+
+- `costs.length == n`
+- `costs[i].length == k`
+- `1 <= n <= 100`
+- `2 <= k <= 20`
+- `1 <= costs[i][j] <= 20`
+
+ 
+
+**进阶：**您能否在 `O(nk)` 的时间复杂度下解决此问题？
+
+```c++
+class Solution {
+public:
+    int minCostII(vector<vector<int>>& costs) {
+        if (costs.empty()) return 0;
+        int n = costs.size();
+        int k = costs[0].size();
+
+        // 初始化第一个房子
+        vector<int> dp = costs[0];
+
+        for (int i = 1; i < n; i++)
+        {
+            // 找到前一个房子的最小值和次小值及其索引
+            int min1 = INT_MAX, min2 = INT_MAX;
+            int minIndex = -1;
+
+            for (int j = 0; j < k; j++)
+            {
+                if (dp[j] < min1)
+                {
+                    min2 = min1;
+                    min1 = dp[j];
+                    minIndex = j;
+                }
+                else if (dp[j] < min2)
+                {
+                    min2 = dp[j];
+                }
+            }
+
+            // 计算当前房子的最小成本
+            vector<int> curr(k);
+
+            for (int j = 0; j < k; j++)
+            {
+                if (j == minIndex)
+                {
+                    // 因为不能与前一个房子染色相同，所以这里遇到最小成本的颜料，就只能取上一个第二小成本加上当前的颜料成本
+                    curr[j] = min2 + costs[i][j];
+                }
+                else
+                {
+                    // 否则的话，就只需要用先前的最小成本直接加上当前颜料的成本就是选择当前颜料的最小成本
+                    curr[j] = min1 + costs[i][j];
+                }
+            }
+
+            dp = curr;
+
+        }
+
+        // 返回最小值
+        int result = INT_MAX;
+        for (int j = 0; j < k; j++)
+        {
+            result = min(result, dp[j]);
+        }
+
+        return result;
+
+    }
+};
+```
+
