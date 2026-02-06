@@ -11321,8 +11321,6 @@ private:
 
 
 
-
-
 ## [79. 单词搜索](https://leetcode.cn/problems/word-search/)
 
 
@@ -11437,6 +11435,125 @@ private:
         board[i][j] = temp;
         return false;
     }
+};
+```
+
+
+
+## [980. 不同路径 III](https://leetcode.cn/problems/unique-paths-iii/)
+
+
+
+在二维网格 `grid` 上，有 4 种类型的方格：
+
+- `1` 表示起始方格。且只有一个起始方格。
+- `2` 表示结束方格，且只有一个结束方格。
+- `0` 表示我们可以走过的空方格。
+- `-1` 表示我们无法跨越的障碍。
+
+返回在四个方向（上、下、左、右）上行走时，从起始方格到结束方格的不同路径的数目**。**
+
+**每一个无障碍方格都要通过一次，但是一条路径中不能重复通过同一个方格**。
+
+ 
+
+**示例 1：**
+
+```
+输入：[[1,0,0,0],[0,0,0,0],[0,0,2,-1]]
+输出：2
+解释：我们有以下两条路径：
+1. (0,0),(0,1),(0,2),(0,3),(1,3),(1,2),(1,1),(1,0),(2,0),(2,1),(2,2)
+2. (0,0),(1,0),(2,0),(2,1),(1,1),(0,1),(0,2),(0,3),(1,3),(1,2),(2,2)
+```
+
+**示例 2：**
+
+```
+输入：[[1,0,0,0],[0,0,0,0],[0,0,0,2]]
+输出：4
+解释：我们有以下四条路径： 
+1. (0,0),(0,1),(0,2),(0,3),(1,3),(1,2),(1,1),(1,0),(2,0),(2,1),(2,2),(2,3)
+2. (0,0),(0,1),(1,1),(1,0),(2,0),(2,1),(2,2),(1,2),(0,2),(0,3),(1,3),(2,3)
+3. (0,0),(1,0),(2,0),(2,1),(2,2),(1,2),(1,1),(0,1),(0,2),(0,3),(1,3),(2,3)
+4. (0,0),(1,0),(2,0),(2,1),(1,1),(0,1),(0,2),(0,3),(1,3),(1,2),(2,2),(2,3)
+```
+
+**示例 3：**
+
+```
+输入：[[0,1],[2,0]]
+输出：0
+解释：
+没有一条路能完全穿过每一个空的方格一次。
+请注意，起始和结束方格可以位于网格中的任意位置。
+```
+
+ 
+
+**提示：**
+
+- `1 <= grid.length * grid[0].length <= 20`
+
+```c++
+class Solution {
+public:
+    int uniquePathsIII(vector<vector<int>>& grid) {
+        int m = grid.size();
+        int n = grid[0].size();
+        
+        int start_i = 0, start_j = 0;
+        int emptyCount = 1;  // 包含起点，所以从1开始
+
+        // 统计空方格数量和找到起点
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 1) {
+                    start_i = i;
+                    start_j = j;
+                } else if (grid[i][j] == 0) {
+                    emptyCount++;
+                }
+            }
+        }
+
+        return dfs(grid, start_i, start_j, emptyCount);
+
+    }
+
+private:
+    int dfs(vector<vector<int>>& grid, int i, int j, int emptyCount)
+    {
+        // 边界检查或者遇到障碍物
+        if (i <0 || i >= grid.size() || j < 0 || j >= grid[0].size() || grid[i][j] < 0)
+        {
+            return 0;
+        }
+
+        // 到达终点
+        if (grid[i][j] == 2)
+        {
+            return emptyCount == 0 ? 1 : 0;
+        }
+
+        // 标记当前单元格已经被访问
+        grid[i][j] = -2;
+
+        // 四方向搜索
+        int path = 0;
+        path += dfs(grid, i+1, j, emptyCount-1);
+        path += dfs(grid, i-1, j, emptyCount-1);
+        path += dfs(grid, i, j+1, emptyCount-1);
+        path += dfs(grid, i, j-1, emptyCount-1);
+
+        // 回溯，恢复单元格状态
+        grid[i][j] = 0;
+
+        return path;
+
+    }
+
+
 };
 ```
 
@@ -15625,6 +15742,481 @@ public:
         return tails.size();
 
     }
+};
+```
+
+
+
+# 多维动态规划
+
+
+
+## [120. 三角形最小路径和](https://leetcode.cn/problems/triangle/)
+
+
+
+给定一个三角形 `triangle` ，找出自顶向下的最小路径和。
+
+每一步只能移动到下一行中相邻的结点上。**相邻的结点** 在这里指的是 **下标** 与 **上一层结点下标** 相同或者等于 **上一层结点下标 + 1** 的两个结点。也就是说，如果正位于当前行的下标 `i` ，那么下一步可以移动到下一行的下标 `i` 或 `i + 1` 。
+
+ 
+
+**示例 1：**
+
+```
+输入：triangle = [[2],[3,4],[6,5,7],[4,1,8,3]]
+输出：11
+解释：如下面简图所示：
+   2
+  3 4
+ 6 5 7
+4 1 8 3
+自顶向下的最小路径和为 11（即，2 + 3 + 5 + 1 = 11）。
+```
+
+**示例 2：**
+
+```
+输入：triangle = [[-10]]
+输出：-10
+```
+
+ 
+
+**提示：**
+
+- `1 <= triangle.length <= 200`
+- `triangle[0].length == 1`
+- `triangle[i].length == triangle[i - 1].length + 1`
+- `-104 <= triangle[i][j] <= 104`
+
+ 
+
+**进阶：**
+
+- 你可以只使用 `O(n)` 的额外空间（`n` 为三角形的总行数）来解决这个问题吗？
+
+```c++
+class Solution {
+public:
+    int minimumTotal(vector<vector<int>>& triangle) {
+        // i行，j列
+        // (i-1, j-1), (i-1, j)
+        //        (i, j)
+        // (i+1, j), (i+1, j+1)
+        // dp[i][j] = min(dp[i-1][j-1], dp[i-1][j]) + triangle[i][j]
+        int n = triangle.size();
+        if (n == 0) return 0;
+
+        // int result = triangle[0][0];
+        // for (int i = 1; i < n; i++)
+        // {
+        //     for (int j = 0; j < triangle[i].size(); j++)
+        //     {
+        //         int topleftJ = j == 0 ? 0 : j - 1;
+        //         int toprightJ = j == (triangle[i].size() - 1) ? j - 1 : j;
+        //         triangle[i][j] += min(triangle[i-1][topleftJ], triangle[i-1][toprightJ]);
+
+        //         if (i == n-1)
+        //         {
+        //             if (j == 0)
+        //             {
+        //                 result = triangle[i][j];
+        //             }
+        //             else
+        //             {
+        //                 result = min(result, triangle[i][j]);
+        //             }
+        //         }
+        //     }
+        // }
+
+        // return result;
+
+        // 当然，也可以自下而上
+        for (int i = n -2; i >= 0; i--)
+        {
+            for (int j = 0; j <= i; j++)
+            {
+                // 每个位置的最小路径 = 当前值 + 下方两个可能位置的最小值
+                triangle[i][j] += min(triangle[i+1][j], triangle[i+1][j+1]);
+            }
+        }
+        return triangle[0][0];
+        
+    }
+};
+```
+
+
+
+
+
+## [64. 最小路径和](https://leetcode.cn/problems/minimum-path-sum/)
+
+
+
+给定一个包含非负整数的 `*m* x *n*` 网格 `grid` ，请找出一条从左上角到右下角的路径，使得路径上的数字总和为最小。
+
+**说明：**每次只能向下或者向右移动一步。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/11/05/minpath.jpg)
+
+```
+输入：grid = [[1,3,1],[1,5,1],[4,2,1]]
+输出：7
+解释：因为路径 1→3→1→1→1 的总和最小。
+```
+
+**示例 2：**
+
+```
+输入：grid = [[1,2,3],[4,5,6]]
+输出：12
+```
+
+ 
+
+**提示：**
+
+- `m == grid.length`
+- `n == grid[i].length`
+- `1 <= m, n <= 200`
+- `0 <= grid[i][j] <= 200`
+
+```c++
+class Solution {
+public:
+    int minPathSum(vector<vector<int>>& grid) {
+        // dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1]);
+        int m = grid.size();
+        if (m == 0) return 0;
+        int n = grid[0].size();
+
+        // 初始化第一行和第一列
+        for (int i = 1; i < n; i++)
+        {
+            grid[0][i] += grid[0][i-1];
+        }
+        for (int i = 1; i < m; i++)
+        {
+            grid[i][0] += grid[i-1][0];
+        }
+
+        for (int i = 1; i < m; i++)
+        {
+            for (int j = 1; j < n; j++)
+            {
+                grid[i][j] += min(grid[i-1][j], grid[i][j-1]);
+            }
+        }
+        return grid[m-1][n-1];
+    }
+};
+```
+
+
+
+## [62. 不同路径](https://leetcode.cn/problems/unique-paths/)
+
+
+
+一个机器人位于一个 `m x n` 网格的左上角 （起始点在下图中标记为 “Start” ）。
+
+机器人每次只能向下或者向右移动一步。机器人试图达到网格的右下角（在下图中标记为 “Finish” ）。
+
+问总共有多少条不同的路径？
+
+ 
+
+**示例 1：**
+
+![img](https://pic.leetcode.cn/1697422740-adxmsI-image.png)
+
+```
+输入：m = 3, n = 7
+输出：28
+```
+
+**示例 2：**
+
+```
+输入：m = 3, n = 2
+输出：3
+解释：
+从左上角开始，总共有 3 条路径可以到达右下角。
+1. 向右 -> 向下 -> 向下
+2. 向下 -> 向下 -> 向右
+3. 向下 -> 向右 -> 向下
+```
+
+**示例 3：**
+
+```
+输入：m = 7, n = 3
+输出：28
+```
+
+**示例 4：**
+
+```
+输入：m = 3, n = 3
+输出：6
+```
+
+ 
+
+**提示：**
+
+- `1 <= m, n <= 100`
+- 题目数据保证答案小于等于 `2 * 109`
+
+```c++
+class Solution {
+public:
+    int uniquePaths(int m, int n) {
+        // // dp[i][j] = dp[i-1][j] + dp[i][j-1]
+        // vector<vector<int>> Grid(m, vector<int>(n, 1));     // m*n的二维数组，数据初始化为1
+
+        // for (int i = 1; i < m; ++i)
+        // {
+        //     for (int j = 1; j < n; ++j)
+        //     {
+        //         Grid[i][j] = Grid[i-1][j] + Grid[i][j-1];
+        //     }
+        // }
+
+        // return Grid[m-1][n-1];
+
+        // 优化空间复杂度（使用一维数组）
+        vector<int> dp(n, 1);  // 只需要一维数组
+        
+        for (int i = 1; i < m; ++i) {
+            for (int j = 1; j < n; ++j) {
+                dp[j] += dp[j - 1];
+            }
+        }
+        
+        return dp[n - 1];
+
+    }
+};
+```
+
+
+
+
+
+
+
+## [63. 不同路径 II](https://leetcode.cn/problems/unique-paths-ii/)
+
+
+
+给定一个 `m x n` 的整数数组 `grid`。一个机器人初始位于 **左上角**（即 `grid[0][0]`）。机器人尝试移动到 **右下角**（即 `grid[m - 1][n - 1]`）。机器人每次只能向下或者向右移动一步。
+
+网格中的障碍物和空位置分别用 `1` 和 `0` 来表示。机器人的移动路径中不能包含 **任何** 有障碍物的方格。
+
+返回机器人能够到达右下角的不同路径数量。
+
+测试用例保证答案小于等于 `2 * 109`。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/11/04/robot1.jpg)
+
+```
+输入：obstacleGrid = [[0,0,0],[0,1,0],[0,0,0]]
+输出：2
+解释：3x3 网格的正中间有一个障碍物。
+从左上角到右下角一共有 2 条不同的路径：
+1. 向右 -> 向右 -> 向下 -> 向下
+2. 向下 -> 向下 -> 向右 -> 向右
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2020/11/04/robot2.jpg)
+
+```
+输入：obstacleGrid = [[0,1],[0,0]]
+输出：1
+```
+
+ 
+
+**提示：**
+
+- `m == obstacleGrid.length`
+- `n == obstacleGrid[i].length`
+- `1 <= m, n <= 100`
+- `obstacleGrid[i][j]` 为 `0` 或 `1`
+
+```C++
+class Solution {
+public:
+    int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {
+        // dp[i][j] = obstacleGrid[i][j] == 1 ? 0 : dp[i-1][j] + dp[i][j-1]
+        if (obstacleGrid.empty() || obstacleGrid[0].empty()) return 0;
+
+        int m = obstacleGrid.size();
+        int n = obstacleGrid[0].size();
+
+        // 起点或终点有障碍
+        if (obstacleGrid[0][0] == 1 || obstacleGrid[m-1][n-1] == 1) return 0;
+
+        obstacleGrid[0][0] = 1;     // 0行0列只有一种到达方法
+
+        // 初始化第一行和第一列
+        for (int j = 1; j < n; ++j) {  // 使用++j可能略快
+            int val = obstacleGrid[0][j];
+            obstacleGrid[0][j] = (val == 1) ? 0 : obstacleGrid[0][j-1];
+        }
+        
+        // 初始化第一列
+        for (int i = 1; i < m; ++i) {
+            int val = obstacleGrid[i][0];
+            obstacleGrid[i][0] = (val == 1) ? 0 : obstacleGrid[i-1][0];
+        }
+
+        for (int i = 1; i < m; ++i)
+        {
+            for (int j = 1; j < n; ++j)
+            {
+                int val = obstacleGrid[i][j];
+                obstacleGrid[i][j] = val == 1 ? 0 : (obstacleGrid[i-1][j] + obstacleGrid[i][j-1]);
+            }
+        }
+
+        return obstacleGrid[m-1][n-1];
+
+
+    }
+};
+```
+
+
+
+
+
+
+## [5. 最长回文子串](https://leetcode.cn/problems/longest-palindromic-substring/)
+
+给你一个字符串 `s`，找到 `s` 中最长的 回文 子串。
+
+ 
+
+**示例 1：**
+
+```
+输入：s = "babad"
+输出："bab"
+解释："aba" 同样是符合题意的答案。
+```
+
+**示例 2：**
+
+```
+输入：s = "cbbd"
+输出："bb"
+```
+
+ 
+
+**提示：**
+
+- `1 <= s.length <= 1000`
+- `s` 仅由数字和英文字母组成
+
+```c++
+class Solution {
+public:
+    string longestPalindrome(string s) {
+        // 设 dp[i][j] 表示字符串 s 中从索引 i 到 j 的子串是否为回文串（布尔值），那么状态转移方程为：
+        // dp[i][j] = (s[i] == s[j]) && (j-i < 2 || dp[i+1][j-1])
+        // 如果 s[i] 不等于 s[j]，那么 dp[i][j] 肯定为 false。
+        // 如果 s[i] == s[j]，那么还需要看：
+        // 如果子串长度小于等于2（即 j - i < 2），那么一定是回文串（因为两个字符相同，或者同一个字符）。
+        // 如果子串长度大于2，那么需要看去掉头尾之后的子串是否为回文串，即 dp[i+1][j-1]。
+
+        // 时间复杂度：O(n²)，需要填充 n×n 的dp表
+        // 空间复杂度：O(n²)，需要存储整个dp表
+
+        // int n = s.size();
+        // if (n <= 1) return s;
+
+        // vector<vector<bool>> dp(n, vector<bool>(n, false));
+        // int start = 0, maxLen = 1;
+
+        // // 按照子串长度遍历
+        // for (int len = 1; len <= n; len++)
+        // {
+        //     for (int i = 0; i <= n - len; i++)
+        //     {
+        //         int j = i + len -1;
+
+        //         if (s[i] == s[j] && (len <= 2 || dp[i+1][j-1]))
+        //         {
+        //             dp[i][j] = true;
+
+        //             if (len > maxLen)
+        //             {
+        //                 start = i;
+        //                 maxLen = len;
+        //             }
+        //         }
+
+        //     }
+        // }
+
+        // return s.substr(start, maxLen);
+
+        // 优化：中心扩展法
+        // 虽然动态规划直观，但空间复杂度高。实际应用中更常用中心扩展法：
+        int n = s.size();
+        if (n <= 1) return s;
+
+        int start = 0, maxLen = 1;
+
+        for (int i = 0; i < n; i++)
+        {
+            // 奇数长度回文
+            int len1 = expandAroundCenter(s, i, i);
+            // 偶数长度回文
+            int len2 = expandAroundCenter(s, i, i+1);
+
+            int len = max(len1, len2);
+            if (len > maxLen)
+            {
+                maxLen = len;
+                start = i - (len-1)/2;
+            }
+        }
+
+        return s.substr(start, maxLen);
+
+    }
+
+private:
+    int expandAroundCenter(const string& s, int left, int right)
+    {
+        while (left >= 0 && right < s.size() && s[left] == s[right])
+        {
+            left--;
+            right++;
+        }
+
+        return right - left - 1;
+    }
+
+
+
 };
 ```
 
