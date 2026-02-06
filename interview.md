@@ -15085,3 +15085,546 @@ public:
 };
 ```
 
+
+
+
+
+## [139. 单词拆分](https://leetcode.cn/problems/word-break/)
+
+
+
+给你一个字符串 `s` 和一个字符串列表 `wordDict` 作为字典。如果可以利用字典中出现的一个或多个单词拼接出 `s` 则返回 `true`。
+
+**注意：**不要求字典中出现的单词全部都使用，并且字典中的单词可以重复使用。
+
+ 
+
+**示例 1：**
+
+```
+输入: s = "leetcode", wordDict = ["leet", "code"]
+输出: true
+解释: 返回 true 因为 "leetcode" 可以由 "leet" 和 "code" 拼接成。
+```
+
+**示例 2：**
+
+```
+输入: s = "applepenapple", wordDict = ["apple", "pen"]
+输出: true
+解释: 返回 true 因为 "applepenapple" 可以由 "apple" "pen" "apple" 拼接成。
+     注意，你可以重复使用字典中的单词。
+```
+
+**示例 3：**
+
+```
+输入: s = "catsandog", wordDict = ["cats", "dog", "sand", "and", "cat"]
+输出: false
+```
+
+ 
+
+**提示：**
+
+- `1 <= s.length <= 300`
+- `1 <= wordDict.length <= 1000`
+- `1 <= wordDict[i].length <= 20`
+- `s` 和 `wordDict[i]` 仅由小写英文字母组成
+- `wordDict` 中的所有字符串 **互不相同**
+
+```c++
+class Solution {
+public:
+    bool wordBreak(string s, vector<string>& wordDict) {
+        
+        int n = s.size();
+        unordered_set<string> wordSet(wordDict.begin(), wordDict.end());
+
+        // 计算单词最大长度，避免不必要的子串检查
+        int maxLen = 0;
+        for (const string& word : wordDict)
+        {
+            maxLen = max(maxLen, (int)word.size());
+        }
+
+        // dp[i] = dp[j] && wordSet.contains(s[j, i-j])
+        vector<bool> dp(n+1, false);
+        dp[0] = true;       // 当字字符串为空时，返回true
+        for (int i = 1; i <= n; i++)
+        {
+            // 我们的状态转移方程是：dp[i] = dp[j] && s[j...i-1]在字典中。
+            // 如果i-j>maxLen，那么s[j...i-1]的长度大于maxLen，肯定不在字典中
+            // 所以我们可以只考虑j从max(i-maxLen, 0)到i-1
+            for (int j = max(0, i - maxLen); j < i; j++)
+            {
+                if (dp[j] && wordSet.contains(s.substr(j, i-j)))
+                {
+                    dp[i] = true;
+                    break;
+                }
+            }
+        }
+
+        return dp[n];
+
+        // 算法逻辑解释：
+        // dp[i] = true 表示字符串 s 的前 i 个字符可以被拆分
+        // 对于每个位置 i，尝试所有可能的分割点 j（0 ≤ j < i）
+        // 如果 s[0...j-1] 可拆分（dp[j] = true）且 s[j...i-1] 在字典中，那么 s[0...i-1] 就可拆分
+        // 时间复杂度：O(n²)，前缀优化法：O(n * L)，其中L是字典中最长单词长度，通常远小于n
+        // 空间复杂度：O(n)
+
+    }
+};
+```
+
+
+
+## [140. 单词拆分 II](https://leetcode.cn/problems/word-break-ii/)
+
+
+
+给定一个字符串 `s` 和一个字符串字典 `wordDict` ，在字符串 `s` 中增加空格来构建一个句子，使得句子中所有的单词都在词典中。**以任意顺序** 返回所有这些可能的句子。
+
+**注意：**词典中的同一个单词可能在分段中被重复使用多次。
+
+ 
+
+**示例 1：**
+
+```
+输入:s = "catsanddog", wordDict = ["cat","cats","and","sand","dog"]
+输出:["cats and dog","cat sand dog"]
+```
+
+**示例 2：**
+
+```
+输入:s = "pineapplepenapple", wordDict = ["apple","pen","applepen","pine","pineapple"]
+输出:["pine apple pen apple","pineapple pen apple","pine applepen apple"]
+解释: 注意你可以重复使用字典中的单词。
+```
+
+**示例 3：**
+
+```
+输入:s = "catsandog", wordDict = ["cats","dog","sand","and","cat"]
+输出:[]
+```
+
+ 
+
+**提示：**
+
+
+
+- `1 <= s.length <= 20`
+- `1 <= wordDict.length <= 1000`
+- `1 <= wordDict[i].length <= 10`
+- `s` 和 `wordDict[i]` 仅有小写英文字母组成
+- `wordDict` 中所有字符串都 **不同**
+
+```c++
+class TrieNode
+{
+public:
+    bool isEnd;
+    vector<TrieNode*> children;
+
+    TrieNode() : isEnd(false), children(26, nullptr) {}
+};
+
+class Solution {
+public:
+    vector<string> wordBreak(string s, vector<string>& wordDict) {
+        // 构建trie树
+        TrieNode* root = new TrieNode();
+        for (const string& word : wordDict)
+        {
+            TrieNode* node = root;
+            for (char c : word)
+            {
+                int idx = c - 'a';
+                if (!node->children[idx])
+                {
+                    node->children[idx] = new TrieNode();
+                }
+                node = node->children[idx];
+            }
+            node->isEnd = true;
+        }
+
+        unordered_map<int, vector<string>> memo;
+        return dfs(s, 0, root, memo);
+
+    }
+
+private:
+    vector<string> dfs(const string& s, int start, TrieNode* root, unordered_map<int, vector<string>>& memo)
+    {
+        if (memo.contains(start)) return memo[start];
+
+        vector<string> result;
+        if (start == s.length())
+        {
+            result.push_back("");
+            return result;
+        }
+
+        TrieNode* node = root;
+        // 从start开始，逐个字符进行匹配
+        for (int i = start; i < s.length(); i++)
+        {
+            int idx = s[i] - 'a';
+            if (!node->children[idx]) break;
+
+            node = node->children[idx];
+            if (node->isEnd)
+            {
+                string word = s.substr(start, i - start + 1);
+                // 递归获取剩余部分
+                vector<string> rest = dfs(s, i + 1, root, memo);
+
+                // 拼接
+                for (const string& r : rest)
+                {
+                    if (r.empty())
+                    {
+                        result.push_back(word);
+                    }
+                    else
+                    {
+                        result.push_back(word + " " + r);
+                    }
+                }
+            }
+        }
+
+        memo[start] = result;
+        return result;
+
+    }
+
+
+
+};
+```
+
+
+
+
+
+## [322. 零钱兑换](https://leetcode.cn/problems/coin-change/)
+
+
+
+给你一个整数数组 `coins` ，表示不同面额的硬币；以及一个整数 `amount` ，表示总金额。
+
+计算并返回可以凑成总金额所需的 **最少的硬币个数** 。如果没有任何一种硬币组合能组成总金额，返回 `-1` 。
+
+你可以认为每种硬币的数量是无限的。
+
+ 
+
+**示例 1：**
+
+```
+输入：coins = [1, 2, 5], amount = 11
+输出：3 
+解释：11 = 5 + 5 + 1
+```
+
+**示例 2：**
+
+```
+输入：coins = [2], amount = 3
+输出：-1
+```
+
+**示例 3：**
+
+```
+输入：coins = [1], amount = 0
+输出：0
+```
+
+ 
+
+**提示：**
+
+- `1 <= coins.length <= 12`
+- `1 <= coins[i] <= 231 - 1`
+- `0 <= amount <= 104`
+
+```c++
+class Solution {
+public:
+    int coinChange(vector<int>& coins, int amount) {
+        
+        if (amount > 10000)
+        {
+            return coinChangeBFS(coins, amount);
+        }
+
+        // 对硬币排序，让大面额硬币在前面
+        sort(coins.rbegin(), coins.rend());
+        // dp[i] = min(dp[i], dp[i - coin] + 1) 对于每个 coin 且 i - coin >= 0
+        vector<int> dp(amount + 1, amount + 1);
+        dp[0] = 0;      // 因为金额为零时，不需要硬币
+        for (int i = 1; i <= amount; i++)
+        {
+            for (int coin : coins)
+            {
+                if (coin > i) continue;
+
+                int newCount = dp[i-coin] + 1;
+
+                if (newCount < dp[i])
+                {
+                    dp[i] = newCount;
+
+                    // 如果找到使用1个硬币的方案，可以提前结束
+                    if (newCount == 1) break;
+                }
+            }
+        }
+
+        return dp[amount] > amount ? -1 : dp[amount];
+    }
+
+private:
+    // 数额较大时，使用BFS广度优先搜索会更快
+    int coinChangeBFS(vector<int>& coins, int amount)
+    {
+        if (amount == 0) return 0;
+
+        vector<bool> visited(amount + 1, false);
+        queue<int> q;
+        q.push(0);
+        int level = 0;
+
+        while (!q.empty())
+        {
+            int size = q.size();
+            level++;
+
+            for (int i = 0; i < size; i++)
+            {
+                int current = q.front();
+                q.pop();
+
+                for (int coin : coins)
+                {
+                    int next = current + coin;
+                    if (next == amount) return level;
+                    if (next > amount) continue;
+                    if (visited[next]) continue;
+
+                    visited[next] = true;
+                    q.push(next);
+
+                }
+            }
+        }
+
+        return -1;
+
+    }
+
+
+};
+```
+
+
+
+
+
+
+## [518. 零钱兑换 II](https://leetcode.cn/problems/coin-change-ii/)
+
+
+
+给你一个整数数组 `coins` 表示不同面额的硬币，另给一个整数 `amount` 表示总金额。
+
+请你计算并返回可以凑成总金额的硬币组合数。如果任何硬币组合都无法凑出总金额，返回 `0` 。
+
+假设每一种面额的硬币有无限个。 
+
+题目数据保证结果符合 32 位带符号整数。
+
+ 
+
+**示例 1：**
+
+```
+输入：amount = 5, coins = [1, 2, 5]
+输出：4
+解释：有四种方式可以凑成总金额：
+5=5
+5=2+2+1
+5=2+1+1+1
+5=1+1+1+1+1
+```
+
+**示例 2：**
+
+```
+输入：amount = 3, coins = [2]
+输出：0
+解释：只用面额 2 的硬币不能凑成总金额 3 。
+```
+
+**示例 3：**
+
+```
+输入：amount = 10, coins = [10] 
+输出：1
+```
+
+ 
+
+**提示：**
+
+- `1 <= coins.length <= 300`
+- `1 <= coins[i] <= 5000`
+- `coins` 中的所有值 **互不相同**
+- `0 <= amount <= 5000`
+
+```c++
+class Solution {
+public:
+    int change(int amount, vector<int>& coins) {
+
+        // 状态定义：dp[i] 表示凑成金额 i 的组合数。
+        // 状态转移方程（注意顺序）：
+        // 这是一个完全背包问题，对于每个硬币 coin，我们更新金额从 coin 到 amount 的 dp 值：
+        // for coin in coins:
+        // for i from coin to amount:
+        // dp[i] += dp[i - coin]
+        // 但是要注意，这里求的是组合数，不是排列数。
+        // 因此需要先遍历硬币，再遍历金额。
+        // 这样可以保证硬币的顺序是确定的（即不会出现重复的组合，例如 [1,2] 和 [2,1] 被视为同一种）。
+        vector<unsigned long long> dp(amount + 1, 0);
+        dp[0] = 1;      // 因为凑成金额0的组合只有一种，那就是什么都不选
+
+        for (int coin : coins)
+        {
+            for (int i = coin; i <= amount; i++)
+            {
+                dp[i] += dp[i-coin];
+            }
+        }
+        return dp[amount];
+    }
+};
+```
+
+
+
+
+
+## [300. 最长递增子序列](https://leetcode.cn/problems/longest-increasing-subsequence/)
+
+
+
+给你一个整数数组 `nums` ，找到其中最长严格递增子序列的长度。
+
+**子序列** 是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，`[3,6,2,7]` 是数组 `[0,3,1,6,2,2,7]` 的子序列。
+
+**示例 1：**
+
+```
+输入：nums = [10,9,2,5,3,7,101,18]
+输出：4
+解释：最长递增子序列是 [2,3,7,101]，因此长度为 4 。
+```
+
+**示例 2：**
+
+```
+输入：nums = [0,1,0,3,2,3]
+输出：4
+```
+
+**示例 3：**
+
+```
+输入：nums = [7,7,7,7,7,7,7]
+输出：1
+```
+
+ 
+
+**提示：**
+
+- `1 <= nums.length <= 2500`
+- `-104 <= nums[i] <= 104`
+
+ 
+
+**进阶：**
+
+- 你能将算法的时间复杂度降低到 `O(n log(n))` 吗?
+
+```c++
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        // int n = nums.size();
+        // vector<int> dp(n, 1);
+        // int result = 1;
+        // for (int i = 1; i < n; i++)
+        // {
+        //     // 如果这样写，只能是最长连续递增子序列，因为这种写法只考虑了两个相邻元素的比较
+        //     // if (nums[i] > nums[i-1])
+        //     // {
+        //     //     dp[i] = dp[i-1] + 1;
+        //     // }
+        //     // result = max(result, dp[i]);
+
+        //     for (int j = 0; j < i; j++)
+        //     {
+        //         if (nums[i] > nums[j])
+        //         {
+        //             dp[i] = max(dp[i], dp[j]+1);
+        //         }
+        //     }
+        //     result = max(result, dp[i]);
+        // }
+
+        // return result;
+
+        // 上述方法使用的是标准动态规划的解法，
+        // 时间复杂度：O(n²)
+        // 空间复杂度：O(n)
+
+        // 该题使用贪心+二分查找更优
+        // 时间复杂度：O(n log n)
+        // 空间复杂度：O(n)
+        vector<int> tails;      // tails[k]存储长度为k+1的递增子序列的最小结尾值
+        for (int num : nums)
+        {
+            // 二分查找，找到第一个 >= num的值
+            // std::lower_bound 用于在有序区间中查找第一个不小于给定值的元素位置，
+            // 底层基于二分查找，时间复杂度为 O(log n)。
+            auto it = lower_bound(tails.begin(), tails.end(), num);
+
+            if (it == tails.end())
+            {
+                // num比所有结尾都大，可以延长最长子序列
+                tails.push_back(num);
+            }
+            else
+            {
+                // 替换掉该位置的元素，使得长度的结尾值为最小
+                *it = num;
+            }
+        }
+
+        return tails.size();
+
+    }
+};
+```
+
