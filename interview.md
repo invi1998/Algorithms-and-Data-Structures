@@ -16220,3 +16220,599 @@ private:
 };
 ```
 
+
+
+
+
+## [97. 交错字符串](https://leetcode.cn/problems/interleaving-string/)
+
+
+
+给定三个字符串 `s1`、`s2`、`s3`，请你帮忙验证 `s3` 是否是由 `s1` 和 `s2` **交错** 组成的。
+
+两个字符串 `s` 和 `t` **交错** 的定义与过程如下，其中每个字符串都会被分割成若干 **非空** 子字符串：
+
+- `s = s1 + s2 + ... + sn`
+- `t = t1 + t2 + ... + tm`
+- `|n - m| <= 1`
+- **交错** 是 `s1 + t1 + s2 + t2 + s3 + t3 + ...` 或者 `t1 + s1 + t2 + s2 + t3 + s3 + ...`
+
+**注意：**`a + b` 意味着字符串 `a` 和 `b` 连接。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/09/02/interleave.jpg)
+
+```
+输入：s1 = "aabcc", s2 = "dbbca", s3 = "aadbbcbcac"
+输出：true
+```
+
+**示例 2：**
+
+```
+输入：s1 = "aabcc", s2 = "dbbca", s3 = "aadbbbaccc"
+输出：false
+```
+
+**示例 3：**
+
+```
+输入：s1 = "", s2 = "", s3 = ""
+输出：true
+```
+
+ 
+
+**提示：**
+
+- `0 <= s1.length, s2.length <= 100`
+- `0 <= s3.length <= 200`
+- `s1`、`s2`、和 `s3` 都由小写英文字母组成
+
+ 
+
+**进阶：**您能否仅使用 `O(s2.length)` 额外的内存空间来解决它?
+
+```c++
+class Solution {
+public:
+    bool isInterleave(string s1, string s2, string s3) {
+        // 状态定义：dp[i][j]表示s1的前i个字符和s2的前j个字符是否能交错组成s3的前i+j个字符
+        // 状态转移方程：
+        // 如果s1的第i个字符（s1[i-1]）等于s3的第i+j个字符s3[i+j-1]，那么dp[i][j]的取值就等于dp[i-1][j]
+        // 同样，如果s2的第j个字符s2[j-1]等于s3的第i+j个字符s3[i+j-1]，那么dp[i][j]的取值就等于dp[i][j-1];
+        // 因此，状态转移方程就为
+        // dp[i][j] = (dp[i-1][j] && s1[i-1] == s3[i+j-1]) || (dp[i][j-1] && s2[j-1] == s3[i+j+1])
+        // 初始化
+        // dp[0][0] = true;     表示两个空字符串可以交错组成空字符串
+        // 第一行：dp[0][j] = dp[0][j-1] && s2[j-1] == s3[j-1], 表示s2的前j个字符是否与s3的前j个字符匹配
+        // 第二列：dp[i][0] = dp[i-1][0] && s1[i-1] == s3[i-1]，表示s1的前i个字符是否与s3的前i个字符匹配
+        int m = s1.length();
+        int n = s2.length();
+        int l = s3.length();
+
+        if (m + n != l) return false;
+
+        vector<vector<bool>> dp(m+1, vector<bool>(n+1, false));
+        dp[0][0] = true;
+
+        // 只使用s1的情况
+        for (int i = 1; i <= m; i++)
+        {
+            dp[i][0] = dp[i-1][0] && s1[i-1] == s3[i-1];
+        }
+
+        // 只使用s2的情况
+        for (int i = 1; i <= n; i++)
+        {
+            dp[0][i] = dp[0][i-1] && s2[i-1] == s3[i-1];
+        }
+
+        // 状态转移
+        for (int i = 1; i <= m; i++)
+        {
+            for (int j = 1; j <= n; j++)
+            {
+                dp[i][j] = (dp[i-1][j] && s1[i-1] == s3[i+j-1]) ||
+                           (dp[i][j-1] && s2[j-1] == s3[i+j-1]);
+            }
+        }
+        return dp[m][n];
+    }
+};
+```
+
+
+
+
+
+## [72. 编辑距离](https://leetcode.cn/problems/edit-distance/)
+
+
+
+给你两个单词 `word1` 和 `word2`， *请返回将 `word1` 转换成 `word2` 所使用的最少操作数* 。
+
+你可以对一个单词进行如下三种操作：
+
+- 插入一个字符
+- 删除一个字符
+- 替换一个字符
+
+ 
+
+**示例 1：**
+
+```
+输入：word1 = "horse", word2 = "ros"
+输出：3
+解释：
+horse -> rorse (将 'h' 替换为 'r')
+rorse -> rose (删除 'r')
+rose -> ros (删除 'e')
+```
+
+**示例 2：**
+
+```
+输入：word1 = "intention", word2 = "execution"
+输出：5
+解释：
+intention -> inention (删除 't')
+inention -> enention (将 'i' 替换为 'e')
+enention -> exention (将 'n' 替换为 'x')
+exention -> exection (将 'n' 替换为 'c')
+exection -> execution (插入 'u')
+```
+
+ 
+
+**提示：**
+
+- `0 <= word1.length, word2.length <= 500`
+- `word1` 和 `word2` 由小写英文字母组成
+
+```c++
+class Solution {
+public:
+    int minDistance(string word1, string word2) {
+        // 我们定义dp[i][j]表示将word1的前i个字符转换为word2的前j个字符所需的最少操作数。
+        // 操作包括：插入、删除、替换。
+
+        // 状态转移方程：
+        // 如果word1[i-1] == word2[j-1]，则dp[i][j] = dp[i-1][j-1]（不需要操作）
+        // 否则，我们可以进行三种操作：
+        // a) 插入：在word1中插入一个字符，相当于考虑dp[i][j-1]（word1的前i个字符和word2的前j-1个字符已经匹配）然后插入word2[j-1]
+        // 所以操作数为dp[i][j-1] + 1
+        // b) 删除：删除word1的第i个字符，相当于考虑dp[i-1][j]（word1的前i-1个字符和word2的前j个字符已经匹配）然后删除word1[i-1]
+        // 所以操作数为dp[i-1][j] + 1
+        // c) 替换：将word1的第i个字符替换为word2的第j个字符，相当于考虑dp[i-1][j-1]（word1的前i-1个字符和word2的前j-1个字符已经匹配）然后替换
+        // 所以操作数为dp[i-1][j-1] + 1
+        // 取这三种操作的最小值：dp[i][j] = min(dp[i-1][j-1], dp[i-1][j], dp[i][j-1]) + 1
+
+        int m = word1.length();
+        int n = word2.length();
+
+        // dp[i][j] 表示 word1[0..i-1] 转换为 word2[0..j-1] 的最小编辑距离
+        vector<vector<int>> dp(m+1, vector<int>(n+1, 0));
+
+        // 基础情况，初始化
+        // 将空字符串转为word2的前j个字符，需要j次插入操作
+        for (int j = 0; j <= n; j++)
+        {
+            dp[0][j] = j;
+        }
+        // 将字符串word1的前i个字符转为word2的空字符串需要i次删除操作
+        for (int i = 0; i <= m; i++)
+        {
+            dp[i][0] = i;
+        }
+
+        // 状态转移
+        for (int i = 1; i <= m; i++)
+        {
+            for (int j = 1; j <= n; j++)
+            {
+                if (word1[i-1] == word2[j-1])
+                {
+                    dp[i][j] = dp[i-1][j-1];
+                }
+                else
+                {
+                    dp[i][j] = 1 + min({
+                        dp[i-1][j],     // 删除
+                        dp[i][j-1],     // 插入
+                        dp[i-1][j-1]    // 替换
+                    });
+                }
+            }
+        }
+
+        return dp[m][n];
+
+    }
+};
+```
+
+
+
+## [123. 买卖股票的最佳时机 III](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iii/)
+
+
+
+给定一个数组，它的第 `i` 个元素是一支给定的股票在第 `i` 天的价格。
+
+设计一个算法来计算你所能获取的最大利润。你最多可以完成 **两笔** 交易。
+
+**注意：**你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+
+ 
+
+**示例 1:**
+
+```
+输入：prices = [3,3,5,0,0,3,1,4]
+输出：6
+解释：在第 4 天（股票价格 = 0）的时候买入，在第 6 天（股票价格 = 3）的时候卖出，这笔交易所能获得利润 = 3-0 = 3 。
+     随后，在第 7 天（股票价格 = 1）的时候买入，在第 8 天 （股票价格 = 4）的时候卖出，这笔交易所能获得利润 = 4-1 = 3 。
+```
+
+**示例 2：**
+
+```
+输入：prices = [1,2,3,4,5]
+输出：4
+解释：在第 1 天（股票价格 = 1）的时候买入，在第 5 天 （股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5-1 = 4 。   
+     注意你不能在第 1 天和第 2 天接连购买股票，之后再将它们卖出。   
+     因为这样属于同时参与了多笔交易，你必须在再次购买前出售掉之前的股票。
+```
+
+**示例 3：**
+
+```
+输入：prices = [7,6,4,3,1] 
+输出：0 
+解释：在这个情况下, 没有交易完成, 所以最大利润为 0。
+```
+
+**示例 4：**
+
+```
+输入：prices = [1]
+输出：0
+```
+
+ 
+
+**提示：**
+
+- `1 <= prices.length <= 105`
+- `0 <= prices[i] <= 105`
+
+```c++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        // 方法一：五个状态
+        // 将每天的状态分为五个：
+        // 未进行任何操作
+        // 第一次买入（持有第一支股票）
+        // 第一次卖出（完成第一笔交易）
+        // 第二次买入（持有第二支股票）
+        // 第二次卖出（完成第二笔交易）
+
+        int n = prices.size();
+        if (n <= 1) return 0;
+
+        // 初始化4个状态
+        int buy1 = -prices[0];      // 第一次买入
+        int sell1 = 0;              // 第一次卖出
+        int buy2 = -prices[0];      // 第二次买入
+        int sell2 = 0;              // 第二次卖出
+
+        for (int i = 1; i < n; i++)
+        {
+            // 注意这里要先更新sell2和buy2，再更新sell1和buy1
+            // 因为sell2依赖更新前的buy2，buy2依赖更新前的sell1，sell1依赖更新前的buy1
+
+            // 保存前一天的状态
+            int pre_buy1 = buy1;
+            int pre_sell1 = sell1;
+            int pre_buy2 = buy2;
+
+            // 更新当天状态
+            buy1 = max(pre_buy1, -prices[i]);
+            sell1 = max(pre_sell1, pre_buy1 + prices[i]);
+            buy2 = max(pre_buy2, pre_sell1 - prices[i]);
+            sell2 = max(sell2, pre_buy2 + prices[i]);
+
+            // 也可以写成（注意顺序）：
+            // sell2 = max(sell2, buy2 + prices[i]);  // 用更新前的buy2
+            // buy2 = max(buy2, sell1 - prices[i]);   // 用更新前的sell1
+            // sell1 = max(sell1, buy1 + prices[i]);  // 用更新前的buy1
+            // buy1 = max(buy1, -prices[i]);
+
+        }
+
+        return max(sell1, sell2);
+
+    }
+};
+```
+
+
+
+
+
+## [188. 买卖股票的最佳时机 IV](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iv/)
+
+
+
+给你一个整数数组 `prices` 和一个整数 `k` ，其中 `prices[i]` 是某支给定的股票在第 `i` 天的价格。
+
+设计一个算法来计算你所能获取的最大利润。你最多可以完成 `k` 笔交易。也就是说，你最多可以买 `k` 次，卖 `k` 次。
+
+**注意：**你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+
+ 
+
+**示例 1：**
+
+```
+输入：k = 2, prices = [2,4,1]
+输出：2
+解释：在第 1 天 (股票价格 = 2) 的时候买入，在第 2 天 (股票价格 = 4) 的时候卖出，这笔交易所能获得利润 = 4-2 = 2 。
+```
+
+**示例 2：**
+
+```
+输入：k = 2, prices = [3,2,6,5,0,3]
+输出：7
+解释：在第 2 天 (股票价格 = 2) 的时候买入，在第 3 天 (股票价格 = 6) 的时候卖出, 这笔交易所能获得利润 = 6-2 = 4 。
+     随后，在第 5 天 (股票价格 = 0) 的时候买入，在第 6 天 (股票价格 = 3) 的时候卖出, 这笔交易所能获得利润 = 3-0 = 3 。
+```
+
+ 
+
+**提示：**
+
+- `1 <= k <= 100`
+- `1 <= prices.length <= 1000`
+- `0 <= prices[i] <= 1000`
+
+```c++
+class Solution {
+public:
+    int maxProfit(int k, vector<int>& prices) {
+        int n = prices.size();
+        if (n <= 1) return 0;
+
+        // 如果k>=n/2，那就相当于无限次交易（贪心）
+        if (k >= n/2)
+        {
+            int profit = 0;
+            for (int i = 1; i < n; i++)
+            {
+                if (prices[i] > prices[i-1])
+                {
+                    profit += prices[i] - prices[i-1];
+                }
+            }
+            return profit;
+        }
+
+        // dp[i][j]：第i天，交易j次，持有股票的最大利润
+        // dp[i][j+1]：第i天，交易j次，不持有股票的最大利润
+        vector<vector<int>> dp(k+1, vector<int>(2, INT_MIN/2));
+        dp[0][0] = 0;       // 第0天，0次交易，不持有股票
+        dp[0][1] = -prices[0];      // 第0天，0次交易，持有股票（可以理解为第一次买入）
+
+        for (int i = 1; i < n; i++)
+        {
+            for (int j = 0; j <= k; j++)
+            {
+                // 保持不持有状态，或者卖出（如果持有）
+                if (j > 0)
+                {
+                    dp[j][0] = max(dp[j][0], dp[j-1][1] + prices[i]);
+                }
+                // 保持持有状态，或者买入（如果不持有）
+                dp[j][1] = max(dp[j][1], dp[j][0] - prices[i]);
+            }
+        }
+
+        int maxProfit = 0;
+        for (int j = 0; j <= k; j++)
+        {
+            maxProfit = max(maxProfit, dp[j][0]);
+        }
+        return maxProfit;
+    }
+};
+```
+
+
+
+
+
+## [221. 最大正方形](https://leetcode.cn/problems/maximal-square/)
+
+
+
+在一个由 `'0'` 和 `'1'` 组成的二维矩阵内，找到只包含 `'1'` 的最大正方形，并返回其面积。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/11/26/max1grid.jpg)
+
+```
+输入：matrix = [["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]
+输出：4
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2020/11/26/max2grid.jpg)
+
+```
+输入：matrix = [["0","1"],["1","0"]]
+输出：1
+```
+
+**示例 3：**
+
+```
+输入：matrix = [["0"]]
+输出：0
+```
+
+ 
+
+**提示：**
+
+- `m == matrix.length`
+- `n == matrix[i].length`
+- `1 <= m, n <= 300`
+- `matrix[i][j]` 为 `'0'` 或 `'1'`
+
+```c++
+class Solution {
+public:
+    int maximalSquare(vector<vector<char>>& matrix) {
+        // 设 dp[i][j] 表示以第 i 行、第 j 列为右下角的正方形的最大边长。
+        // 如果 matrix[i][j] == '1':
+        //     dp[i][j] = min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]) + 1
+        // 否则:
+        //     dp[i][j] = 0
+
+        if (matrix.empty() || matrix[0].empty()) return 0;
+
+        int m = matrix.size();
+        int n = matrix[0].size();
+        vector<vector<int>> dp(m, vector<int>(n, 0));
+
+        int maxSide = 0;
+
+        for (int i = 0; i < m; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                if (matrix[i][j] == '1')
+                {
+                    if (i == 0 || j == 0)
+                    {
+                        dp[i][j] = 1;
+                    }
+                    else
+                    {
+                        dp[i][j] = min({dp[i-1][j], dp[i][j-1], dp[i-1][j-1]}) + 1;
+                    }
+                    maxSide = max(maxSide, dp[i][j]);
+                }
+            }
+        }
+
+        return maxSide * maxSide;
+
+    }
+};
+```
+
+
+
+
+
+
+## [85. 最大矩形](https://leetcode.cn/problems/maximal-rectangle/)
+
+
+
+给定一个仅包含 `0` 和 `1` 、大小为 `rows x cols` 的二维二进制矩阵，找出只包含 `1` 的最大矩形，并返回其面积。
+
+ 
+
+**示例 1：**
+
+![img](https://pic.leetcode.cn/1722912576-boIxpm-image.png)
+
+```
+输入：matrix = [["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]
+输出：6
+解释：最大矩形如上图所示。
+```
+
+**示例 2：**
+
+```
+输入：matrix = [["0"]]
+输出：0
+```
+
+**示例 3：**
+
+```
+输入：matrix = [["1"]]
+输出：1
+```
+
+ 
+
+**提示：**
+
+- `rows == matrix.length`
+- `cols == matrix[0].length`
+- `1 <= rows, cols <= 200`
+- `matrix[i][j]` 为 `'0'` 或 `'1'`
+
+```c++
+class Solution {
+public:
+    int maximalRectangle(vector<vector<char>>& matrix) {
+        if (matrix.empty() || matrix[0].empty()) return 0;
+        
+        int m = matrix.size(), n = matrix[0].size();
+        vector<int> heights(n, 0);
+        int maxArea = 0;
+        
+        for (int i = 0; i < m; i++) {
+            // 更新高度数组
+            for (int j = 0; j < n; j++) {
+                heights[j] = (matrix[i][j] == '1') ? heights[j] + 1 : 0;
+            }
+            // 计算当前行的最大矩形面积
+            maxArea = max(maxArea, largestRectangleArea(heights));
+        }
+        
+        return maxArea;
+    }
+    
+private:
+    // 计算柱状图中的最大矩形（单调栈）
+    int largestRectangleArea(vector<int>& heights) {
+        int n = heights.size();
+        stack<int> stk;
+        int maxArea = 0;
+        
+        for (int i = 0; i <= n; i++) {
+            int curHeight = (i == n) ? 0 : heights[i];
+            
+            while (!stk.empty() && curHeight < heights[stk.top()]) {
+                int height = heights[stk.top()];
+                stk.pop();
+                int width = stk.empty() ? i : i - stk.top() - 1;
+                maxArea = max(maxArea, height * width);
+            }
+            
+            stk.push(i);
+        }
+        
+        return maxArea;
+    }
+};
+```
+
